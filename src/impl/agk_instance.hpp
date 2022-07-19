@@ -1,14 +1,15 @@
 #pragma once
-#ifndef AGK_CORE_H
-#define AGK_CORE_H
+
+#ifndef AGK_INSTANCE_H
+#define AGK_INSTANCE_H
 
 #include <SDL2/SDL.h>
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 /**
  * The core of Anubis Graphics Kit.
  */
-class agk_core {
+class agk_instance {
 protected:
     SDL_Window* sdl_window;
     SDL_GLContext sdl_gl_context;
@@ -18,8 +19,8 @@ protected:
     float screen_width;
     float screen_height;
 public:
-    agk_core();
-    ~agk_core();
+    agk_instance();
+    ~agk_instance();
 
     void init();
     void shutdown();

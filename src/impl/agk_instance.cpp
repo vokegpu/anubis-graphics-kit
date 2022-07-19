@@ -1,16 +1,16 @@
-#include "agk_core.hpp"
-#include "agk_util.hpp"
-#include "agk_renderer_manager.hpp"
+#include "agk_instance.hpp"
+#include "api/agk_util.hpp"
+#include "api/agk_renderer_manager.hpp"
 
-agk_core::agk_core() {
-
-}
-
-agk_core::~agk_core() {
+agk_instance::agk_instance() {
 
 }
 
-void agk_core::init() {
+agk_instance::~agk_instance() {
+
+}
+
+void agk_instance::init() {
     util::log("AGK initialising!");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -34,12 +34,12 @@ void agk_core::init() {
     util::log("AGK core initialised!");
 }
 
-void agk_core::shutdown() {
+void agk_instance::shutdown() {
     util::log("Quitting from AGK, bye-bye!");
     SDL_free(this->sdl_window);
 }
 
-void agk_core::run() {
+void agk_instance::run() {
     agk_fx_manager::init();
     agk_clock::set_fps(60);
 
@@ -72,7 +72,7 @@ void agk_core::run() {
     }
 }
 
-void agk_core::on_event_segment(SDL_Event &sdl_event) {
+void agk_instance::on_event_segment(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_QUIT: {
             this->running = false;
@@ -95,11 +95,11 @@ void agk_core::on_event_segment(SDL_Event &sdl_event) {
     }
 }
 
-void agk_core::on_update_segment() {
+void agk_instance::on_update_segment() {
 
 }
 
-void agk_core::on_render_segment() {
+void agk_instance::on_render_segment() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
