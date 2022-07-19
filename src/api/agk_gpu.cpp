@@ -24,7 +24,7 @@ void gpu::program::set4fm(const std::string &uniform_name, const float *val) {
 bool gpu::compile_shader(GLuint &shader, GLuint mode, const char *shader_src) {
     shader = glCreateShader(mode);
 
-    glShaderSource(shader, 1, &shader_src);
+    glShaderSource(shader, 1, &shader_src, NULL);
     glCompileShader(shader);
 
     GLint compile_status = GL_FALSE;
