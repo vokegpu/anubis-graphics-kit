@@ -1,5 +1,6 @@
 #include "agk_core.hpp"
 #include "agk_util.hpp"
+#include "agk_renderer_manager.hpp"
 
 agk_core::agk_core() {
 
@@ -39,8 +40,10 @@ void agk_core::shutdown() {
 }
 
 void agk_core::run() {
-    SDL_Event sdl_event;
+    agk_fx_manager::init();
     agk_clock::set_fps(60);
+
+    SDL_Event sdl_event;
 
     /*
      * The game main loop.

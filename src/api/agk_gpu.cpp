@@ -63,4 +63,6 @@ void gpu::create_program(gpu::program &program, const char *vsh_path, const char
             util::log(log);
         }
     }
+
+    program.validation = flag;
 }

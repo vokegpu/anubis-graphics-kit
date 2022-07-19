@@ -53,6 +53,7 @@ void util::log(const std::string &name) {
 
 bool util::open_file(agk_source &source, const std::string &path) {
     if (!util::file_exists(path)) {
+        util::log("Could not open '" + path + "'.");
         return false;
     }
 

@@ -18,16 +18,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="93f8824f-acf0-49a6-b0ac-14466a5052ad" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/build/data/fx/fx_mode.vsh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/data/fx/fx_model.fsh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/agk_renderer_manager.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/agk_renderer_manager.hpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/agk_resource_manager.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/agk_resource_manager.hpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/data/fx/fx_model.vsh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" beforeDir="false" afterPath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_mode.vsh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_model.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_model.fsh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_core.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_core.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_gpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_gpu.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_renderer_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_renderer_manager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_resource_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_resource_manager.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,22 +58,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Diyng\Documents\GitHub\anubis-graphics-kit" />
@@ -80,11 +82,6 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="anubis_graphics_kit" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="anubis_graphics_kit" TARGET_NAME="anubis_graphics_kit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="anubis_graphics_kit" RUN_TARGET_NAME="anubis_graphics_kit">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -101,7 +98,9 @@
       <updated>1658244017856</updated>
       <workItem from="1658244019249" duration="809000" />
       <workItem from="1658244855463" duration="118000" />
-      <workItem from="1658245006380" duration="12040000" />
+      <workItem from="1658245006380" duration="13440000" />
+      <workItem from="1658259395263" duration="60000" />
+      <workItem from="1658259469615" duration="358000" />
     </task>
     <servers />
   </component>
