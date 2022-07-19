@@ -39,5 +39,60 @@ void agk_core::shutdown() {
 }
 
 void agk_core::run() {
+    SDL_Event sdl_event;
+    agk_clock::set_fps(60);
 
+    /*
+     * The game main loop.
+     */
+    while (this->running) {
+        // Run the clock.
+        agk_clock::run();
+
+        // If elapsed ticks is greater than interval fps we need to sync.
+        if (agk_clock::ticks_running_asynchronous()) {
+            agk_clock::sync_running_ticks();
+
+            while (SDL_PollEvent(&sdl_event)) {
+                this->on_event_segment(sdl_event);
+            }
+
+            this->on_update_segment();
+            this->on_render_segment();
+
+            // Swap buffers.
+            SDL_GL_SwapWindow(this->sdl_window);
+        }
+    }
+}
+
+void agk_core::on_event_segment(SDL_Event &sdl_event) {
+    switch (sdl_event.type) {
+        case SDL_QUIT: {
+            this->running = false;
+            break;
+        }
+
+        case SDL_WINDOWEVENT: {
+            switch (sdl_event.window.type) {
+                case SDL_WINDOWEVENT_SIZE_CHANGED: {
+                    this->screen_width = static_cast<float>(sdl_event.window.data1);
+                    this->screen_height = static_cast<float>(sdl_event.window.data2);
+
+                    glViewport(0, static_cast<GLint>(sdl_event.window.data1), static_cast<GLint>(sdl_event.window.data1), 0);
+                    break;
+                }
+            }
+
+            break;
+        }
+    }
+}
+
+void agk_core::on_update_segment() {
+
+}
+
+void agk_core::on_render_segment() {
+    glClearColor();
 }
