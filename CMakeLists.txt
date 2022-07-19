@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(EXECUTABLE_OUTPUT_PATH ../build)
 
 # Find for all files.
-file(GLOB SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 
 # Include the src for environment of project.
 include_directories(src)

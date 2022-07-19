@@ -56,6 +56,20 @@ build CMakeFiles/anubis_graphics_kit.dir/src/agk_client.cpp.obj: CXX_COMPILER__a
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src
 
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_core.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_core.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_core.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
+  OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
+  OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
+
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_util.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
+  OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
+  OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target anubis_graphics_kit
@@ -64,7 +78,7 @@ build CMakeFiles/anubis_graphics_kit.dir/src/agk_client.cpp.obj: CXX_COMPILER__a
 #############################################
 # Link the executable ..\build\anubis_graphics_kit.exe
 
-build ../build/anubis_graphics_kit.exe: CXX_EXECUTABLE_LINKER__anubis_graphics_kit_Debug CMakeFiles/anubis_graphics_kit.dir/src/agk_client.cpp.obj
+build ../build/anubis_graphics_kit.exe: CXX_EXECUTABLE_LINKER__anubis_graphics_kit_Debug CMakeFiles/anubis_graphics_kit.dir/src/agk_client.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_core.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lmingw32  -lglew32  -lopengl32  -lSDL2main  -lSDL2  -lSDL2_image  -lfreetype-6  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir

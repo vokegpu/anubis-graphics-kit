@@ -11,7 +11,11 @@
 class agk_core {
 protected:
     SDL_Window* sdl_window;
+    SDL_GLContext sdl_gl_context;
 public:
+    agk_core();
+    ~agk_core();
+
     void init();
     void shutdown();
     void run();
