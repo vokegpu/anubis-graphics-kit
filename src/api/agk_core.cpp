@@ -60,6 +60,9 @@ void agk_core::run() {
             this->on_update_segment();
             this->on_render_segment();
 
+            // Check the frame rate of current loop.
+            agk_clock::check_frame_rate();
+
             // Swap buffers.
             SDL_GL_SwapWindow(this->sdl_window);
         }
@@ -94,5 +97,6 @@ void agk_core::on_update_segment() {
 }
 
 void agk_core::on_render_segment() {
-    glClearColor();
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }

@@ -18,9 +18,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="93f8824f-acf0-49a6-b0ac-14466a5052ad" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/api/agk_material.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/api/agk_material.hpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/api/agk_math.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/api/agk_math.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" beforeDir="false" afterPath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_core.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_core.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_core.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_core.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_util.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.hpp" afterDir="false" />
     </list>
@@ -95,7 +101,7 @@
       <updated>1658244017856</updated>
       <workItem from="1658244019249" duration="809000" />
       <workItem from="1658244855463" duration="118000" />
-      <workItem from="1658245006380" duration="3791000" />
+      <workItem from="1658245006380" duration="5259000" />
     </task>
     <servers />
   </component>
