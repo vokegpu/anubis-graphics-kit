@@ -1,0 +1,3 @@
+C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug/CMakeFiles/anubis_graphics_kit.dir
+C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug/CMakeFiles/rebuild_cache.dir
