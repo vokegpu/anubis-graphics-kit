@@ -30,10 +30,20 @@ struct agk_clock {
 };
 
 /**
+ * File source.
+ **/
+struct agk_source {
+    std::string data1;
+};
+
+/**
  * The utilities of program.
  **/
 namespace util {
     void log(const std::string &name);
+
+    bool open_file(agk_source &source, const std::string &path);
+    bool file_exists(const std::string &path);
 };
 
 #endif

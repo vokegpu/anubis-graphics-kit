@@ -9,6 +9,9 @@ struct math {
         float y;
         float z;
         float w;
+
+        vec4f();
+        vec4f(float x, float y, float z, float w);
     };
 };
 

@@ -1,6 +1,7 @@
 #include "agk_util.hpp"
 
 #include <SDL2/SDL.h>
+#include <fstream>
 
 uint64_t agk_clock::elapsed_ticks = 0;
 uint64_t agk_clock::ticks_going_on = 0;
@@ -48,4 +49,44 @@ void agk_clock::check_frame_rate() {
 void util::log(const std::string &name) {
     const std::string property = "[MAIN] " + name;
     std::cout << property.c_str() << "\n";
+}
+
+bool util::open_file(agk_source &source, const std::string &path) {
+    if (!util::file_exists(path)) {
+        return false;
+    }
+
+    bool flag = false;
+
+    // TODO modes for get the data from opened file.
+    if (true) {
+        std::ifstream ifs(path.c_str());
+        std::string string_builder;
+
+        if (ifs.is_open()) {
+            std::string string_buffer;
+
+            while (getline(ifs, string_buffer)) {
+                string_builder += "\n" + string_buffer;
+            }
+
+            ifs.close();
+            source.data1 = string_builder;
+        }
+
+        flag = true;
+    }
+
+    return flag;
+}
+
+bool util::file_exists(const std::string &path) {
+    FILE* f = fopen(path.c_str(), "r");
+    bool flag = f != NULL;
+
+    if (flag) {
+        fclose(f);
+    }
+
+    return flag;
 }
