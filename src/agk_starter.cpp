@@ -1,7 +1,7 @@
-#include "agk_client.hpp"
+#include "agk_starter.hpp"
 #include <iostream>
 
-agk_instance* const the_agk_core = new agk_instance();
+agk* const the_agk_core = new agk();
 
 int main(int argv, char** argc) {
     the_agk_core->init();

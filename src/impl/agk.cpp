@@ -1,16 +1,16 @@
-#include "agk_instance.hpp"
+#include "agk.hpp"
 #include "api/agk_util.hpp"
 #include "api/agk_renderer_manager.hpp"
 
-agk_instance::agk_instance() {
+agk::agk() {
 
 }
 
-agk_instance::~agk_instance() {
+agk::~agk() {
 
 }
 
-void agk_instance::init() {
+void agk::init() {
     util::log("AGK initialising!");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -34,16 +34,17 @@ void agk_instance::init() {
     util::log("AGK core initialised!");
 }
 
-void agk_instance::shutdown() {
+void agk::shutdown() {
     util::log("Quitting from AGK, bye-bye!");
     SDL_free(this->sdl_window);
 }
 
-void agk_instance::run() {
+void agk::run() {
     agk_fx_manager::init();
     agk_clock::set_fps(60);
-
     SDL_Event sdl_event;
+
+    this->camera = new agk_camera();
 
     /*
      * The game main loop.
@@ -72,7 +73,7 @@ void agk_instance::run() {
     }
 }
 
-void agk_instance::on_event_segment(SDL_Event &sdl_event) {
+void agk::on_event_segment(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_QUIT: {
             this->running = false;
@@ -93,13 +94,49 @@ void agk_instance::on_event_segment(SDL_Event &sdl_event) {
             break;
         }
     }
+
+    if (this->scene != nullptr) {
+        this->scene->on_event(sdl_event);
+    }
 }
 
-void agk_instance::on_update_segment() {
-
+void agk::on_update_segment() {
+    if (this->scene != nullptr) {
+        this->scene->on_update();
+    }
 }
 
-void agk_instance::on_render_segment() {
+void agk::on_render_segment() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    if (this->scene != nullptr) {
+        this->scene->on_render();
+    }
+}
+
+void agk::load_scene(agk_scene* raw_scene) {
+    if (this->scene == raw_scene) {
+        return;
+    }
+
+    if (this->scene != nullptr && raw_scene == nullptr) {
+        this->scene->on_end();
+        delete this->scene;
+        this->scene = nullptr;
+        return;
+    }
+
+    if (this->scene == nullptr && raw_scene != nullptr) {
+        this->scene = raw_scene;
+        this->scene->on_start();
+        return;
+    }
+
+    if (this->scene != nullptr && raw_scene != nullptr) {
+        this->scene->on_end();
+        delete this->scene;
+        this->scene = raw_scene;
+        this->scene->on_start();
+    }
 }

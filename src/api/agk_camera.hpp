@@ -27,7 +27,7 @@ public:
     agk_camera();
     ~agk_camera();
 
-    glm::mat4
+    glm::mat4 matrix();
 
     void on_event(SDL_Event &sdl_event) override;
     void on_update() override;

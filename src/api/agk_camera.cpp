@@ -1,4 +1,5 @@
 #include "agk_camera.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 agk_camera::agk_camera() {
     this->position = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -41,7 +42,6 @@ void agk_camera::on_event(SDL_Event &sdl_event) {
 
 void agk_camera::on_update() {
     agk_feature::on_update();
-
     glm::vec3 vec_front;
 
     vec_front.x = glm::cos(glm::radians(this->yaw)) * glm::cos(glm::radians(this->pitch));
@@ -55,4 +55,8 @@ void agk_camera::on_update() {
 
 void agk_camera::on_render() {
     agk_feature::on_render();
+}
+
+glm::mat4 agk_camera::matrix() {
+    return glm::lookAt(this->position, this->position + this->front, this->up);
 }
