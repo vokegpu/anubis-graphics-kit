@@ -1,10 +1,13 @@
 #include "agk_camera.hpp"
+#include "agk_util.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 agk_camera::agk_camera() {
-    this->position = glm::vec3(0.0f, 0.0f, 3.0f);
-    this->up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->position = glm::vec3(0.0f, 0.0f, 0.0f);
+    this->world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->front = glm::vec3(0.0f, 0.0f, -1.0f);
     this->fov = 60.0f;
+    this->mouse_sensitivity = 0.1f;
 
     this->on_update();
 }
@@ -19,7 +22,10 @@ void agk_camera::on_event(SDL_Event &sdl_event) {
         case SDL_MOUSEMOTION: {
             if (this->mouse_locked) {
                 float mouse_delta_x = (static_cast<float>(sdl_event.motion.x) - this->previous_mx) * this->mouse_sensitivity;
-                float mouse_delta_y = (static_cast<float>(sdl_event.motion.y) - this->previous_my) * this->mouse_sensitivity;
+                float mouse_delta_y = (this->previous_my - static_cast<float>(sdl_event.motion.y)) * this->mouse_sensitivity;
+
+                this->previous_mx = static_cast<float>(sdl_event.motion.x);
+                this->previous_my = static_cast<float>(sdl_event.motion.y);
 
                 this->yaw += mouse_delta_x;
                 this->pitch += mouse_delta_y;

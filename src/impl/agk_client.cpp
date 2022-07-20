@@ -1,16 +1,17 @@
-#include "agk.hpp"
+#include "agk_client.hpp"
 #include "api/agk_util.hpp"
 #include "api/agk_renderer_manager.hpp"
+#include "impl/scenes/scene_cube.hpp"
 
-agk::agk() {
-
-}
-
-agk::~agk() {
+agk_client::agk_client() {
 
 }
 
-void agk::init() {
+agk_client::~agk_client() {
+
+}
+
+void agk_client::init() {
     util::log("AGK initialising!");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -34,17 +35,18 @@ void agk::init() {
     util::log("AGK core initialised!");
 }
 
-void agk::shutdown() {
+void agk_client::shutdown() {
     util::log("Quitting from AGK, bye-bye!");
     SDL_free(this->sdl_window);
 }
 
-void agk::run() {
+void agk_client::run() {
     agk_fx_manager::init();
     agk_clock::set_fps(60);
     SDL_Event sdl_event;
 
     this->camera = new agk_camera();
+    this->load_scene(new scene_cube());
 
     /*
      * The game main loop.
@@ -73,7 +75,7 @@ void agk::run() {
     }
 }
 
-void agk::on_event_segment(SDL_Event &sdl_event) {
+void agk_client::on_event_segment(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_QUIT: {
             this->running = false;
@@ -100,13 +102,13 @@ void agk::on_event_segment(SDL_Event &sdl_event) {
     }
 }
 
-void agk::on_update_segment() {
+void agk_client::on_update_segment() {
     if (this->scene != nullptr) {
         this->scene->on_update();
     }
 }
 
-void agk::on_render_segment() {
+void agk_client::on_render_segment() {
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -115,7 +117,7 @@ void agk::on_render_segment() {
     }
 }
 
-void agk::load_scene(agk_scene* raw_scene) {
+void agk_client::load_scene(agk_scene* raw_scene) {
     if (this->scene == raw_scene) {
         return;
     }
@@ -139,4 +141,12 @@ void agk::load_scene(agk_scene* raw_scene) {
         this->scene = raw_scene;
         this->scene->on_start();
     }
+}
+
+float agk_client::get_screen_width() {
+    return this->screen_width;
+}
+
+float agk_client::get_screen_height() {
+    return this->screen_height;
 }

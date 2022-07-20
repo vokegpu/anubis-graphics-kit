@@ -49,8 +49,8 @@ cmake_ninja_workdir = C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake
 
 build cmake_object_order_depends_target_anubis_graphics_kit: phony || CMakeFiles/anubis_graphics_kit.dir
 
-build CMakeFiles/anubis_graphics_kit.dir/src/agk_starter.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/agk_starter.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\agk_starter.cpp.obj.d
+build CMakeFiles/anubis_graphics_kit.dir/src/agk.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/agk.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\agk.cpp.obj.d
   FLAGS = -g -std=gnu++11
   INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
@@ -119,12 +119,19 @@ build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: CXX_COMPILER_
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
 
-build CMakeFiles/anubis_graphics_kit.dir/src/impl/agk.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/impl/agk.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\impl\agk.cpp.obj.d
+build CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/impl/agk_client.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\impl\agk_client.cpp.obj.d
   FLAGS = -g -std=gnu++11
   INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\impl
+
+build CMakeFiles/anubis_graphics_kit.dir/src/impl/scenes/scene_cube.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/impl/scenes/scene_cube.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes\scene_cube.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
+  OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
+  OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes
 
 
 # =============================================================================
@@ -134,7 +141,7 @@ build CMakeFiles/anubis_graphics_kit.dir/src/impl/agk.cpp.obj: CXX_COMPILER__anu
 #############################################
 # Link the executable ..\build\anubis_graphics_kit.exe
 
-build ../build/anubis_graphics_kit.exe: CXX_EXECUTABLE_LINKER__anubis_graphics_kit_Debug CMakeFiles/anubis_graphics_kit.dir/src/agk_starter.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_camera.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_feature.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_gpu.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_material.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_math.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_renderer_manager.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_resource_manager.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/impl/agk.cpp.obj
+build ../build/anubis_graphics_kit.exe: CXX_EXECUTABLE_LINKER__anubis_graphics_kit_Debug CMakeFiles/anubis_graphics_kit.dir/src/agk.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_camera.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_feature.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_gpu.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_material.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_math.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_renderer_manager.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_resource_manager.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/impl/scenes/scene_cube.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lmingw32  -lglew32  -lopengl32  -lSDL2main  -lSDL2  -lSDL2_image  -lfreetype-6  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir

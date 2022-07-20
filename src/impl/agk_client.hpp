@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef AGK_H
-#define AGK_H
+#ifndef AGK_CLIENT_H
+#define AGK_CLIENT_H
 
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
@@ -12,7 +12,7 @@
 /**
  * The core of Anubis Graphics Kit.
  **/
-class agk {
+class agk_client {
 protected:
     SDL_Window* sdl_window;
     SDL_GLContext sdl_gl_context;
@@ -25,8 +25,11 @@ public:
     agk_camera* camera = nullptr;
     agk_scene* scene = nullptr;
 
-    agk();
-    ~agk();
+    float get_screen_width();
+    float get_screen_height();
+
+    agk_client();
+    ~agk_client();
 
     void init();
     void shutdown();

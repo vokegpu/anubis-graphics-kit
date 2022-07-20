@@ -21,6 +21,10 @@ void gpu::program::set4fm(const std::string &uniform_name, const float *val) {
     glUniformMatrix4fv(glGetUniformLocation(this->program, uniform_name.c_str()), 1, GL_FALSE, val);
 }
 
+void gpu::program::use() {
+    glUseProgram(this->program);
+}
+
 bool gpu::compile_shader(GLuint &shader, GLuint mode, const char *shader_src) {
     shader = glCreateShader(mode);
 
