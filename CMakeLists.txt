@@ -7,10 +7,11 @@ set(EXECUTABLE_OUTPUT_PATH ../build)
 
 # Find for all files.
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE LIB_FILES "external/*.lib")
 
 # Include the src for environment of project.
 include_directories(src)
 
 # Inject at the executable the src files and link the libraries used in the project.
 add_executable(anubis_graphics_kit ${SRC_FILES})
-target_link_libraries(anubis_graphics_kit mingw32 glew32 opengl32 SDL2main SDL2 SDL2_image freetype-6)
+target_link_libraries(anubis_graphics_kit ${LIB_FILES} opengl32 SDL2main SDL2)

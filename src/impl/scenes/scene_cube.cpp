@@ -89,7 +89,29 @@ void scene_cube::on_event(SDL_Event &sdl_event) {
 
     switch (sdl_event.type) {
         case SDL_KEYDOWN: {
-            the_agk_core->camera->position.z -= 0.10;
+            switch (sdl_event.key.keysym.sym) {
+                case SDLK_w: {
+                    the_agk_core->camera->position.z += 0.10;
+                    break;
+                }
+
+                case SDLK_s: {
+                    the_agk_core->camera->position.z -= 0.10;
+                    break;
+                }
+
+                case SDLK_a: {
+                    the_agk_core->camera->position.x -= 0.10;
+                    break;
+                }
+
+                case SDLK_d: {
+                    the_agk_core->camera->position.x += 0.10;
+                    break;
+                }
+            }
+
+            break;
         };
 
         case SDL_MOUSEMOTION: {
@@ -110,7 +132,6 @@ void scene_cube::on_render() {
     glm::mat4 model = glm::mat4(1.0f);
 
     model = glm::translate(model, glm::vec3(0, 0, 0));
-
     float color[] = {0.0f, 0.0f, 0.6f, 1.0f};
 
     agk_fx_manager::fx_model.use();
