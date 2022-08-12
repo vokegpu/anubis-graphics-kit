@@ -12,37 +12,37 @@ agk_client::~agk_client() {
 }
 
 void agk_client::init() {
-    util::log("AGK initialising!");
+    agk_util::log("AGK initialising!");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
-        util::log("Could not initialise SDL2.");
+        agk_util::log("Could not initialise SDL2.");
         return;
     }
-
-    this->sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 800, SDL_WINDOW_OPENGL);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
+    this->sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     this->sdl_gl_context = SDL_GL_CreateContext(this->sdl_window);
 
     glewExperimental = true;
     if (glewInit()) {
-        util::log("Could not initialise API OpenGL extensions.");
+        agk_util::log("Could not initialise API OpenGL extensions.");
     }
 
-    util::log("AGK core initialised!");
+    agk_util::log("AGK core initialised!");
 }
 
 void agk_client::shutdown() {
-    util::log("Quitting from AGK, bye-bye!");
+    agk_util::log("Quitting from AGK, bye-bye!");
     SDL_free(this->sdl_window);
 }
 
 void agk_client::run() {
     agk_fx_manager::init();
     agk_clock::set_fps(60);
+    agk_util::init();
     SDL_Event sdl_event;
 
     this->camera = new agk_camera();
@@ -76,7 +76,7 @@ void agk_client::run() {
 }
 
 void agk_client::on_event_segment(SDL_Event &sdl_event) {
-    util::keyboard(sdl_event);
+    agk_util::keyboard(sdl_event);
 
     switch (sdl_event.type) {
         case SDL_QUIT: {
@@ -151,4 +151,8 @@ float agk_client::get_screen_width() {
 
 float agk_client::get_screen_height() {
     return this->screen_height;
+}
+
+SDL_Window *agk_client::get_sdl_win() {
+    return this->sdl_window;
 }

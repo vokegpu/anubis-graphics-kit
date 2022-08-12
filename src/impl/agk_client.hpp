@@ -17,13 +17,15 @@ protected:
     SDL_Window* sdl_window;
     SDL_GLContext sdl_gl_context;
 
-    float screen_width = 1280;
-    float screen_height = 800;
+    float screen_width = 1920;
+    float screen_height = 1080;
 
     bool running = true;
 public:
     agk_camera* camera = nullptr;
     agk_scene* scene = nullptr;
+
+    SDL_Window* get_sdl_win();
 
     float get_screen_width();
     float get_screen_height();

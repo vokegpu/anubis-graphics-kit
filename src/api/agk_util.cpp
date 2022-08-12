@@ -12,7 +12,7 @@ uint32_t agk_clock::fps = 0;
 uint32_t agk_clock::fps_elapsed = 0;
 uint64_t agk_clock::elapsed_milliseconds_fps_cycle = 0;
 
-bool util::pressed[322];
+bool agk_util::pressed[322];
 float agk_clock::delta_time = 0.0f;
 
 void agk_clock::set_fps(uint8_t new_fps) {
@@ -47,14 +47,14 @@ void agk_clock::check_frame_rate() {
     }
 }
 
-void util::log(const std::string &name) {
+void agk_util::log(const std::string &name) {
     const std::string property = "[MAIN] " + name;
     std::cout << property.c_str() << "\n";
 }
 
-bool util::open_file(agk_source &source, const std::string &path) {
-    if (!util::file_exists(path)) {
-        util::log("Could not open '" + path + "'.");
+bool agk_util::open_file(agk_source &source, const std::string &path) {
+    if (!agk_util::file_exists(path)) {
+        agk_util::log("Could not open '" + path + "'.");
         return false;
     }
 
@@ -82,7 +82,7 @@ bool util::open_file(agk_source &source, const std::string &path) {
     return flag;
 }
 
-bool util::file_exists(const std::string &path) {
+bool agk_util::file_exists(const std::string &path) {
     FILE* f = fopen(path.c_str(), "r");
     bool flag = f != NULL;
 
@@ -93,16 +93,22 @@ bool util::file_exists(const std::string &path) {
     return flag;
 }
 
-void util::keyboard(SDL_Event &sdl_event) {
+void agk_util::keyboard(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_KEYDOWN: {
-            util::pressed[sdl_event.key.keysym.sym] = true;
+            agk_util::pressed[sdl_event.key.keysym.sym] = true;
             break;
         }
 
         case SDL_KEYUP: {
-            util::pressed[sdl_event.key.keysym.sym] = false;
+            agk_util::pressed[sdl_event.key.keysym.sym] = false;
             break;
         }
+    }
+}
+
+void agk_util::init() {
+    for (uint32_t i = 0; i < 322; i++) {
+        agk_util::pressed[i] = false;
     }
 }

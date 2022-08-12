@@ -1,6 +1,7 @@
 #include "agk_camera.hpp"
 #include "agk_util.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <agk.hpp>
 
 agk_camera::agk_camera() {
     this->position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -21,14 +22,11 @@ void agk_camera::on_event(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_MOUSEMOTION: {
             if (this->mouse_locked) {
-                float mouse_delta_x = (static_cast<float>(sdl_event.motion.x) - this->previous_mx) * this->mouse_sensitivity;
-                float mouse_delta_y = (this->previous_my - static_cast<float>(sdl_event.motion.y)) * this->mouse_sensitivity;
-
-                this->previous_mx = static_cast<float>(sdl_event.motion.x);
-                this->previous_my = static_cast<float>(sdl_event.motion.y);
+                float mouse_delta_x = static_cast<float>(sdl_event.motion.xrel) * this->mouse_sensitivity;
+                float mouse_delta_y = static_cast<float>(sdl_event.motion.yrel) * this->mouse_sensitivity;
 
                 this->yaw += mouse_delta_x;
-                this->pitch += mouse_delta_y;
+                this->pitch -= mouse_delta_y;
 
                 if (this->pitch > 89.0f) {
                     this->pitch = 89.0f;
@@ -57,6 +55,8 @@ void agk_camera::on_update() {
     this->front = glm::normalize(vec_front);
     this->right = glm::normalize(glm::cross(this->front, this->world_up));
     this->up = glm::normalize(glm::cross(this->right, this->front));
+
+
 }
 
 void agk_camera::on_render() {

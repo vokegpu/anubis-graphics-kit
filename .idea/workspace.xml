@@ -19,41 +19,17 @@
   <component name="ChangeListManager">
     <list default="true" id="93f8824f-acf0-49a6-b0ac-14466a5052ad" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/SDL2.dll" beforeDir="false" afterPath="$PROJECT_DIR$/build/SDL2.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/SDL2_image.dll" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" beforeDir="false" afterPath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/anubis_graphics_kit.ilk" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/anubis_graphics_kit.pdb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/glew32.dll" beforeDir="false" afterPath="$PROJECT_DIR$/build/glew32.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libgcc_s_dw2-1.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libjpeg-9.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libpng16-16.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libstdc++-6.dll" beforeDir="false" afterPath="$PROJECT_DIR$/build/libstdc++-6.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libtiff-5.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libwebp-7.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/libwinpthread-1.dll" beforeDir="false" afterPath="$PROJECT_DIR$/build/libwinpthread-1.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/zlib1.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeCCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeCXXCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeCXXCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeDetermineCompilerABI_C.bin" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeDetermineCompilerABI_CXX.bin" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeRCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.22.3/CMakeRCCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-environment.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-environment.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_model.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_model.fsh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_model.vsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_model.vsh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_camera.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_camera.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_material.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_material.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_camera.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_camera.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_gpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_gpu.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_util.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/impl/agk_client.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/impl/agk_client.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_cube.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/scenes/scene_cube.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_cube.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/scenes/scene_cube.hpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,9 +85,9 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="anubis_graphics_kit" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="anubis_graphics_kit" RUN_TARGET_NAME="anubis_graphics_kit" EXPLICIT_BUILD_TARGET_NAME="all">
@@ -135,6 +111,7 @@
       <workItem from="1658259469615" duration="9095000" />
       <workItem from="1658334157153" duration="19725000" />
       <workItem from="1660266050806" duration="3101000" />
+      <workItem from="1660269991746" duration="5010000" />
     </task>
     <servers />
   </component>

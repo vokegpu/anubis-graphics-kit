@@ -79,6 +79,11 @@ void scene_cube::on_start() {
     glBindVertexArray(0);
 
     glEnable(GL_DEPTH_TEST);
+
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+    SDL_SetWindowGrab(the_agk_core->get_sdl_win(), SDL_FALSE);
+
+    the_agk_core->camera->position = glm::vec3(0.0f, 0.0f, -10.0f);
 }
 
 void scene_cube::on_end() {
@@ -98,29 +103,44 @@ void scene_cube::on_event(SDL_Event &sdl_event) {
 
 void scene_cube::on_update() {
     agk_scene::on_update();
+    float v = 0.0f;
 
-    if (util::pressed[SDLK_w]) {
-        this->velocity.z = 1.0f;
+    float forward = 0.0f;
+    float strafe = 0.0f;
+    float fly = 0.0f;
+
+    if (agk_util::pressed[SDLK_w]) {
+        forward = 1;
     }
 
-    if (util::pressed[SDLK_s]) {
-        this->velocity.z = -1.0f;
+    if (agk_util::pressed[SDLK_s]) {
+        forward = -1;
     }
 
-    if (util::pressed[SDLK_a]) {
-        this->velocity.x = 1.0f;
+    if (agk_util::pressed[SDLK_a]) {
+        strafe = 1;
     }
 
-    if (util::pressed[SDLK_d]) {
-        this->velocity.x = -1.0f;
+    if (agk_util::pressed[SDLK_d]) {
+        strafe = -1;
     }
 
-    float f = glm::length(this->velocity);
-    this->velocity.x += glm::sin(f) * 0.148f;
-    this->velocity.z -= glm::cos(f) * 0.148f;
+    if (agk_util::pressed[SDLK_SPACE]) {
+        fly = -1;
+    }
+
+    float f = the_agk_core->camera->yaw;
+    float x = glm::cos(glm::radians(f));
+    float z = glm::sin(glm::radians(f));
+    float y = glm::sin(glm::radians(the_agk_core->camera->pitch));
+
+    v = 0.2867f;
+
+    this->velocity.x = forward * v * x + strafe * v * z;
+    this->velocity.z = forward * v * z - strafe * v * x;
+    this->velocity.y = (forward + fly) * v * y;
 
     the_agk_core->camera->position += this->velocity * agk_clock::delta_time;
-    this->velocity *= 0.1f;
 }
 
 void scene_cube::on_render() {
@@ -130,13 +150,20 @@ void scene_cube::on_render() {
     glm::mat4 model = glm::mat4(1.0f);
 
     model = glm::translate(model, glm::vec3(0, 0, 0));
-    float color[] = {0.0f, 0.0f, 0.6f, 1.0f};
+    float color[] = {0.5f, 0.5f, 1.0f, 1.0f};
+    float ambient_light[] = {1.0f, 1.0f, 1.0f, 0.2f};
+    float ambient_light_pos[] = {0.0f, 1.0f, 0.0f, 1.0f};
 
     agk_fx_manager::fx_model.use();
     agk_fx_manager::fx_model.set4fm("u_mat4_perspective", &projection[0][0]);
     agk_fx_manager::fx_model.set4fm("u_mat4_view", &the_agk_core->camera->matrix()[0][0]);
     agk_fx_manager::fx_model.set4fm("u_mat4_model", &model[0][0]);
     agk_fx_manager::fx_model.set4f("u_vec4_color", color);
+    agk_fx_manager::fx_model.set4f("u_vec4_ambient_color", ambient_light);
+    agk_fx_manager::fx_model.set4f("u_vec4_ambient_light", ambient_light_pos);
+
+    ambient_light[3] = 1.0f;
+    agk_fx_manager::fx_model.set4f("u_vec4_light_color", ambient_light);
 
     glBindVertexArray(this->vao);
     glDrawArrays(GL_TRIANGLES, 0, 36);

@@ -40,9 +40,10 @@ struct agk_source {
 /**
  * The utilities of program.
  **/
-namespace util {
+namespace agk_util {
     extern bool pressed[322];
 
+    void init();
     void log(const std::string &name);
     void keyboard(SDL_Event &sdl_event);
 
