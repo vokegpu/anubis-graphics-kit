@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <SDL2/SDL.h>
 
 /**
  * The AGK clock for manage fps and stuff.
@@ -40,7 +41,10 @@ struct agk_source {
  * The utilities of program.
  **/
 namespace util {
+    extern bool pressed[322];
+
     void log(const std::string &name);
+    void keyboard(SDL_Event &sdl_event);
 
     bool open_file(agk_source &source, const std::string &path);
     bool file_exists(const std::string &path);

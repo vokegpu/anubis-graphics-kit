@@ -32,14 +32,14 @@ CONFIGURATION = Debug
 #############################################
 # Include rules file.
 
-include CMakeFiles\rules.ninja
+include CMakeFiles/rules.ninja
 
 # =============================================================================
 
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\cmake-build-debug\
+cmake_ninja_workdir = C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug/
 # =============================================================================
 # Object build statements for EXECUTABLE target anubis_graphics_kit
 
@@ -47,103 +47,91 @@ cmake_ninja_workdir = C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\cmake
 #############################################
 # Order-only phony target for anubis_graphics_kit
 
-build cmake_object_order_depends_target_anubis_graphics_kit: phony || CMakeFiles\anubis_graphics_kit.dir
+build cmake_object_order_depends_target_anubis_graphics_kit: phony || CMakeFiles/anubis_graphics_kit.dir
 
-build CMakeFiles\anubis_graphics_kit.dir\src\agk.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\agk.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/agk.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/agk.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\agk.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_camera.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_camera.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_camera.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_camera.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_camera.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_feature.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_feature.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_feature.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_feature.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_feature.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_gpu.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_gpu.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_gpu.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_gpu.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_gpu.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_material.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_material.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_material.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_material.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_material.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_math.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_math.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_math.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_math.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_math.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_renderer_manager.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_renderer_manager.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_renderer_manager.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_renderer_manager.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_renderer_manager.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_resource_manager.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_resource_manager.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_resource_manager.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_resource_manager.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_resource_manager.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_scene.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_scene.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_scene.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_scene.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api\agk_util.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/agk_util.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\api
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\impl\agk_client.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\impl\agk_client.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/impl/agk_client.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\impl\agk_client.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\impl
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
-build CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes\scene_cube.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\impl\scenes\scene_cube.cpp || cmake_object_order_depends_target_anubis_graphics_kit
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  INCLUDES = -IC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src
+build CMakeFiles/anubis_graphics_kit.dir/src/impl/scenes/scene_cube.cpp.obj: CXX_COMPILER__anubis_graphics_kit_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/impl/scenes/scene_cube.cpp || cmake_object_order_depends_target_anubis_graphics_kit
+  DEP_FILE = CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes\scene_cube.cpp.obj.d
+  FLAGS = -g -std=gnu++11
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   OBJECT_FILE_DIR = CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
 
 
 # =============================================================================
@@ -153,47 +141,45 @@ build CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes\scene_cube.cpp.obj: CXX
 #############################################
 # Link the executable ..\build\anubis_graphics_kit.exe
 
-build ..\build\anubis_graphics_kit.exe: CXX_EXECUTABLE_LINKER__anubis_graphics_kit_Debug CMakeFiles\anubis_graphics_kit.dir\src\agk.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_camera.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_feature.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_gpu.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_material.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_math.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_renderer_manager.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_resource_manager.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_scene.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\impl\agk_client.cpp.obj CMakeFiles\anubis_graphics_kit.dir\src\impl\scenes\scene_cube.cpp.obj | ..\external\glew32.lib ..\external\glew32s.lib
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
-  LINK_FLAGS = /machine:X86 /debug /INCREMENTAL /subsystem:console
-  LINK_LIBRARIES = ..\external\glew32.lib  ..\external\glew32s.lib  opengl32.lib  SDL2main.lib  SDL2.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+build ../build/anubis_graphics_kit.exe: CXX_EXECUTABLE_LINKER__anubis_graphics_kit_Debug CMakeFiles/anubis_graphics_kit.dir/src/agk.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_camera.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_feature.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_gpu.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_material.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_math.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_renderer_manager.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_resource_manager.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj CMakeFiles/anubis_graphics_kit.dir/src/impl/scenes/scene_cube.cpp.obj
+  FLAGS = -g
+  LINK_LIBRARIES = -lmingw32  -lopengl32  -lglew32  -lSDL2main  -lSDL2  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\anubis_graphics_kit.dir
   POST_BUILD = cd .
   PRE_LINK = cd .
-  TARGET_COMPILE_PDB = CMakeFiles\anubis_graphics_kit.dir\
   TARGET_FILE = ..\build\anubis_graphics_kit.exe
-  TARGET_IMPLIB = ..\build\anubis_graphics_kit.lib
-  TARGET_PDB = ..\build\anubis_graphics_kit.pdb
+  TARGET_IMPLIB = ..\build\libanubis_graphics_kit.dll.a
+  TARGET_PDB = anubis_graphics_kit.exe.dbg
 
 
 #############################################
 # Utility command for edit_cache
 
-build CMakeFiles\edit_cache.util: CUSTOM_COMMAND
+build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
   COMMAND = cmd.exe /C "cd /D C:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2022.1.2\bin\cmake\win\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
-build edit_cache: phony CMakeFiles\edit_cache.util
+build edit_cache: phony CMakeFiles/edit_cache.util
 
 
 #############################################
 # Utility command for rebuild_cache
 
-build CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
+build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
   COMMAND = cmd.exe /C "cd /D C:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\cmake-build-debug && "C:\Program Files\JetBrains\CLion 2022.1.2\bin\cmake\win\bin\cmake.exe" --regenerate-during-build -SC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit -BC:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\cmake-build-debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
 
-build rebuild_cache: phony CMakeFiles\rebuild_cache.util
+build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 
 # =============================================================================
 # Target aliases.
 
-build anubis_graphics_kit: phony ..\build\anubis_graphics_kit.exe
+build anubis_graphics_kit: phony ../build/anubis_graphics_kit.exe
 
-build anubis_graphics_kit.exe: phony ..\build\anubis_graphics_kit.exe
+build anubis_graphics_kit.exe: phony ../build/anubis_graphics_kit.exe
 
 # =============================================================================
 # Folder targets.
@@ -203,7 +189,7 @@ build anubis_graphics_kit.exe: phony ..\build\anubis_graphics_kit.exe
 #############################################
 # Folder: C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug
 
-build all: phony ..\build\anubis_graphics_kit.exe
+build all: phony ../build/anubis_graphics_kit.exe
 
 # =============================================================================
 # Built-in targets
@@ -212,14 +198,14 @@ build all: phony ..\build\anubis_graphics_kit.exe
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | ..\CMakeLists.txt C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeRCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Compiler\MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows-MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.22.3\CMakeCCompiler.cmake CMakeFiles\3.22.3\CMakeCXXCompiler.cmake CMakeFiles\3.22.3\CMakeRCCompiler.cmake CMakeFiles\3.22.3\CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | ../CMakeLists.txt C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeCXXInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeCommonLanguageInclude.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeGenericSystem.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeInitializeConfigs.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeLanguageInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeRCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeSystemSpecificInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeSystemSpecificInitialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-windres.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/WindowsPaths.cmake CMakeCache.txt CMakeFiles/3.22.3/CMakeCCompiler.cmake CMakeFiles/3.22.3/CMakeCXXCompiler.cmake CMakeFiles/3.22.3/CMakeRCCompiler.cmake CMakeFiles/3.22.3/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build ..\CMakeLists.txt C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeCXXInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeCommonLanguageInclude.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeGenericSystem.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeInitializeConfigs.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeLanguageInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeRCInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeSystemSpecificInformation.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\CMakeSystemSpecificInitialize.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Compiler\CMakeCommonCompilerMacros.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Compiler\MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Compiler\MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows-MSVC-C.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows-MSVC-CXX.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows-MSVC.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\Windows.cmake C$:\Program$ Files\JetBrains\CLion$ 2022.1.2\bin\cmake\win\share\cmake-3.22\Modules\Platform\WindowsPaths.cmake CMakeCache.txt CMakeFiles\3.22.3\CMakeCCompiler.cmake CMakeFiles\3.22.3\CMakeCXXCompiler.cmake CMakeFiles\3.22.3\CMakeRCCompiler.cmake CMakeFiles\3.22.3\CMakeSystem.cmake: phony
+build ../CMakeLists.txt C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeCXXInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeCommonLanguageInclude.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeGenericSystem.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeInitializeConfigs.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeLanguageInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeRCInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeSystemSpecificInformation.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/CMakeSystemSpecificInitialize.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/CMakeCommonCompilerMacros.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Compiler/GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-C-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-C.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-CXX-ABI.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU-CXX.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-GNU.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows-windres.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/Windows.cmake C$:/Program$ Files/JetBrains/CLion$ 2022.1.2/bin/cmake/win/share/cmake-3.22/Modules/Platform/WindowsPaths.cmake CMakeCache.txt CMakeFiles/3.22.3/CMakeCCompiler.cmake CMakeFiles/3.22.3/CMakeCXXCompiler.cmake CMakeFiles/3.22.3/CMakeRCCompiler.cmake CMakeFiles/3.22.3/CMakeSystem.cmake: phony
 
 
 #############################################

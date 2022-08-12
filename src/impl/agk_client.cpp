@@ -76,6 +76,8 @@ void agk_client::run() {
 }
 
 void agk_client::on_event_segment(SDL_Event &sdl_event) {
+    util::keyboard(sdl_event);
+
     switch (sdl_event.type) {
         case SDL_QUIT: {
             this->running = false;

@@ -12,6 +12,7 @@ uint32_t agk_clock::fps = 0;
 uint32_t agk_clock::fps_elapsed = 0;
 uint64_t agk_clock::elapsed_milliseconds_fps_cycle = 0;
 
+bool util::pressed[322];
 float agk_clock::delta_time = 0.0f;
 
 void agk_clock::set_fps(uint8_t new_fps) {
@@ -90,4 +91,18 @@ bool util::file_exists(const std::string &path) {
     }
 
     return flag;
+}
+
+void util::keyboard(SDL_Event &sdl_event) {
+    switch (sdl_event.type) {
+        case SDL_KEYDOWN: {
+            util::pressed[sdl_event.key.keysym.sym] = true;
+            break;
+        }
+
+        case SDL_KEYUP: {
+            util::pressed[sdl_event.key.keysym.sym] = false;
+            break;
+        }
+    }
 }

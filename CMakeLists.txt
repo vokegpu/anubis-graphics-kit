@@ -14,4 +14,4 @@ include_directories(src)
 
 # Inject at the executable the src files and link the libraries used in the project.
 add_executable(anubis_graphics_kit ${SRC_FILES})
-target_link_libraries(anubis_graphics_kit ${LIB_FILES} opengl32 SDL2main SDL2)
+target_link_libraries(anubis_graphics_kit mingw32 opengl32 glew32 SDL2main SDL2)

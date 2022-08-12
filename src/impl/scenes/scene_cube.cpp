@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <api/agk_util.hpp>
 
 void scene_cube::on_start() {
     agk_scene::on_start();
@@ -88,32 +89,6 @@ void scene_cube::on_event(SDL_Event &sdl_event) {
     agk_scene::on_event(sdl_event);
 
     switch (sdl_event.type) {
-        case SDL_KEYDOWN: {
-            switch (sdl_event.key.keysym.sym) {
-                case SDLK_w: {
-                    the_agk_core->camera->position.z += 0.10;
-                    break;
-                }
-
-                case SDLK_s: {
-                    the_agk_core->camera->position.z -= 0.10;
-                    break;
-                }
-
-                case SDLK_a: {
-                    the_agk_core->camera->position.x -= 0.10;
-                    break;
-                }
-
-                case SDLK_d: {
-                    the_agk_core->camera->position.x += 0.10;
-                    break;
-                }
-            }
-
-            break;
-        };
-
         case SDL_MOUSEMOTION: {
             the_agk_core->camera->on_event(sdl_event);
             break;
@@ -123,6 +98,29 @@ void scene_cube::on_event(SDL_Event &sdl_event) {
 
 void scene_cube::on_update() {
     agk_scene::on_update();
+
+    if (util::pressed[SDLK_w]) {
+        this->velocity.z = 1.0f;
+    }
+
+    if (util::pressed[SDLK_s]) {
+        this->velocity.z = -1.0f;
+    }
+
+    if (util::pressed[SDLK_a]) {
+        this->velocity.x = 1.0f;
+    }
+
+    if (util::pressed[SDLK_d]) {
+        this->velocity.x = -1.0f;
+    }
+
+    float f = glm::length(this->velocity);
+    this->velocity.x += glm::sin(f) * 0.148f;
+    this->velocity.z -= glm::cos(f) * 0.148f;
+
+    the_agk_core->camera->position += this->velocity * agk_clock::delta_time;
+    this->velocity *= 0.1f;
 }
 
 void scene_cube::on_render() {

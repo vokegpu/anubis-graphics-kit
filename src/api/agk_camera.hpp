@@ -8,8 +8,8 @@
 
 class agk_camera : public agk_feature {
 protected:
-    float previous_mx;
-    float previous_my;
+    float previous_mx = 0;
+    float previous_my = 0;
 public:
     glm::vec3 position;
     glm::vec3 front;
@@ -17,8 +17,8 @@ public:
     glm::vec3 right;
     glm::vec3 world_up;
 
-    float yaw;
-    float pitch;
+    float yaw = 0.0f;
+    float pitch = 0.0f;
 
     float fov;
     float mouse_sensitivity;

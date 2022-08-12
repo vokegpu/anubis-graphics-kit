@@ -17,8 +17,8 @@ protected:
     SDL_Window* sdl_window;
     SDL_GLContext sdl_gl_context;
 
-    float screen_width;
-    float screen_height;
+    float screen_width = 1280;
+    float screen_height = 800;
 
     bool running = true;
 public:
