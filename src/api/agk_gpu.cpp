@@ -17,7 +17,7 @@ void gpu::program::set4f(const std::string &uniform_name, const float* val) {
     glUniform4fv(glGetUniformLocation(this->program, uniform_name.c_str()), 1, val);
 }
 
-void gpu::program::set4fm(const std::string &uniform_name, const float *val) {
+void gpu::program::setm4f(const std::string &uniform_name, const float *val) {
     glUniformMatrix4fv(glGetUniformLocation(this->program, uniform_name.c_str()), 1, GL_FALSE, val);
 }
 
@@ -43,19 +43,24 @@ bool gpu::compile_shader(GLuint &shader, GLuint mode, const char *shader_src) {
     return compile_status;
 }
 
-void gpu::create_program(gpu::program &program, const char *vsh_path, const char *fsh_path) {
-    agk_source vsh_source, fsh_source;
+void gpu::create_program(gpu::program &program, const char *vsh_path, const char *fsh_path, const char* gsh_path) {
+    agk_source vsh_source, fsh_source, gsh_source;
     bool flag = true;
-    GLuint vsh, fsh;
+    GLuint vsh, fsh, gsh;
 
-    flag = agk_util::open_file(vsh_source, vsh_path) && agk_util::open_file(fsh_source, fsh_path);
-    flag = flag && gpu::compile_shader(vsh, GL_VERTEX_SHADER, vsh_source.data1.c_str()) && gpu::compile_shader(fsh, GL_FRAGMENT_SHADER, fsh_source.data1.c_str());
+    flag = agk_util::open_file(vsh_source, vsh_path) && agk_util::open_file(fsh_source, fsh_path) && (gsh_path == nullptr || agk_util::open_file(gsh_source, gsh_path));
+    flag = flag && gpu::compile_shader(vsh, GL_VERTEX_SHADER, vsh_source.data1.c_str()) && gpu::compile_shader(gsh, GL_FRAGMENT_SHADER, fsh_source.data1.c_str()) && (gsh_path == nullptr || gpu::compile_shader(fsh, GL_GEOMETRY_SHADER, fsh_source.data1.c_str()));
 
     if (flag) {
         program.program = glCreateProgram();
 
         glAttachShader(program.program, vsh);
         glAttachShader(program.program, fsh);
+
+        if (gsh_path != nullptr) {
+            glAttachShader(program.program, gsh);
+        }
+
         glLinkProgram(program.program);
 
         GLint link_status = GL_FALSE;
@@ -66,6 +71,13 @@ void gpu::create_program(gpu::program &program, const char *vsh_path, const char
             glGetProgramInfoLog(program.program, 256, NULL, log);
             agk_util::log(log);
         }
+
+        if (gsh_path != nullptr) {
+            glDeleteShader(gsh);
+        }
+
+        glDeleteShader(vsh);
+        glDeleteShader(fsh);
     }
 
     program.validation = flag;

@@ -14,18 +14,22 @@
  **/
 class agk_client {
 protected:
-    SDL_Window* sdl_window;
-    SDL_GLContext sdl_gl_context;
+    SDL_Window* sdl_window{};
+    SDL_GLContext sdl_gl_context{};
 
-    float screen_width = 1920;
-    float screen_height = 1080;
+    float screen_width = 800;
+    float screen_height = 600;
 
     bool running = true;
+    glm::mat4 glm_matrix_perspective{};
+
+    void update_window_size(uint32_t w, uint32_t hj);
 public:
     agk_camera* camera = nullptr;
     agk_scene* scene = nullptr;
 
     SDL_Window* get_sdl_win();
+    glm::mat4 matrix_perspective();
 
     float get_screen_width();
     float get_screen_height();

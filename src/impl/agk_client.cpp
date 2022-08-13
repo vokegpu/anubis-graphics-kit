@@ -1,15 +1,11 @@
 #include "agk_client.hpp"
 #include "api/agk_util.hpp"
-#include "api/agk_renderer_manager.hpp"
-#include "impl/scenes/scene_cube.hpp"
+#include "api/agk_render.hpp"
+#include "impl/scenes/scene_main.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
-agk_client::agk_client() {
-
-}
-
-agk_client::~agk_client() {
-
-}
+agk_client::agk_client() = default;
+agk_client::~agk_client() = default;
 
 void agk_client::init() {
     agk_util::log("AGK initialising!");
@@ -23,7 +19,7 @@ void agk_client::init() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-    this->sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+    this->sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->screen_width, this->screen_height,  SDL_WINDOW_OPENGL);
     this->sdl_gl_context = SDL_GL_CreateContext(this->sdl_window);
 
     glewExperimental = true;
@@ -40,13 +36,13 @@ void agk_client::shutdown() {
 }
 
 void agk_client::run() {
-    agk_fx_manager::init();
+    agk_batch3d::init();
     agk_clock::set_fps(60);
     agk_util::init();
     SDL_Event sdl_event;
 
     this->camera = new agk_camera();
-    this->load_scene(new scene_cube());
+    this->load_scene(new scene_main());
 
     /*
      * The game main loop.
@@ -87,10 +83,7 @@ void agk_client::on_event_segment(SDL_Event &sdl_event) {
         case SDL_WINDOWEVENT: {
             switch (sdl_event.window.type) {
                 case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                    this->screen_width = static_cast<float>(sdl_event.window.data1);
-                    this->screen_height = static_cast<float>(sdl_event.window.data2);
-
-                    glViewport(0, static_cast<GLint>(sdl_event.window.data1), static_cast<GLint>(sdl_event.window.data1), 0);
+                    this->update_window_size(sdl_event.window.data1, sdl_event.window.data2);
                     break;
                 }
             }
@@ -111,6 +104,9 @@ void agk_client::on_update_segment() {
 }
 
 void agk_client::on_render_segment() {
+    glViewport(0, 0, static_cast<int32_t>(this->screen_width), static_cast<int32_t>(this->screen_height));
+    this->glm_matrix_perspective = glm::perspective(glm::radians(this->camera->fov), (this->screen_width / this->screen_height), 0.1f, 100.0f);
+
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -155,4 +151,13 @@ float agk_client::get_screen_height() {
 
 SDL_Window *agk_client::get_sdl_win() {
     return this->sdl_window;
+}
+
+glm::mat4 agk_client::matrix_perspective() {
+    return this->glm_matrix_perspective;
+}
+
+void agk_client::update_window_size(uint32_t w, uint32_t h) {
+    this->screen_width = static_cast<float>(w);
+    this->screen_height = static_cast<float>(h);
 }

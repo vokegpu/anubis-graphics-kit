@@ -3,6 +3,12 @@
 #define AGK_H
 
 #include "impl/agk_client.hpp"
-extern agk_client* const the_agk_core;
+#include "api/agk_gpu.hpp"
+
+namespace agk {
+    extern agk_client* const core;
+
+    void push_back_camera(gpu::program &program);
+};
 
 #endif

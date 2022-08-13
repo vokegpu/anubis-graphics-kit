@@ -1,1 +1,0 @@
-#include "agk_resource_manager.hpp"
