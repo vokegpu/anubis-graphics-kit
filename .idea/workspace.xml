@@ -18,30 +18,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="93f8824f-acf0-49a6-b0ac-14466a5052ad" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.fsh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.gsh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.vsh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/agk_render.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/api/agk_render.hpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" beforeDir="false" afterPath="$PROJECT_DIR$/build/anubis_graphics_kit.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_model.fsh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_model.vsh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_shape3d.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.fsh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/data/fx/fx_shape3d.vsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.vsh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agk.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/agk.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/agk.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/agk.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_gpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_gpu.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_gpu.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_gpu.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_renderer_manager.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_renderer_manager.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_resource_manager.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_resource_manager.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/agk_client.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/agk_client.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_cube.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_cube.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/scenes/scene_main.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_render.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_render.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_render.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_render.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,7 +111,7 @@
       <workItem from="1660266050806" duration="3101000" />
       <workItem from="1660269991746" duration="5010000" />
       <workItem from="1660341259131" duration="1098000" />
-      <workItem from="1660342419210" duration="12533000" />
+      <workItem from="1660342419210" duration="15564000" />
     </task>
     <servers />
   </component>

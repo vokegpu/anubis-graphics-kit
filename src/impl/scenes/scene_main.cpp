@@ -60,6 +60,12 @@ void scene_main::on_start() {
 
     agk_mesh_stream m_stream;
     m_stream.dispatch(180, vert_list);
+    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, -1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
 
     batch.invoke();
     batch.dispatch(m_stream);

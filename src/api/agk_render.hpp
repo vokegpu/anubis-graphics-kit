@@ -12,13 +12,18 @@
 struct agk_mesh_stream {
 protected:
     std::vector<float> data;
+    std::vector<float> data_normal;
+
     uint32_t vertex_amount = 0;
 public:
     void clear();
     void dispatch(float x, float y, float z, float u, float v);
     void dispatch(uint32_t sizeof_list, float* list);
+    void dispatch_normal(float x, float y, float z);
 
     std::vector<float> &access_data();
+    std::vector<float> &access_data_normals();
+
     uint32_t get_vertex_amount();
     uint32_t size();
 };
