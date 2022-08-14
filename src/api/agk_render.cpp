@@ -31,6 +31,7 @@ GLuint agk_mesh_stream::size() {
 
 void agk_mesh_stream::clear() {
     this->data.clear();
+    this->data_normal.clear();
 }
 
 uint32_t agk_mesh_stream::get_vertex_amount() {
@@ -63,17 +64,16 @@ void agk_batch3d::revoke() {
         this->should_not_create_buffers = true;
     }
 
-    glBindVertexArray(this->vao_all_data);
-
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo_data1);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->mesh.size(), &this->mesh.access_data()[0], GL_STATIC_DRAW);
+
+    glBindVertexArray(this->vao_all_data);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 3);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo_data2);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->mesh.access_data_normals().size(), &this->mesh.access_data_normals()[0], GL_STATIC_DRAW);
@@ -102,6 +102,7 @@ void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
     glBindVertexArray(this->vao_all_data);
     glDrawArrays(GL_TRIANGLES, 0, (int32_t) this->mesh.get_vertex_amount());
     glBindVertexArray(0);
+    glUseProgram(0);
 }
 
 void agk_batch3d::dispatch(agk_mesh_stream &m_stream) {

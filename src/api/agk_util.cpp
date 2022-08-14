@@ -12,7 +12,7 @@ uint32_t agk_clock::fps = 0;
 uint32_t agk_clock::fps_elapsed = 0;
 uint64_t agk_clock::elapsed_milliseconds_fps_cycle = 0;
 
-bool agk_util::pressed[322];
+std::map<std::string, bool> agk_util::keymap;
 float agk_clock::delta_time = 0.0f;
 
 void agk_clock::set_fps(uint8_t new_fps) {
@@ -96,19 +96,17 @@ bool agk_util::file_exists(const std::string &path) {
 void agk_util::keyboard(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_KEYDOWN: {
-            agk_util::pressed[sdl_event.key.keysym.sym] = true;
+            agk_util::keymap[SDL_GetKeyName(sdl_event.key.keysym.sym)] = true;
             break;
         }
 
         case SDL_KEYUP: {
-            agk_util::pressed[sdl_event.key.keysym.sym] = false;
+            agk_util::keymap[SDL_GetKeyName(sdl_event.key.keysym.sym)] = false;
             break;
         }
     }
 }
 
 void agk_util::init() {
-    for (uint32_t i = 0; i < 322; i++) {
-        agk_util::pressed[i] = false;
-    }
+
 }

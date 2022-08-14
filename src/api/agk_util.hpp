@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <SDL2/SDL.h>
+#include <map>
 
 /**
  * The AGK clock for manage fps and stuff.
@@ -41,7 +42,7 @@ struct agk_source {
  * The utilities of program.
  **/
 namespace agk_util {
-    extern bool pressed[322];
+    extern std::map<std::string, bool> keymap;
 
     void init();
     void log(const std::string &name);

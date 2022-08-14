@@ -23,8 +23,11 @@
       <change beforePath="$PROJECT_DIR$/build/data/fx/fx_shape3d.fsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.fsh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/data/fx/fx_shape3d.vsh" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/fx/fx_shape3d.vsh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_gpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_gpu.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/agk_render.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_render.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_render.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_render.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/agk_util.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/impl/agk_client.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,25 +58,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "last_opened_file_path": "C:/Users/Diyng/Downloads/d9ynjsc-cfd2d62f-c1a7-494c-a73d-6f842e15385f.png",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "structure.view.defaults.are.configured": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Diyng/Downloads/d9ynjsc-cfd2d62f-c1a7-494c-a73d-6f842e15385f.png&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\src\api" />
@@ -83,9 +86,9 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="anubis_graphics_kit" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="anubis_graphics_kit" RUN_TARGET_NAME="anubis_graphics_kit" EXPLICIT_BUILD_TARGET_NAME="all">
@@ -111,7 +114,8 @@
       <workItem from="1660266050806" duration="3101000" />
       <workItem from="1660269991746" duration="5010000" />
       <workItem from="1660341259131" duration="1098000" />
-      <workItem from="1660342419210" duration="15564000" />
+      <workItem from="1660342419210" duration="16341000" />
+      <workItem from="1660399304525" duration="12860000" />
     </task>
     <servers />
   </component>

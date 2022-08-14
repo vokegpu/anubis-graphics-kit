@@ -15,47 +15,47 @@ void scene_main::on_start() {
     agk::core->camera->position = glm::vec3(0.0f, 0.0f, -2.0f);
 
     float vert_list[180] = {
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
 
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            // 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            // 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            // 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            // 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            // 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            // 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            // 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            // 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            // 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
     agk_mesh_stream m_stream;
@@ -64,8 +64,8 @@ void scene_main::on_start() {
     m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
     m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
     m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, -1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
 
     batch.invoke();
     batch.dispatch(m_stream);
@@ -95,36 +95,41 @@ void scene_main::on_update() {
     float strafe = 0.0f;
     float fly = 0.0f;
 
-    if (agk_util::pressed[SDLK_w]) {
+    if (agk_util::keymap["W"]) {
         forward = 1;
-    }
-
-    if (agk_util::pressed[SDLK_s]) {
+    } else if (agk_util::keymap["S"]) {
         forward = -1;
     }
 
-    if (agk_util::pressed[SDLK_a]) {
+    if (agk_util::keymap["A"]) {
         strafe = 1;
     }
 
-    if (agk_util::pressed[SDLK_d]) {
+    if (agk_util::keymap["D"]) {
         strafe = -1;
     }
 
-    if (agk_util::pressed[SDLK_SPACE]) {
+    if (agk_util::keymap["Left Shift"]) {
         fly = -1;
+    } else if (agk_util::keymap["Space"]) {
+        fly = 1;
+    }
+
+    if (agk_util::keymap["Escape"]) {
+        SDL_Event sdl_event;
+        sdl_event.type = SDL_QUIT;
+        SDL_PushEvent(&sdl_event);
     }
 
     float f = agk::core->camera->yaw;
     float x = glm::cos(glm::radians(f));
     float z = glm::sin(glm::radians(f));
-    float y = glm::sin(glm::radians(agk::core->camera->pitch));
 
     v = 0.2867f;
 
     this->velocity.x = forward * v * x + strafe * v * z;
     this->velocity.z = forward * v * z - strafe * v * x;
-    this->velocity.y = (forward + fly) * v * y;
+    this->velocity.y = fly * v;
 
     agk::core->camera->position += this->velocity * agk_clock::delta_time;
 }
@@ -132,5 +137,5 @@ void scene_main::on_update() {
 void scene_main::on_render() {
     agk_scene::on_render();
 
-    this->batch.draw(glm::vec3(0, 0, 0), glm::vec4(0.3f, 0.4f, 0.5f, 1.0f));
+    this->batch.draw(glm::vec3(0, 0, 0), glm::vec4(0.9f, 0.4f, 0.9f, 1.0f));
 }

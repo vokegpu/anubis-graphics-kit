@@ -49,7 +49,7 @@ void gpu::create_program(gpu::program &program, const char *vsh_path, const char
     GLuint vsh, fsh, gsh;
 
     flag = agk_util::open_file(vsh_source, vsh_path) && agk_util::open_file(fsh_source, fsh_path) && (gsh_path == nullptr || agk_util::open_file(gsh_source, gsh_path));
-    flag = flag && gpu::compile_shader(vsh, GL_VERTEX_SHADER, vsh_source.data1.c_str()) && gpu::compile_shader(gsh, GL_FRAGMENT_SHADER, fsh_source.data1.c_str()) && (gsh_path == nullptr || gpu::compile_shader(fsh, GL_GEOMETRY_SHADER, fsh_source.data1.c_str()));
+    flag = flag && gpu::compile_shader(vsh, GL_VERTEX_SHADER, vsh_source.data1.c_str()) && gpu::compile_shader(fsh, GL_FRAGMENT_SHADER, fsh_source.data1.c_str()) && (gsh_path == nullptr || gpu::compile_shader(gsh, GL_GEOMETRY_SHADER, fsh_source.data1.c_str()));
 
     if (flag) {
         program.program = glCreateProgram();
