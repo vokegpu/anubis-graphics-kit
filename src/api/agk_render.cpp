@@ -49,7 +49,7 @@ std::vector<float> &agk_mesh_stream::access_data_normals() {
 }
 
 void agk_batch3d::init() {
-    gpu::create_program(agk_batch3d::fx_shape3d, "data/fx/fx_shape3d.vsh", "data/fx/fx_shape3d.fsh");
+    gpu::create_program(agk_batch3d::fx_shape3d, "data/effects/DiffuseLighting.vs", "data/effects/DiffuseLighting.fs");
 }
 
 void agk_batch3d::invoke() {
@@ -94,10 +94,8 @@ void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
     agk_batch3d::fx_shape3d.use();
     agk::push_back_camera(agk_batch3d::fx_shape3d);
 
-    agk_batch3d::fx_shape3d.set4f("u_vec_color", &color[0]);
-    agk_batch3d::fx_shape3d.set1i("u_bool_texture_active", 0);
-    agk_batch3d::fx_shape3d.set1i("u_sampler_texture_active", 0);
-    agk_batch3d::fx_shape3d.setm4f("u_mat_model", &model[0][0]);
+    agk_batch3d::fx_shape3d.setm4f("ModelViewMatrix", &model[0][0]);
+
 
     glBindVertexArray(this->vao_all_data);
     glDrawArrays(GL_TRIANGLES, 0, (int32_t) this->mesh.get_vertex_amount());

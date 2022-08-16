@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(anubis_graphics_kit)
+project(agk)
 
 # Set the version of C++ 11 and the build location (the DLLs are copy manually).
 set(CMAKE_CXX_STANDARD 11)
@@ -13,5 +13,5 @@ file(GLOB_RECURSE LIB_FILES "external/*.lib")
 include_directories(src)
 
 # Inject at the executable the src files and link the libraries used in the project.
-add_executable(anubis_graphics_kit ${SRC_FILES})
-target_link_libraries(anubis_graphics_kit mingw32 opengl32 glew32 SDL2main SDL2)
+add_executable(agk ${SRC_FILES})
+target_link_libraries(agk mingw32 opengl32 glew32 SDL2main SDL2)

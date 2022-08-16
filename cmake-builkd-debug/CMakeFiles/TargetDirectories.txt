@@ -1,0 +1,3 @@
+C:/Users/Rina/Documents/github/anubis-graphics-kit/cmake-builkd-debug/CMakeFiles/agk.dir
+C:/Users/Rina/Documents/github/anubis-graphics-kit/cmake-builkd-debug/CMakeFiles/edit_cache.dir
+C:/Users/Rina/Documents/github/anubis-graphics-kit/cmake-builkd-debug/CMakeFiles/rebuild_cache.dir
