@@ -41,7 +41,7 @@ struct agk_source {
 /**
  * The utilities of program.
  **/
-namespace agk_util {
+namespace util {
     extern std::map<std::string, bool> keymap;
 
     void init();

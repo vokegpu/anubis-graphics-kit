@@ -1,7 +1,9 @@
 #include "agk_render.hpp"
 #include "agk.hpp"
+#include "agk_util.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <fstream>
 
 gpu::program agk_batch3d::fx_shape3d;
 
@@ -86,6 +88,10 @@ void agk_batch3d::revoke() {
 }
 
 void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
+    if (!this->should_not_create_buffers) {
+        return;
+    }
+
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, pos);
 
@@ -101,7 +107,7 @@ void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
     agk_batch3d::fx_shape3d.setm3f("NormalMatrix", &normal_matrix[0][0]);
     agk_batch3d::fx_shape3d.set3f("Kd", &glm::vec3(1.0f, 1.0f, 1.0f)[0]);
     agk_batch3d::fx_shape3d.set3f("Ld", &color[0]);
-    agk_batch3d::fx_shape3d.set4f("LigthSpot", &light_pos[0]);
+    agk_batch3d::fx_shape3d.set4f("LightSpot", &light_pos[0]);
     agk_batch3d::fx_shape3d.set3f("Camera", &agk::core->camera->position[0]);
 
     glBindVertexArray(this->vao_all_data);
@@ -112,4 +118,63 @@ void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
 
 void agk_batch3d::dispatch(agk_mesh_stream &m_stream) {
     this->mesh = m_stream;
+}
+
+bool model::load(agk_mesh_stream &mesh, const std::string &path, model::type type) {
+    std::ifstream ifs(path.c_str());
+    std::string string_builder;
+    bool flag = false;
+
+    if ((flag = ifs.is_open())) {
+        std::string string_buffer;
+        int32_t len = 0;
+
+        int32_t index1 = 0;
+        int32_t index2 = 0;
+        int32_t index3 = 0;
+
+        float x = 0;
+        float y = 0;
+        float z = 0;
+
+        std::string find;
+
+        while (getline(ifs, string_buffer)) {
+            len = (int32_t) string_buffer.size();
+
+            if (len < 1) {
+                continue;
+            }
+
+            find = string_buffer.substr(0, 2);
+
+            if (find == "v ") {
+                index1 = (int32_t) string_buffer.find(' ') + 1;
+                index2 = (int32_t) string_buffer.find(' ', index1 + 1);
+                index3 = (int32_t) string_buffer.find(' ', index2 + 2);
+
+                x = static_cast<float>(std::stof(string_buffer.substr(index1, index2)));
+                y = static_cast<float>(std::stof(string_buffer.substr(index2, index3)));
+                z = static_cast<float>(std::stof(string_buffer.substr(index3, len)));
+
+                mesh.dispatch(x, y, z, 1.0, 1.0);
+            }
+
+            if (find == "vn") {
+                index1 = (int32_t) string_buffer.find(' ') + 1;
+                index2 = (int32_t) string_buffer.find(' ', index1 + 1);
+                index3 = (int32_t) string_buffer.find(' ', index2 + 2);
+
+                x = static_cast<float>(std::stof(string_buffer.substr(index1, index2)));
+                y = static_cast<float>(std::stof(string_buffer.substr(index2, index3)));
+                z = static_cast<float>(std::stof(string_buffer.substr(index3, len)));
+
+                mesh.dispatch_normal(x, y, z);
+            }
+        }
+
+        ifs.close();
+    }
+
+    return flag;
 }

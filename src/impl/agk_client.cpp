@@ -8,38 +8,38 @@ agk_client::agk_client() = default;
 agk_client::~agk_client() = default;
 
 void agk_client::init() {
-    agk_util::log("AGK initialising!");
+    util::log("AGK initialising!");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
-        agk_util::log("Could not initialise SDL2.");
+        util::log("Could not initialise SDL2.");
         return;
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetSwapInterval(1);
 
-    this->sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->screen_width, this->screen_height,  SDL_WINDOW_OPENGL);
+    this->sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->screen_width, this->screen_height,  SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     this->sdl_gl_context = SDL_GL_CreateContext(this->sdl_window);
 
     glewExperimental = true;
     if (glewInit()) {
-        agk_util::log("Could not initialise API OpenGL extensions.");
+        util::log("Could not initialise API OpenGL extensions.");
     }
 
-    agk_util::log("AGK core initialised!");
+    util::log("AGK core initialised!");
 }
 
 void agk_client::shutdown() {
-    agk_util::log("Quitting from AGK, bye-bye!");
+    util::log("Quitting from AGK, bye-bye!");
     SDL_free(this->sdl_window);
 }
 
 void agk_client::run() {
     agk_batch3d::init();
     agk_clock::set_fps(60);
-    agk_util::init();
+    util::init();
     SDL_Event sdl_event;
 
     this->camera = new agk_camera();
@@ -73,7 +73,7 @@ void agk_client::run() {
 }
 
 void agk_client::on_event_segment(SDL_Event &sdl_event) {
-    agk_util::keyboard(sdl_event);
+    util::keyboard(sdl_event);
 
     switch (sdl_event.type) {
         case SDL_QUIT: {
@@ -82,13 +82,17 @@ void agk_client::on_event_segment(SDL_Event &sdl_event) {
         }
 
         case SDL_WINDOWEVENT: {
-            switch (sdl_event.window.type) {
-                case SDL_WINDOWEVENT_SIZE_CHANGED: {
+            switch (sdl_event.window.event) {
+                case SDL_WINDOWEVENT_RESIZED: {
                     this->update_window_size(sdl_event.window.data1, sdl_event.window.data2);
                     break;
                 }
             }
 
+            break;
+        }
+
+        case SDL_KEYDOWN: {
             break;
         }
     }

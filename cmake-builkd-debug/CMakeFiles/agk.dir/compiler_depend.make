@@ -855,7 +855,7 @@ CMakeFiles/agk.dir/src/api/agk_camera.cpp.obj: C:/Users/Rina/Documents/github/an
   C:/MinGW/x86_64-w64-mingw32/include/glm/detail/type_half.inl \
   C:/MinGW/x86_64-w64-mingw32/include/glm/integer.hpp \
   C:/MinGW/x86_64-w64-mingw32/include/glm/detail/func_integer.inl \
-  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.hpp \
+  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.hpp \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/map \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_tree.h \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/ext/aligned_buffer.h \
@@ -1307,7 +1307,7 @@ CMakeFiles/agk.dir/src/api/agk_gpu.cpp.obj: C:/Users/Rina/Documents/github/anubi
   C:/MinGW/x86_64-w64-mingw32/include/inttypes.h \
   C:/MinGW/x86_64-w64-mingw32/include/GL/glu.h \
   C:/MinGW/x86_64-w64-mingw32/include/GL/gl.h \
-  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.hpp \
+  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.hpp \
   C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL.h \
   C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL_main.h \
   C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL_stdinc.h \
@@ -2336,8 +2336,8 @@ CMakeFiles/agk.dir/src/api/agk_scene.cpp.obj: C:/Users/Rina/Documents/github/anu
   C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL_locale.h \
   C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL_misc.h
 
-CMakeFiles/agk.dir/src/api/agk_util.cpp.obj: C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.cpp \
-  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.hpp \
+CMakeFiles/agk.dir/src/api/util.cpp.obj: C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.cpp \
+  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.hpp \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/iostream \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/c++config.h \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/os_defines.h \
@@ -3060,7 +3060,7 @@ CMakeFiles/agk.dir/src/impl/agk_client.cpp.obj: C:/Users/Rina/Documents/github/a
   C:/MinGW/x86_64-w64-mingw32/include/glm/integer.hpp \
   C:/MinGW/x86_64-w64-mingw32/include/glm/detail/func_integer.inl \
   C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_scene.hpp \
-  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.hpp \
+  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.hpp \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/map \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_tree.h \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/ext/aligned_buffer.h \
@@ -3533,7 +3533,7 @@ CMakeFiles/agk.dir/src/impl/scenes/scene_main.cpp.obj: C:/Users/Rina/Documents/g
   C:/Users/Rina/Documents/github/anubis-graphics-kit/src/impl/agk_client.hpp \
   C:/MinGW/x86_64-w64-mingw32/include/GL/glew.h \
   C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_camera.hpp \
-  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.hpp \
+  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.hpp \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/map \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_tree.h \
   C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/ext/aligned_buffer.h \
@@ -4330,7 +4330,7 @@ C:/MinGW/x86_64-w64-mingw32/include/glm/ext/vector_double3.hpp:
 
 C:/MinGW/x86_64-w64-mingw32/include/glm/ext/vector_int3.hpp:
 
-C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.cpp:
+C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.cpp:
 
 C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_double4x4.hpp:
 
@@ -4460,7 +4460,7 @@ C:/MinGW/x86_64-w64-mingw32/include/glm/detail/type_half.inl:
 
 C:/MinGW/x86_64-w64-mingw32/include/glm/detail/func_integer.inl:
 
-C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.hpp:
+C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.hpp:
 
 C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/ext/aligned_buffer.h:
 

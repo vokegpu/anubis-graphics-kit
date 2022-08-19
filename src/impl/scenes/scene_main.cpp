@@ -58,52 +58,55 @@ void scene_main::on_start() {
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
-    agk_mesh_stream m_stream;
-    m_stream.dispatch(180, vert_list);
-    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    agk_mesh_stream m_stream_cube;
+    m_stream_cube.dispatch(180, vert_list);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
 
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
-    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream_cube.dispatch_normal(0.0f, 0.0f, 1.0f);
 
-    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, 0.0f, 0.0f);
 
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(0.0f, 1.0f, 0.0f);
 
-    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
-    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream_cube.dispatch_normal(1.0f, -1.0f, 0.0f);
 
-    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+
+    agk_mesh_stream m_stream_male;
+    model::load(m_stream_male, "data/models/cube.obj", model::type::OBJ);
 
     batch.invoke();
-    batch.dispatch(m_stream);
+    batch.dispatch(m_stream_cube);
     batch.revoke();
 }
 
@@ -130,27 +133,27 @@ void scene_main::on_update() {
     float strafe = 0.0f;
     float fly = 0.0f;
 
-    if (agk_util::keymap["W"]) {
+    if (util::keymap["W"]) {
         forward = 1;
-    } else if (agk_util::keymap["S"]) {
+    } else if (util::keymap["S"]) {
         forward = -1;
     }
 
-    if (agk_util::keymap["A"]) {
+    if (util::keymap["A"]) {
         strafe = 1;
     }
 
-    if (agk_util::keymap["D"]) {
+    if (util::keymap["D"]) {
         strafe = -1;
     }
 
-    if (agk_util::keymap["Left Shift"]) {
+    if (util::keymap["Left Shift"]) {
         fly = -1;
-    } else if (agk_util::keymap["Space"]) {
+    } else if (util::keymap["Space"]) {
         fly = 1;
     }
 
-    if (agk_util::keymap["Escape"]) {
+    if (util::keymap["Escape"]) {
         SDL_Event sdl_event;
         sdl_event.type = SDL_QUIT;
         SDL_PushEvent(&sdl_event);

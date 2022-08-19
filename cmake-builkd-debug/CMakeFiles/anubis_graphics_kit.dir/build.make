@@ -188,20 +188,20 @@ CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.s"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\agk_scene.cpp -o CMakeFiles\anubis_graphics_kit.dir\src\api\agk_scene.cpp.s
 
-CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/flags.make
-CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/includes_CXX.rsp
-CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_util.cpp
-CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\Rina\Documents\github\anubis-graphics-kit\cmake-builkd-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj -MF CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.obj.d -o CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.obj -c C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\agk_util.cpp
+CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/flags.make
+CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/includes_CXX.rsp
+CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj: C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/util.cpp
+CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\Rina\Documents\github\anubis-graphics-kit\cmake-builkd-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj -MF CMakeFiles\anubis_graphics_kit.dir\src\api\util.cpp.obj.d -o CMakeFiles\anubis_graphics_kit.dir\src\api\util.cpp.obj -c C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\util.cpp
 
-CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.i"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\agk_util.cpp > CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.i
+CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\util.cpp > CMakeFiles\anubis_graphics_kit.dir\src\api\util.cpp.i
 
-CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.s"
-	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\agk_util.cpp -o CMakeFiles\anubis_graphics_kit.dir\src\api\agk_util.cpp.s
+CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\util.cpp -o CMakeFiles\anubis_graphics_kit.dir\src\api\util.cpp.s
 
 CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/flags.make
 CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj: CMakeFiles/anubis_graphics_kit.dir/includes_CXX.rsp
@@ -243,7 +243,7 @@ anubis_graphics_kit_OBJECTS = \
 "CMakeFiles/anubis_graphics_kit.dir/src/api/agk_math.cpp.obj" \
 "CMakeFiles/anubis_graphics_kit.dir/src/api/agk_render.cpp.obj" \
 "CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.obj" \
-"CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj" \
+"CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj" \
 "CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj" \
 "CMakeFiles/anubis_graphics_kit.dir/src/impl/scenes/scene_main.cpp.obj"
 
@@ -258,7 +258,7 @@ C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe
 C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/api/agk_math.cpp.obj
 C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/api/agk_render.cpp.obj
 C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/api/agk_scene.cpp.obj
-C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/api/agk_util.cpp.obj
+C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/api/util.cpp.obj
 C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/impl/agk_client.cpp.obj
 C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/src/impl/scenes/scene_main.cpp.obj
 C:/Users/Rina/Documents/github/anubis-graphics-kit/build/anubis_graphics_kit.exe: CMakeFiles/anubis_graphics_kit.dir/build.make

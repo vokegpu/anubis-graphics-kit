@@ -17,8 +17,8 @@ protected:
     SDL_Window* sdl_window{};
     SDL_GLContext sdl_gl_context{};
 
-    float screen_width = 800;
-    float screen_height = 600;
+    float screen_width = 1280;
+    float screen_height = 800;
 
     bool running = true;
     glm::mat4 glm_matrix_perspective{};

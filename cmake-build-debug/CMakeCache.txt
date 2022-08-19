@@ -151,7 +151,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=anubis_graphics_kit
+CMAKE_PROJECT_NAME:STATIC=agk
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=C:/Program Files/JetBrains/CLion 2022.1.2/bin/mingw/bin/ranlib.exe
@@ -232,6 +232,15 @@ CMAKE_STRIP:FILEPATH=C:/Program Files/JetBrains/CLion 2022.1.2/bin/mingw/bin/str
 // during the make.  This is useful for debugging only. With Visual
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
+
+//Value Computed by CMake
+agk_BINARY_DIR:STATIC=C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug
+
+//Value Computed by CMake
+agk_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+agk_SOURCE_DIR:STATIC=C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit
 
 //Value Computed by CMake
 anubis_graphics_kit_BINARY_DIR:STATIC=C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug

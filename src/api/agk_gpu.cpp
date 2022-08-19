@@ -45,7 +45,7 @@ bool gpu::compile_shader(GLuint &shader, GLuint mode, const char *shader_src) {
     if (!compile_status) {
         char log[256];
         glGetShaderInfoLog(shader, 256, NULL, log);
-        agk_util::log(log);
+        util::log(log);
     }
 
     return compile_status;
@@ -56,7 +56,7 @@ void gpu::create_program(gpu::program &program, const char *vsh_path, const char
     bool flag = true;
     GLuint vsh, fsh, gsh;
 
-    flag = agk_util::open_file(vsh_source, vsh_path) && agk_util::open_file(fsh_source, fsh_path) && (gsh_path == nullptr || agk_util::open_file(gsh_source, gsh_path));
+    flag = util::open_file(vsh_source, vsh_path) && util::open_file(fsh_source, fsh_path) && (gsh_path == nullptr || util::open_file(gsh_source, gsh_path));
     flag = flag && gpu::compile_shader(vsh, GL_VERTEX_SHADER, vsh_source.data1.c_str()) && gpu::compile_shader(fsh, GL_FRAGMENT_SHADER, fsh_source.data1.c_str()) && (gsh_path == nullptr || gpu::compile_shader(gsh, GL_GEOMETRY_SHADER, fsh_source.data1.c_str()));
 
     if (flag) {
@@ -77,7 +77,7 @@ void gpu::create_program(gpu::program &program, const char *vsh_path, const char
         if (!link_status) {
             char log[256];
             glGetProgramInfoLog(program.program, 256, NULL, log);
-            agk_util::log(log);
+            util::log(log);
         }
 
         if (gsh_path != nullptr) {

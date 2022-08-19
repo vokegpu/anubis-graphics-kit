@@ -47,4 +47,12 @@ public:
 
 };
 
+namespace model {
+    enum type {
+        OBJ
+    };
+
+    bool load(agk_mesh_stream &mesh, const std::string &path, model::type type);
+};
+
 #endif
