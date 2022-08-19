@@ -108,7 +108,7 @@ void agk_client::on_render_segment() {
     glViewport(0, 0, static_cast<int32_t>(this->screen_width), static_cast<int32_t>(this->screen_height));
     this->glm_matrix_perspective = glm::perspective(glm::radians(this->camera->fov), (this->screen_width / this->screen_height), 0.1f, 100.0f);
 
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     if (this->scene != nullptr) {

@@ -15,57 +15,92 @@ void scene_main::on_start() {
     agk::core->camera->position = glm::vec3(0.0f, 0.0f, -2.0f);
 
     float vert_list[180] = {
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
 
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+
+            1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
             1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
             1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
             1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-
-            1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-            1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
             1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 
-            // 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            // 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            // 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            // 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 
-            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            // 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            // 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            // 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 
-            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-            // 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            // 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            // 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
     agk_mesh_stream m_stream;
     m_stream.dispatch(180, vert_list);
     m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, -1.0f);
+
     m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+    m_stream.dispatch_normal(0.0f, 0.0f, 1.0f);
+
+    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, 0.0f, 0.0f);
+
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+
+    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+    m_stream.dispatch_normal(1.0f, -1.0f, 0.0f);
+
     m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
-    m_stream.dispatch_normal(0.0f, 1.0f, 0.0f);
+    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
+    m_stream.dispatch_normal(-1.0f, 0.0f, 0.0f);
 
     batch.invoke();
     batch.dispatch(m_stream);
@@ -137,5 +172,5 @@ void scene_main::on_update() {
 void scene_main::on_render() {
     agk_scene::on_render();
 
-    this->batch.draw(glm::vec3(0, 0, 0), glm::vec4(0.9f, 0.4f, 0.9f, 1.0f));
+    this->batch.draw(glm::vec3(-2, 0, 0), glm::vec4(1.0f, 0.4f, 0.5f, 1.0f));
 }

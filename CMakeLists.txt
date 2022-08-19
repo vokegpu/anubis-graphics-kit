@@ -4,6 +4,7 @@ project(agk)
 # Set the version of C++ 11 and the build location (the DLLs are copy manually).
 set(CMAKE_CXX_STANDARD 11)
 set(EXECUTABLE_OUTPUT_PATH ../build)
+add_compile_options("-O3")
 
 # Find for all files.
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")

@@ -2059,6 +2059,9 @@ CMakeFiles/agk.dir/src/api/agk_render.cpp.obj
  C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_transform.hpp
  C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_transform.inl
  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_transform.inl
+ C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.hpp
+ C:/MinGW/x86_64-w64-mingw32/include/glm/detail/setup.hpp
+ C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.inl
 
 CMakeFiles/agk.dir/src/api/agk_scene.cpp.obj
  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_scene.cpp

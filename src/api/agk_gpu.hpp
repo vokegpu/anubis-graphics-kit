@@ -20,6 +20,8 @@ namespace gpu {
         void set1ui(const std::string &uniform_name, uint32_t val);
         void set4f(const std::string &uniform_name, const float* val);
         void setm4f(const std::string &uniform_name, const float* val);
+        void setm3f(const std::string &uniform_name, const float* val);
+        void set3f(const std::string &uniform_name, const float* val);
         void use();
     };
 

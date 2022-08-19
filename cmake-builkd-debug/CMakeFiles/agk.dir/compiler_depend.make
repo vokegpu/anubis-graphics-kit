@@ -2051,7 +2051,10 @@ CMakeFiles/agk.dir/src/api/agk_render.cpp.obj: C:/Users/Rina/Documents/github/an
   C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_clip_space.inl \
   C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_transform.hpp \
   C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_transform.inl \
-  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_transform.inl
+  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_transform.inl \
+  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.hpp \
+  C:/MinGW/x86_64-w64-mingw32/include/glm/detail/setup.hpp \
+  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.inl
 
 CMakeFiles/agk.dir/src/api/agk_scene.cpp.obj: C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_scene.cpp \
   C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_scene.hpp \
@@ -3725,6 +3728,8 @@ C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL_thread.h:
 
 C:/MinGW/x86_64-w64-mingw32/include/_mingw_off_t.h:
 
+C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.inl:
+
 C:/MinGW/x86_64-w64-mingw32/include/SDL2/SDL_rwops.h:
 
 C:/MinGW/x86_64-w64-mingw32/include/glm/geometric.hpp:
@@ -4290,6 +4295,8 @@ C:/MinGW/x86_64-w64-mingw32/include/glm/detail/compute_vector_relational.hpp:
 C:/MinGW/x86_64-w64-mingw32/include/glm/ext/vector_float3_precision.hpp:
 
 C:/MinGW/x86_64-w64-mingw32/include/glm/ext/vector_float2.hpp:
+
+C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.hpp:
 
 C:/MinGW/x86_64-w64-mingw32/include/glm/ext/vector_float2_precision.hpp:
 

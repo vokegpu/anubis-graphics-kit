@@ -21,6 +21,14 @@ void gpu::program::setm4f(const std::string &uniform_name, const float *val) {
     glUniformMatrix4fv(glGetUniformLocation(this->program, uniform_name.c_str()), 1, GL_FALSE, val);
 }
 
+void gpu::program::setm3f(const std::string &uniform_name, const float* val) {
+    glUniformMatrix3fv(glGetUniformLocation(this->program, uniform_name.c_str()), 1, GL_FALSE, val);
+}
+
+void gpu::program::set3f(const std::string &uniform_name, const float* val) {
+    glUniform3fv(glGetUniformLocation(this->program, uniform_name.c_str()), 1, val);
+}
+
 void gpu::program::use() {
     glUseProgram(this->program);
 }

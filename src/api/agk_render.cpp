@@ -1,6 +1,7 @@
 #include "agk_render.hpp"
 #include "agk.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 gpu::program agk_batch3d::fx_shape3d;
 
@@ -22,7 +23,7 @@ void agk_mesh_stream::dispatch(uint32_t sizeof_list, float* list) {
         this->data.push_back(list[i]);
     }
 
-    this->vertex_amount += sizeof_list * 5;
+    this->vertex_amount += sizeof_list / 5;
 }
 
 GLuint agk_mesh_stream::size() {
@@ -73,29 +74,35 @@ void agk_batch3d::revoke() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 3);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 3));
 
     glBindBuffer(GL_ARRAY_BUFFER, this->vbo_data2);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * this->mesh.access_data_normals().size(), &this->mesh.access_data_normals()[0], GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, pos);
 
-    glm::vec3 light_pos = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat3 normal_matrix = glm::mat3(model);
+    normal_matrix = glm::inverseTranspose(normal_matrix);
+
+    glm::vec3 light_pos = agk::core->camera->position;
 
     agk_batch3d::fx_shape3d.use();
     agk::push_back_camera(agk_batch3d::fx_shape3d);
 
     agk_batch3d::fx_shape3d.setm4f("ModelViewMatrix", &model[0][0]);
-
+    agk_batch3d::fx_shape3d.setm3f("NormalMatrix", &normal_matrix[0][0]);
+    agk_batch3d::fx_shape3d.set3f("Kd", &glm::vec3(1.0f, 1.0f, 1.0f)[0]);
+    agk_batch3d::fx_shape3d.set3f("Ld", &color[0]);
+    agk_batch3d::fx_shape3d.set4f("LigthSpot", &light_pos[0]);
+    agk_batch3d::fx_shape3d.set3f("Camera", &agk::core->camera->position[0]);
 
     glBindVertexArray(this->vao_all_data);
     glDrawArrays(GL_TRIANGLES, 0, (int32_t) this->mesh.get_vertex_amount());
