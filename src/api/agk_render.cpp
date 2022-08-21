@@ -117,7 +117,7 @@ void agk_batch3d::draw(const glm::vec3 &pos, const glm::vec4 &color) {
 }
 
 void agk_batch3d::dispatch(agk_mesh_stream &m_stream) {
-    this->mesh = m_stream;
+    this->mesh += m_stream;
 }
 
 bool model::load(agk_mesh_stream &mesh, const std::string &path, model::type type) {

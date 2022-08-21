@@ -26,6 +26,12 @@ public:
 
     uint32_t get_vertex_amount();
     uint32_t size();
+
+    void operator += (agk_mesh_stream &mesh) {
+        this->data.insert(this->data.begin(), mesh.access_data().begin(), mesh.access_data().end());
+        this->data_normal.insert(this->data_normal.begin(), mesh.access_data_normals().begin(), mesh.access_data().end());
+        this->vertex_amount += mesh.get_vertex_amount();
+    }
 };
 
 class agk_batch3d {

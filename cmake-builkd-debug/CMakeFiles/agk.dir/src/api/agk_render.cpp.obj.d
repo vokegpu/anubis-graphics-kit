@@ -436,6 +436,19 @@ CMakeFiles/agk.dir/src/api/agk_render.cpp.obj: \
  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_camera.hpp \
  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_feature.hpp \
  C:/Users/Rina/Documents/github/anubis-graphics-kit/src/api/agk_scene.hpp \
+ C:\Users\Rina\Documents\github\anubis-graphics-kit\src\api\agk_util.hpp \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/map \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_tree.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/ext/aligned_buffer.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_map.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/tuple \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/utility \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_relops.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/array \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/uses_allocator.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/invoke.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/stl_multimap.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/erase_if.h \
  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_transform.hpp \
  C:/MinGW/x86_64-w64-mingw32/include/glm/ext/matrix_projection.hpp \
  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/constants.hpp \
@@ -450,4 +463,9 @@ CMakeFiles/agk.dir/src/api/agk_render.cpp.obj: \
  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_transform.inl \
  C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.hpp \
  C:/MinGW/x86_64-w64-mingw32/include/glm/detail/setup.hpp \
- C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.inl
+ C:/MinGW/x86_64-w64-mingw32/include/glm/gtc/matrix_inverse.inl \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/fstream \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/codecvt.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/basic_file.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/x86_64-w64-mingw32/bits/c++io.h \
+ C:/MinGW/lib/gcc/x86_64-w64-mingw32/11.2.0/include/c++/bits/fstream.tcc

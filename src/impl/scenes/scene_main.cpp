@@ -58,6 +58,7 @@ void scene_main::on_start() {
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
+    for (int i = 10; i < 20; i++) {
     agk_mesh_stream m_stream_cube;
     m_stream_cube.dispatch(180, vert_list);
     m_stream_cube.dispatch_normal(0.0f, 0.0f, -1.0f);
@@ -101,6 +102,7 @@ void scene_main::on_start() {
     m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
     m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
     m_stream_cube.dispatch_normal(-1.0f, 0.0f, 0.0f);
+}
 
     agk_mesh_stream m_stream_male;
     model::load(m_stream_male, "data/models/cube.obj", model::type::OBJ);
