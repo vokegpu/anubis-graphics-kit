@@ -19,29 +19,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="93f8824f-acf0-49a6-b0ac-14466a5052ad" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/agk.exe" beforeDir="false" afterPath="$PROJECT_DIR$/build/agk.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/data/effects/DiffuseLighting.fs" beforeDir="false" afterPath="$PROJECT_DIR$/build/data/effects/DiffuseLighting.fs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/rules.ninja" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/compiler_depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/compiler_depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/compiler_depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/compiler_depend.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/objects1.rsp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/agk.dir/objects1.rsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/anubis_graphics_kit.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/anubis_graphics_kit.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/anubis_graphics_kit.dir/objects1.rsp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-builkd-debug/CMakeFiles/anubis_graphics_kit.dir/objects1.rsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_gpu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_gpu.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_render.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_render.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_render.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_render.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_util.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/agk_util.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/agk_util.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/agk_client.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/agk_client.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/agk_client.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/impl/scenes/scene_main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,11 +78,6 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.agk">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="agk" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="agk" TARGET_NAME="agk" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="agk" RUN_TARGET_NAME="agk">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -138,7 +112,9 @@
       <workItem from="1660341259131" duration="1098000" />
       <workItem from="1660342419210" duration="16341000" />
       <workItem from="1660399304525" duration="12860000" />
-      <workItem from="1660932448531" duration="7771000" />
+      <workItem from="1660932448531" duration="8964000" />
+      <workItem from="1661139113908" duration="595000" />
+      <workItem from="1661184125519" duration="424000" />
     </task>
     <servers />
   </component>
