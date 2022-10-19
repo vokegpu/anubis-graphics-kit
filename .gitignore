@@ -1,2 +1,3 @@
 # Ignore the folders.
 /cmake-build-debug/
+/.idea/
