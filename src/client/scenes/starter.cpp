@@ -32,5 +32,4 @@ void client::scenes::starter::on_update() {
 
 void client::scenes::starter::on_render() {
 	model.draw();
-	util::log("hi");
 }
