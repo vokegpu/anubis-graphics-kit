@@ -1,6 +1,6 @@
 # anubis-graphics-kit
 
-OpenGL 4, used to learn shading algorhtims.
+OpenGL 4, used to learn shading algorithms.
 
 # Features
 
