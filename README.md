@@ -1,2 +1,3 @@
 # anubis-graphics-kit
- Modern implementation of visual effects following Nvidia rules using the API OpenGL.
+
+OpenGL 4, used to learn shading algorhtims.
