@@ -1,5 +1,5 @@
-#ifndef AGK_CORE_H
-#define AGK_CORE_H
+#ifndef AGK_API_CORE_H
+#define AGK_API_CORE_H
 
 #include <SDL2/SDL.h>
 #include "api/gc/gc.hpp"
@@ -18,20 +18,6 @@ public:
 	feature* current_scene {nullptr};
 	gc garbage_collector {};
 
-};
-
-namespace api {
-	extern core app;
-
-	namespace scene {
-		void load(feature*);
-		feature* &current();
-	}
-
-	namespace gc {
-		void destroy(feature*);
-		void create(feature*);
-	}
 };
 
 #endif

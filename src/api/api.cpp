@@ -1,14 +1,15 @@
-#include <iostream>
-#include "api/core/core.hpp"
+#include "api.hpp"
 #include "api/util/runtime.hpp"
 #include <GL/glew.h>
 
-int32_t main(int32_t, char**) {
+core api::app {};
+
+void api::mainloop(feature* initial_scene) {
 	util::log("initialising");
 
 	if (SDL_Init(SDL_INIT_VIDEO)) {
 		util::log("failed to init SDL");
-		return 1;
+		return;
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -32,12 +33,19 @@ int32_t main(int32_t, char**) {
 	SDL_Event sdl_event {};
 
 	api::app.mainloop = true;
+	api::scene::load(initial_scene);
+
 	while (api::app.mainloop) {
 		if (util::reset_if_reach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
 			while (SDL_PollEvent(&sdl_event)) {
 				switch (sdl_event.type) {
 					case SDL_QUIT: {
 						api::app.mainloop = false;
+						break;
+					}
+
+					default: {
+						if (api::app.current_scene != nullptr) api::app.current_scene->on_event(sdl_event);
 						break;
 					}
 				}
@@ -48,14 +56,59 @@ int32_t main(int32_t, char**) {
 				ticked_frames = 0;
 			}
 
-			glViewport(0, 0, api::app.screen_width, api::app.screen_height);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			if (api::app.current_scene != nullptr) {
+				api::app.current_scene->on_update();
+			}
+
+			api::app.garbage_collector.do_update();
+
+			if (api::app.current_scene != nullptr) {
+				api::app.current_scene->on_render();
+			}
 
 			ticked_frames++;
 			SDL_GL_SwapWindow(api::app.root);
 		}
 	}
+}
 
-	return 0;
+void api::scene::load(feature* scene) {
+	auto &current_scene {api::scene::current()};
+
+	// if you think it is bad, you should code more.
+
+	if (scene == nullptr && current_scene != nullptr) {
+		api::gc::destroy(current_scene);
+		api::app.current_scene = nullptr;
+		return;
+	}
+
+	if (scene != nullptr && current_scene != nullptr && current_scene == scene) {
+		api::gc::destroy(scene);
+		return;
+	}
+
+	if (scene != nullptr && current_scene != nullptr && current_scene != scene) {
+		api::gc::destroy(current_scene);
+		api::gc::create(scene);
+		api::app.current_scene = scene;
+		return;
+	}
+
+	if (scene != nullptr && current_scene == nullptr) {
+		api::gc::create(scene);
+		api::app.current_scene = scene;
+	}
+}
+
+feature* &api::scene::current() {
+	return api::app.current_scene;
+}
+
+void api::gc::destroy(feature* target) {
+	api::app.garbage_collector.destroy(target);
+}
+
+void api::gc::create(feature* target) {
+	api::app.garbage_collector.create(target);
 }

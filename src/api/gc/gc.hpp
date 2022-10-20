@@ -1,7 +1,7 @@
-#ifndef AGK_GC_H
-#define AGK_GC_H
+#ifndef AGK_API_GC_H
+#define AGK_API_GC_H
 
-#include "api/core/feature.hpp"
+#include "api/feature/feature.hpp"
 #include <queue>
 
 class gc {

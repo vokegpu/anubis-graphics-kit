@@ -1,5 +1,5 @@
-#ifndef AGK_CORE_FEATURE_H
-#define AGK_CORE_FEATURE_H
+#ifndef AGK_API_FEATURE_H
+#define AGK_API_FEATURE_H
 
 #include <SDL2/SDL.h>
 
