@@ -4,7 +4,7 @@ OpenGL 4, used to learn shading algorhtims.
 
 # Features
 
-`gc.hpp handles` the memory alocation of agk features - `core.hpp store` profile context (root, scene, screen size etc) - `feature.hpp` the primordial object of all agk renderer engine.
+`gc.hpp handles` handle memory alocation of agk features - `core.hpp store` profile context (root, scene, screen size etc) - `feature.hpp` the primordial object of all agk renderer engine.
 
 Using the agk API:
 ```c++
