@@ -16,7 +16,7 @@ void api::scene::load(feature* scene) {
 		return;
 	}
 
-	ĩf (scene != nullptr && current_scene != nullptr && current_scene != scene) {
+	if (scene != nullptr && current_scene != nullptr && current_scene != scene) {
 		api::gc::destroy(current_scene);
 		api::gc::create(scene);
 		api::app.current_scene = scene;
@@ -32,5 +32,5 @@ void api::gc::destroy(feature* target) {
 }
 
 void api::gc::create(feature* target) {
-	ekg::app.garbage_collector.creatte(target);
+    api::app.garbage_collector.create(target);
 }
