@@ -1,4 +1,5 @@
 #include "gc.hpp"
+#include "api/util/env.hpp"
 
 std::queue<feature*> gc::queue_uncreated {};
 std::queue<feature*> gc::queue_undead {};
@@ -16,7 +17,7 @@ void gc::create(feature* target) {
 void gc::do_update() {
 	if (this->should_poll_uncreated) {
 		while (!gc::queue_uncreated.empty()) {
-			feature* &target {gc::queue_uncreated.front()};
+			auto &target {gc::queue_uncreated.front()};
 			if (target != nullptr) target->on_create();
 			gc::queue_uncreated.pop();
 		}
@@ -26,7 +27,7 @@ void gc::do_update() {
 
 	if (this->should_poll_undead) {
 		while (!gc::queue_undead.empty()) {
-			feature* &target {gc::queue_undead.front()};
+            auto &target {gc::queue_undead.front()};
 			if (target != nullptr) {
 				target->on_destroy();
 				delete target;

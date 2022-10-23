@@ -18,13 +18,13 @@ void buffer_builder::send_data(size_t size, void* data, GLuint draw_mode) {
 	glBufferData(GL_ARRAY_BUFFER, size, data, draw_mode);
 }
 
-void buffer_builder::shader(GLuint location, GLuint vec_rows, GLuint begin, GLuint end) {
+void buffer_builder::shader(GLuint location, GLuint vec_rows, GLuint begin, GLsizeiptr end) {
 	glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location, vec_rows, GL_FLOAT, GL_FALSE, begin, (void*) end);
 }
 
 void buffer_builder::shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns) {
-	auto vec_area {vec_rows * vec_columns};
+	GLint vec_area {static_cast<GLint>(vec_rows * vec_columns)};
 	GLsizeiptr stride_size {};
 
 	for (GLuint shader_location {location}; shader_location < location + vec_columns; shader_location++) {
@@ -53,20 +53,35 @@ void buffer_builder::revoke() {
 	glBindVertexArray(0);
 }
 
-void buffer_builder::draw() {
-	glBindVertexArray(this->vao);
+void buffer_builder::on_create() {
+    feature::on_create();
+}
 
-	switch (this->mode) {
-		case buffer_builder_mode::normal: {
-			glDrawArrays(this->primitive, 0, this->vert_amount);
-			break;
-		}
+void buffer_builder::on_destroy() {
+    feature::on_destroy();
+    glDeleteVertexArrays(1, &this->vao);
 
-		case buffer_builder_mode::instanced: {
-			glDrawArraysInstanced(this->primitive, 0, this->vert_amount, this->instanced_size);
-			break;
-		}
-	}
+    for (GLuint &vbos : this->vbo_list) {
+        glDeleteBuffers(1, &vbos);
+    }
 
-	glBindVertexArray(0);
+    this->vbo_list.clear();
+}
+
+void buffer_builder::on_render() {
+    glBindVertexArray(this->vao);
+
+    switch (this->mode) {
+        case buffer_builder_mode::normal: {
+            glDrawArrays(this->primitive, 0, this->vert_amount);
+            break;
+        }
+
+        case buffer_builder_mode::instanced: {
+            glDrawArraysInstanced(this->primitive, 0, this->vert_amount, this->instanced_size);
+            break;
+        }
+    }
+
+    glBindVertexArray(0);
 }

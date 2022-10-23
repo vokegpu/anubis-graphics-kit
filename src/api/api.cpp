@@ -1,5 +1,5 @@
 #include "api.hpp"
-#include "api/util/runtime.hpp"
+#include "api/util/env.hpp"
 #include <GL/glew.h>
 
 core api::app {};
@@ -25,7 +25,7 @@ void api::mainloop(feature* initial_scene) {
 	util::log("OpenGL 4 context created");
 
 	util::timing reduce_cpu_ticks_timing {};
-	util::timing counter_fps_timning {};
+	util::timing counter_fps_timing {};
 
 	uint64_t cpu_ticks_interval {api::app.fps};
 	uint64_t fps_interval {1000};
@@ -36,7 +36,7 @@ void api::mainloop(feature* initial_scene) {
 	api::scene::load(initial_scene);
 
 	while (api::app.mainloop) {
-		if (util::reset_if_reach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
+		if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
 			while (SDL_PollEvent(&sdl_event)) {
 				switch (sdl_event.type) {
 					case SDL_QUIT: {
@@ -51,7 +51,7 @@ void api::mainloop(feature* initial_scene) {
 				}
 			}
 
-			if (util::reset_if_reach(reduce_cpu_ticks_timing, fps_interval)) {
+			if (util::resetifreach(reduce_cpu_ticks_timing, fps_interval)) {
 				api::app.display_fps = ticked_frames;
 				ticked_frames = 0;
 			}
@@ -62,6 +62,9 @@ void api::mainloop(feature* initial_scene) {
 
 			api::app.garbage_collector.do_update();
 
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
 			if (api::app.current_scene != nullptr) {
 				api::app.current_scene->on_render();
 			}
@@ -70,6 +73,8 @@ void api::mainloop(feature* initial_scene) {
 			SDL_GL_SwapWindow(api::app.root);
 		}
 	}
+
+    api::app.shader_manger.quit();
 }
 
 void api::scene::load(feature* scene) {
@@ -111,4 +116,8 @@ void api::gc::destroy(feature* target) {
 
 void api::gc::create(feature* target) {
 	api::app.garbage_collector.create(target);
+}
+
+bool api::shading::createprogram(std::string_view name, ::shading::program &program, const std::vector<::shading::resource> &resources) {
+    return api::app.shader_manger.create_shading_program(name, program, resources);
 }

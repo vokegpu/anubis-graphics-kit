@@ -1,3 +1,4 @@
+#include "client.hpp"
 #include "api/api.hpp"
 #include "client/scenes/starter.hpp"
 

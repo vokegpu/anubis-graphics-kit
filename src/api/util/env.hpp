@@ -14,7 +14,7 @@ namespace util {
 
 	bool reset(util::timing&);
 	bool reach(util::timing&, uint64_t);
-	bool reset_if_reach(util::timing&, uint64_t);
+	bool resetifreach(util::timing&, uint64_t);
 }
 
 #endif

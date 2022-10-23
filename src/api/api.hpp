@@ -16,6 +16,10 @@ namespace api {
 		void destroy(feature*);
 		void create(feature*);
 	}
-};
+
+    namespace shading {
+        bool createprogram(std::string_view, ::shading::program &program, const std::vector<::shading::resource>&);
+    };
+}
 
 #endif
