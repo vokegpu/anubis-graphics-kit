@@ -34,6 +34,8 @@ void api::mainloop(feature* initial_scene) {
 
 	api::app.mainloop = true;
 	api::scene::load(initial_scene);
+    api::gc::create(&api::app.world_render_manager);
+    api::gc::create(&api::app.world_client);
 
 	while (api::app.mainloop) {
 		if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {

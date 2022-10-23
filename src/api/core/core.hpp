@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include "api/gc/gc.hpp"
 #include "api/renderer/shading_access.hpp"
+#include "api/world/world_render.hpp"
+#include "api/world/world.hpp"
 
 class core {
 public:
@@ -19,7 +21,8 @@ public:
 	feature* current_scene {nullptr};
 	gc garbage_collector {};
     shading_manager shader_manger {};
-
+    world_render world_render_manager {};
+    world world_client {};
 };
 
 #endif

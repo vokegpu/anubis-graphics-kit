@@ -1,5 +1,5 @@
 #include "starter.hpp"
-#include "api/render/buffer_builder.hpp"
+#include "api/renderer/buffer_builder.hpp"
 #include "api/util/env.hpp"
 #include "api/api.hpp"
 
@@ -31,5 +31,6 @@ void client::scenes::starter::on_update() {
 }
 
 void client::scenes::starter::on_render() {
+    api::app.world_render_manager.object_model_shading;
     this->model->on_render();
 }
