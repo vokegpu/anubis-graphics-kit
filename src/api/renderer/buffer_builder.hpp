@@ -12,6 +12,7 @@ enum buffer_builder_mode {
 
 class buffer_builder : public feature {
 public:
+    const char* tag {};
 	std::vector<GLuint> vbo_list {};
 	GLuint vao {0};
 	uint32_t vbo_bound {};

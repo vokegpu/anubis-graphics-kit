@@ -8,7 +8,8 @@
 
 class world : public feature {
 public:
-    std::map<uint32_t, object*> loaded_object_list {};
+    std::map<uint32_t, object*> loaded_object_map {};
+    std::vector<object*> loaded_object_list {};
 
     void on_create() override;
     void on_destroy() override;

@@ -4,12 +4,15 @@
 #include "api/renderer/shading_access.hpp"
 #include "api/feature/feature.hpp"
 #include "api/renderer/buffer_builder.hpp"
+#include <glm/glm.hpp>
 
 class world_render : public feature {
 public:
     shading::program object_model_shading {};
     shading::program entity_model_shading {};
+
     std::vector<buffer_builder*> loaded_model_list {};
+    glm::mat4 matrix_perspective {};
 
     void on_create() override;
     void on_destroy() override;
