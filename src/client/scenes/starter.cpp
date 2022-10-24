@@ -10,12 +10,16 @@ void client::scenes::starter::on_create() {
 		1.0f, -1.0f, 0.0f
 	};
 
-    api::gc::create(this->model = new buffer_builder());
-	this->model->invoke();
-	this->model->bind();
-	this->model->send_data(sizeof(float) * 9, vert, GL_STATIC_DRAW);
-	this->model->vert_amount = 3;
-	this->model->revoke();
+    auto model {api::world::render().gen_model("hi")};
+    auto cat_object {new object {}};
+    cat_object->model_id = model->id;
+
+    mesh::data cat {mesh::format::obj};
+    api::mesh::load(cat, "./data/models/cube.obj");
+
+    api::world::create(cat_object);
+    api::mesh::compile(cat, model);
+    api::world::camera3d().position = glm::vec3(0, 0, -10);
 }
 
 void client::scenes::starter::on_destroy() {
@@ -31,6 +35,5 @@ void client::scenes::starter::on_update() {
 }
 
 void client::scenes::starter::on_render() {
-    api::app.world_render_manager.object_model_shading;
-    this->model->on_render();
+
 }

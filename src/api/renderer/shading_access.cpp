@@ -67,6 +67,7 @@ bool shading_manager::create_shading_program(std::string_view shading_program_na
             util::log(log);
         } else {
             this->shading_programs_map[shading_program_name] = program.id;
+            util::log(std::string(shading_program_name) + " shading program successfully linked");
         }
 
         for (shading::resource resource : resources) {

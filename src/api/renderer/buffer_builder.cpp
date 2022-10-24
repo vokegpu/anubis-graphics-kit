@@ -1,4 +1,5 @@
 #include "buffer_builder.hpp"
+#include "api/util/env.hpp"
 
 void buffer_builder::bind() {
 	GLuint vbo {};
@@ -14,11 +15,11 @@ void buffer_builder::bind() {
 	this->vbo_bound++;
 }
 
-void buffer_builder::send_data(size_t size, void* data, GLuint draw_mode) {
+void buffer_builder::send_data(GLint size, void* data, GLuint draw_mode) {
 	glBufferData(GL_ARRAY_BUFFER, size, data, draw_mode);
 }
 
-void buffer_builder::shader(GLuint location, GLuint vec_rows, GLuint begin, GLsizeiptr end) {
+void buffer_builder::shader(GLuint location, GLint vec_rows, GLint begin, GLsizeiptr end) {
 	glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location, vec_rows, GL_FLOAT, GL_FALSE, begin, (void*) end);
 }
@@ -84,4 +85,8 @@ void buffer_builder::on_render() {
     }
 
     glBindVertexArray(0);
+}
+
+buffer_builder::buffer_builder(const char* str_tag) {
+    this->tag = str_tag;
 }

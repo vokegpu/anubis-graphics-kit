@@ -13,17 +13,21 @@ enum buffer_builder_mode {
 class buffer_builder : public feature {
 public:
     const char* tag {};
-	std::vector<GLuint> vbo_list {};
+    uint32_t id {};
+
 	GLuint vao {0};
-	uint32_t vbo_bound {};
-	GLuint primitive {GL_TRIANGLES};
-	GLuint vert_amount {};
-	buffer_builder_mode mode {};
-	GLint instanced_size {};
+    uint32_t vbo_bound {};
+    GLuint primitive {GL_TRIANGLES};
+    GLint vert_amount {};
+    GLint instanced_size {};
+
+    std::vector<GLuint> vbo_list {};
+    buffer_builder_mode mode {};
+    buffer_builder(const char*);
 
 	void bind();
-	void send_data(size_t size, void* data, GLuint draw_mode);
-	void shader(GLuint location, GLuint vec_rows, GLuint begin, GLsizeiptr end);
+	void send_data(GLint size, void* data, GLuint draw_mode);
+	void shader(GLuint location, GLint vec_rows, GLint begin, GLsizeiptr end);
 	void shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns);
 
 	void invoke();

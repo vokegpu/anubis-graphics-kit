@@ -14,6 +14,8 @@ public:
     std::vector<buffer_builder*> loaded_model_list {};
     glm::mat4 matrix_perspective {};
 
+    buffer_builder* gen_model(const char*);
+
     void on_create() override;
     void on_destroy() override;
     void on_event(SDL_Event &sdl_event) override;

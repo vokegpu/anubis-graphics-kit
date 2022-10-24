@@ -20,6 +20,19 @@ namespace api {
     namespace shading {
         bool createprogram(std::string_view, ::shading::program &program, const std::vector<::shading::resource>&);
     };
+
+    namespace world {
+        camera3d &camera3d();
+        ::world &current();
+        world_render &render();
+        void create(object*);
+        void destroy(object*);
+    };
+
+    namespace mesh {
+        bool load(::mesh::data&, std::string_view);
+        void compile(::mesh::data &data, buffer_builder *model);
+    };
 }
 
 #endif

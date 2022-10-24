@@ -19,10 +19,12 @@ add_compile_options("-O3")
 
 # Find for all files.
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+file(GLOB AMOGPU "external/libamogpu.a")
 
 # Include the src for environment of project.
 include_directories(src)
+include_directories(external)
 
 # Inject at the executable the src files and link the libraries used in the project.
 add_executable(agk ${SRC_FILES})
-target_link_libraries(agk ${LINKED_LIBRARIES})
+target_link_libraries(agk ${LINKED_LIBRARIES} ${AMOGPU})

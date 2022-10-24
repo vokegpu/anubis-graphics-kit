@@ -1,4 +1,5 @@
 #include "file.hpp"
+#include "env.hpp"
 #include <fstream>
 
 bool util::readfile(std::string_view path, std::string &string_builder) {
@@ -12,6 +13,11 @@ bool util::readfile(std::string_view path, std::string &string_builder) {
 
         ifs.close();
         return true;
+    } else {
+        std::string log {"failed to open file '"};
+        log += path;
+        log += "'";
+        util::log(log);
     }
 
     return false;

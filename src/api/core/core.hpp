@@ -6,11 +6,12 @@
 #include "api/renderer/shading_access.hpp"
 #include "api/world/world_render.hpp"
 #include "api/world/world.hpp"
+#include "api/world/camera/camera.hpp"
+#include "api/mesh/mesh_loader.hpp"
 
 class core {
 public:
 	SDL_Window* root {nullptr};
-
 	int32_t screen_width {1600};
 	int32_t screen_height {900};
 
@@ -23,6 +24,9 @@ public:
     shading_manager shader_manger {};
     world_render world_render_manager {};
     world world_client {};
+    camera3d world_camera3d {};
+    mesh_loader mesh3d_loader {};
+
 };
 
 #endif
