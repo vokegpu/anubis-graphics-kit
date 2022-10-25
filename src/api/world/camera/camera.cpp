@@ -11,6 +11,7 @@ void camera3d::on_create() {
     this->front = glm::vec3(0, 0, -1.0f);
     this->up = glm::vec3(0, 0, 0);
     this->world_up = glm::vec3(0, 1.0f, 0);
+    this->on_update();
 }
 
 void camera3d::on_destroy() {

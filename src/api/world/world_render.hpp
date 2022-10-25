@@ -15,6 +15,7 @@ public:
     glm::mat4 matrix_perspective {};
 
     buffer_builder* gen_model(const char*);
+    void update_perspective_matrix();
 
     void on_create() override;
     void on_destroy() override;

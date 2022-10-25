@@ -21,22 +21,23 @@ void api::mainloop(feature* initial_scene) {
     SDL_GLContext sdl_gl_context {SDL_GL_CreateContext(api::app.root)};
     util::log("window released");
 
-    amogpu::init();
-    dynamic_batching batch {};
-    font_renderer f_renderer {};
-    f_renderer.load("./data/fonts/impact.ttf", 36);
-    amogpu::gl_version = "#version 450 core";
-    f_renderer.from(amogpu::invoked);
-
 	glewExperimental = true;
     glewInit();
 	SDL_GL_SetSwapInterval(1);
 	util::log("OpenGL 4 context created");
 
+    amogpu::gl_version = "#version 450 core";
+    amogpu::init();
+
+    dynamic_batching batch {};
+    font_renderer f_renderer {};
+    f_renderer.load("./data/fonts/impact.ttf", 36);
+    f_renderer.from(amogpu::invoked);
+
 	util::timing reduce_cpu_ticks_timing {};
 	util::timing counter_fps_timing {};
 
-	uint64_t cpu_ticks_interval {api::app.fps};
+	uint64_t cpu_ticks_interval {1000 / api::app.fps};
 	uint64_t fps_interval {1000};
 	uint64_t ticked_frames {};
 	SDL_Event sdl_event {};
@@ -48,6 +49,7 @@ void api::mainloop(feature* initial_scene) {
     api::gc::create(&api::app.world_render_manager);
     api::gc::create(&api::app.world_client);
     api::gc::create(&api::app.world_camera3d);
+    api::world::render().update_perspective_matrix();
 
 	while (api::app.mainloop) {
 		if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
@@ -80,9 +82,11 @@ void api::mainloop(feature* initial_scene) {
             api::app.world_client.on_update();
             api::app.world_render_manager.on_update();
 			api::app.garbage_collector.do_update();
+            amogpu::matrix();
 
+            glViewport(0, 0, api::app.screen_width, api::app.screen_height);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
             api::app.world_render_manager.on_render();
 
@@ -90,7 +94,7 @@ void api::mainloop(feature* initial_scene) {
 				api::app.current_scene->on_render();
 			}
 
-            if (prev_camera.x != api::app.world_camera3d.yaw || prev_camera.y != api::app.world_camera3d.yaw) {
+            if (prev_camera.x != api::app.world_camera3d.yaw || prev_camera.y != api::app.world_camera3d.pitch) {
                 prev_camera.x = api::app.world_camera3d.yaw;
                 prev_camera.y = api::app.world_camera3d.pitch;
 

@@ -28,8 +28,9 @@ void world_render::on_event(SDL_Event &sdl_event) {
         case SDL_WINDOWEVENT: {
             switch (sdl_event.window.event) {
                 case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                    float aspect_ration {static_cast<float>(api::app.screen_width) / static_cast<float>(api::app.screen_height)};
-                    this->matrix_perspective = glm::perspective(api::app.world_camera3d.field_of_view, aspect_ration, 0.1f, 100.0f);
+                    api::app.screen_width = sdl_event.window.data1;
+                    api::app.screen_height = sdl_event.window.data2;
+                    this->update_perspective_matrix();
                     break;
                 }
             }
@@ -93,4 +94,9 @@ buffer_builder *world_render::gen_model(const char* tag) {
     this->loaded_model_list.push_back(model);
     model->id = this->loaded_model_list.size() - 1;
     return model;
+}
+
+void world_render::update_perspective_matrix() {
+    float aspect_ration {static_cast<float>(api::app.screen_width) / static_cast<float>(api::app.screen_height)};
+    this->matrix_perspective = glm::perspective(api::app.world_camera3d.field_of_view, aspect_ration, 0.1f, 100.0f);
 }

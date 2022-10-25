@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#define VERSION 1_0_3
 
 /**
  * @author Rina

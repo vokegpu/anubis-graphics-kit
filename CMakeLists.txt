@@ -5,10 +5,10 @@ set(LINKED_LIBRARIES "")
 set(BUILD_LOCATION "")
 
 if(WIN32)
-	set(LINKED_LIBRARIES mingw32 opengl32 glew32 SDL2main SDL2 freetype)
+	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/win/libamogpu.a" mingw32 opengl32 glew32 SDL2main SDL2 freetype)
 	set(BUILD_LOCATION "../build/win/")
 else()
-	set(LINKED_LIBRARIES SDL2main SDL2 GL GLEW freetype)
+	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/linux/libamogpu.a" SDL2main SDL2 GL GLEW freetype)
 	set(BUILD_LOCATION "../build/linux/")
 endif()
 
@@ -19,7 +19,6 @@ add_compile_options("-O3")
 
 # Find for all files.
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
-file(GLOB AMOGPU "external/libamogpu.a")
 
 # Include the src for environment of project.
 include_directories(src)
@@ -27,4 +26,4 @@ include_directories(external)
 
 # Inject at the executable the src files and link the libraries used in the project.
 add_executable(agk ${SRC_FILES})
-target_link_libraries(agk ${LINKED_LIBRARIES} ${AMOGPU})
+target_link_libraries(agk ${LINKED_LIBRARIES})
