@@ -11,9 +11,8 @@ namespace mesh {
     struct data {
         mesh::format format {};
         int32_t vert_amount {};
-        std::vector<float> vertices {};
-        std::vector<float> texture_coordinates {};
-        std::vector<float> normals {};
+        std::vector<float> vertices {}, texture_coordinates {}, normals {};
+        std::vector<int32_t> vertices_index {}, texture_coordinates_index {}, normals_index {};
     };
 }
 

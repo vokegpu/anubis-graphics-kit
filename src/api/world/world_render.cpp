@@ -12,8 +12,8 @@ void world_render::on_create() {
     });
 
     api::shading::createprogram("entity-model", this->entity_model_shading, {
-            {"./effects/EntityModel.vsh", shading::stage::vertex},
-            {"./effects/EntityModel.fsh", shading::stage::fragment}
+        {"./effects/EntityModel.vsh", shading::stage::vertex},
+        {"./effects/EntityModel.fsh", shading::stage::fragment}
     });
 }
 

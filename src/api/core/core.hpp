@@ -21,12 +21,11 @@ public:
 
 	feature* current_scene {nullptr};
 	gc garbage_collector {};
-    shading_manager shader_manger {};
-    world_render world_render_manager {};
-    world world_client {};
-    camera3d world_camera3d {};
-    mesh_loader mesh3d_loader {};
-
+	shading_manager shader_manger {};
+	world_render world_render_manager {};
+	world world_client {};
+	camera3d world_camera3d {};
+	mesh_loader mesh3d_loader {};
 };
 
 #endif

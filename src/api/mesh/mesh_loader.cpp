@@ -11,6 +11,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
 
     std::string string_buffer {};
     std::string find {};
+    std::string values {};
 
     size_t line_size {};
     uint8_t x_index {};
@@ -29,14 +30,21 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 find = string_buffer.substr(0, 2);
 
                 if (find == "v ") {
+                    util::log(values);
+                    values.replaceAll();
+
+                    util::log(string_buffer.substr(x_index, y_index) + " " + string_buffer.substr(y_index, z_index) + " " + string_buffer.substr(z_index, line_size));
+
+
+                    data.vert_amount++;
+                } else if (find == "vt") {
                     x_index = string_buffer.find(' ') + 1;
                     y_index = string_buffer.find(' ', x_index + 1);
                     z_index = string_buffer.find(' ', y_index + 2);
 
-                    data.vertices.push_back(static_cast<float>(std::stof(string_buffer.substr(x_index, y_index))));
-                    data.vertices.push_back(static_cast<float>(std::stof(string_buffer.substr(y_index, z_index))));
-                    data.vertices.push_back(static_cast<float>(std::stof(string_buffer.substr(z_index, line_size))));
-                    data.vert_amount++;
+                    data.texture_coordinates.push_back(static_cast<float>(std::stof(string_buffer.substr(x_index, y_index))));
+                    data.texture_coordinates.push_back(static_cast<float>(std::stof(string_buffer.substr(y_index, z_index))));
+                    data.texture_coordinates.push_back(static_cast<float>(std::stof(string_buffer.substr(z_index, line_size))));
                 } else if (find == "vn") {
                     x_index = string_buffer.find(' ') + 1;
                     y_index = string_buffer.find(' ', x_index + 1);
@@ -45,6 +53,13 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                     data.normals.push_back(static_cast<float>(std::stof(string_buffer.substr(x_index, y_index))));
                     data.normals.push_back(static_cast<float>(std::stof(string_buffer.substr(y_index, z_index))));
                     data.normals.push_back(static_cast<float>(std::stof(string_buffer.substr(z_index, line_size))));
+                } else if (find == "f ") {
+                    x_index = string_buffer.find(' ') + 1;
+                    y_index = string_buffer.find(' ', x_index + 1);
+                    z_index = string_buffer.find(' ', y_index + 2);
+
+                    auto vert {string_buffer.substr(x_index, y_index - 1)};
+
                 }
             }
 

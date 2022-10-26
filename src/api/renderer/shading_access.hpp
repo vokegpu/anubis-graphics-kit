@@ -2,7 +2,7 @@
 #define AGK_RENDERER_SHADING_ACCESS_H
 
 #include <iostream>
-#include "gl/glew.h"
+#include "GL/glew.h"
 #include <map>
 #include <vector>
 

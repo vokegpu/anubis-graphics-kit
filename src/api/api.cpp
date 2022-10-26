@@ -2,8 +2,13 @@
 #include "api/util/env.hpp"
 #include <GL/glew.h>
 #include <amogpu/amogpu.hpp>
+#include "api/util/file.hpp"
 
 core api::app {};
+
+void api::path(const char* str_path) {
+	util::log(str_path);
+}
 
 void api::mainloop(feature* initial_scene) {
 	util::log("initialising");
@@ -196,5 +201,9 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->bind();
     model->send_data((int32_t) data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
     model->shader(1, 3, 0, 0);
+
+    model->bind();
+    model->send_data((int32_t) data.texture_coordinates.size(), data.texture_coordinates.data(), GL_STATIC_DRAW);
+    model->shader(2, 3, 0, 0);
     model->revoke();
 }

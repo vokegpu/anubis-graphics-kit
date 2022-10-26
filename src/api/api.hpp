@@ -6,6 +6,7 @@
 namespace api {
 	extern core app;
 	void mainloop(feature*);
+    void path(const char*);
 
 	namespace scene {
 		void load(feature*);
