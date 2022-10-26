@@ -8,6 +8,7 @@
 #include "api/world/world.hpp"
 #include "api/world/camera/camera.hpp"
 #include "api/mesh/mesh_loader.hpp"
+#include "api/input/input.hpp"
 
 class core {
 public:
@@ -26,6 +27,7 @@ public:
 	world world_client {};
 	camera3d world_camera3d {};
 	mesh_loader mesh3d_loader {};
+	input input_manager {};
 };
 
 #endif

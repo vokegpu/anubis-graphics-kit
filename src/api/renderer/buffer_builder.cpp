@@ -36,6 +36,18 @@ void buffer_builder::shader_instanced(GLuint location, GLint vec_rows, GLsizeipt
 	}
 }
 
+void buffer_builder::bind_ebo() {
+	if (this->ebo == 0) {
+		glGenBuffers(1, &this->ebo);
+	}
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo);
+}
+
+void buffer_builder::send_indexing_data(GLint size, void* data, GLuint draw_mode) {
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, draw_mode);
+}
+
 void buffer_builder::invoke() {
 	this->vbo_bound = 0;
 	if (this->vao == 0) glGenVertexArrays(1, &this->vao);
@@ -74,12 +86,12 @@ void buffer_builder::on_render() {
 
     switch (this->mode) {
         case buffer_builder_mode::normal: {
-            glDrawArrays(this->primitive, 0, this->vert_amount);
+            glDrawElements(this->primitive, this->vert_amount, GL_UNSIGNED_INT, 0);
             break;
         }
 
         case buffer_builder_mode::instanced: {
-            glDrawArraysInstanced(this->primitive, 0, this->vert_amount, this->instanced_size);
+            glDrawElementsInstanced(this->primitive, this->vert_amount, GL_UNSIGNED_INT, 0, this->instanced_size);
             break;
         }
     }

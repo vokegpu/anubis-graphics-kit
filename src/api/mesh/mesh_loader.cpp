@@ -2,6 +2,14 @@
 #include "api/util/env.hpp"
 #include <fstream>
 
+void mesh_loader::process_indexing_sequence(std::vector<int32_t> &indexes, std::vector<float> &data) {
+    const std::vector<float> reference {data};
+
+    for (int32_t &index : indexes) {
+        data.push_back(reference[index - 1]);
+    }
+}
+
 bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     std::ifstream ifs {path.data()};
     if (!ifs.is_open()) {
@@ -12,11 +20,12 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     std::string string_buffer {};
     std::string find {};
     std::string values {};
+    std::vector<std::string> split {}, split_f_v {}, split_f_vt {}, split_f_vn {};
 
     size_t line_size {};
-    uint8_t x_index {};
-    uint8_t y_index {};
-    uint8_t z_index {};
+    size_t x {1};
+    size_t y {2};
+    size_t z {3};
 
     switch (data.format) {
         case mesh::format::obj: {
@@ -28,38 +37,42 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 }
 
                 find = string_buffer.substr(0, 2);
+                util::split(split, string_buffer, ' ');
+
+                if (split.size() != 4 && split.size() != 3) {
+                    continue;
+                }
 
                 if (find == "v ") {
-                    util::log(values);
-                    values.replaceAll();
-
-                    util::log(string_buffer.substr(x_index, y_index) + " " + string_buffer.substr(y_index, z_index) + " " + string_buffer.substr(z_index, line_size));
-
-
-                    data.vert_amount++;
+                    data.vertices.push_back(std::stof(split[x]));
+                    data.vertices.push_back(std::stof(split[y]));
+                    data.vertices.push_back(std::stof(split[z]));
                 } else if (find == "vt") {
-                    x_index = string_buffer.find(' ') + 1;
-                    y_index = string_buffer.find(' ', x_index + 1);
-                    z_index = string_buffer.find(' ', y_index + 2);
-
-                    data.texture_coordinates.push_back(static_cast<float>(std::stof(string_buffer.substr(x_index, y_index))));
-                    data.texture_coordinates.push_back(static_cast<float>(std::stof(string_buffer.substr(y_index, z_index))));
-                    data.texture_coordinates.push_back(static_cast<float>(std::stof(string_buffer.substr(z_index, line_size))));
+                    data.texture_coordinates.push_back(std::stof(split[x]));
+                    data.texture_coordinates.push_back(std::stof(split[y]));
                 } else if (find == "vn") {
-                    x_index = string_buffer.find(' ') + 1;
-                    y_index = string_buffer.find(' ', x_index + 1);
-                    z_index = string_buffer.find(' ', y_index + 2);
-
-                    data.normals.push_back(static_cast<float>(std::stof(string_buffer.substr(x_index, y_index))));
-                    data.normals.push_back(static_cast<float>(std::stof(string_buffer.substr(y_index, z_index))));
-                    data.normals.push_back(static_cast<float>(std::stof(string_buffer.substr(z_index, line_size))));
+                    data.normals.push_back(std::stof(split[x]));
+                    data.normals.push_back(std::stof(split[y]));
+                    data.normals.push_back(std::stof(split[z]));
                 } else if (find == "f ") {
-                    x_index = string_buffer.find(' ') + 1;
-                    y_index = string_buffer.find(' ', x_index + 1);
-                    z_index = string_buffer.find(' ', y_index + 2);
+                    util::split(split_f_v, split[x], '/');
+                    util::split(split_f_vt, split[y], '/');
+                    util::split(split_f_vn, split[z], '/');
 
-                    auto vert {string_buffer.substr(x_index, y_index - 1)};
+                    if (split_f_v.size() == 3 && split_f_vt.size() == 3 && split_f_vn.size() == 3) {
+                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[0])));
+                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[1])));
+                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[2])));
+                        data.vert_amount++;
 
+                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[0])));
+                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[1])));
+                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[2])));
+
+                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vn[0])));
+                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vn[1])));
+                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vn[2])));
+                    }
                 }
             }
 

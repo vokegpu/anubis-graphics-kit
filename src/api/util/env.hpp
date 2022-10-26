@@ -1,6 +1,7 @@
 #ifndef AGK_UTIL_RUNTIME_H
 #define AGK_UTIL_RUNTIME_H
 
+#include <vector>
 #include <iostream>
 
 namespace util {
@@ -15,6 +16,8 @@ namespace util {
 	bool reset(util::timing&);
 	bool reach(util::timing&, uint64_t);
 	bool resetifreach(util::timing&, uint64_t);
+
+	void split(std::vector<std::string>&, std::string_view, const char);
 }
 
 #endif

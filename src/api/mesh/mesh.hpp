@@ -12,7 +12,7 @@ namespace mesh {
         mesh::format format {};
         int32_t vert_amount {};
         std::vector<float> vertices {}, texture_coordinates {}, normals {};
-        std::vector<int32_t> vertices_index {}, texture_coordinates_index {}, normals_index {};
+        std::vector<uint32_t> vertices_index {}, texture_coordinates_index {}, normals_index {};
     };
 }
 

@@ -34,6 +34,10 @@ namespace api {
         bool load(::mesh::data&, std::string_view);
         void compile(::mesh::data &data, buffer_builder *model);
     };
+
+    namespace input {
+        bool pressed(std::string_view);
+    };
 }
 
 #endif

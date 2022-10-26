@@ -6,6 +6,7 @@
 
 class mesh_loader {
 public:
+    void process_indexing_sequence(std::vector<int32_t> &indexes, std::vector<float> &data);
     bool load_object(mesh::data&, std::string_view);
 };
 

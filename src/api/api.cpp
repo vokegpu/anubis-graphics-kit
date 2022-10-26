@@ -46,7 +46,6 @@ void api::mainloop(feature* initial_scene) {
 	uint64_t fps_interval {1000};
 	uint64_t ticked_frames {};
 	SDL_Event sdl_event {};
-
     glm::vec3 prev_camera {};
 
 	api::app.mainloop = true;
@@ -70,6 +69,7 @@ void api::mainloop(feature* initial_scene) {
                         api::app.world_camera3d.on_event(sdl_event);
                         api::app.world_client.on_event(sdl_event);
                         api::app.world_render_manager.on_event(sdl_event);
+                        api::app.input_manager.on_event(sdl_event);
 						break;
 					}
 				}
@@ -87,6 +87,7 @@ void api::mainloop(feature* initial_scene) {
             api::app.world_client.on_update();
             api::app.world_render_manager.on_update();
 			api::app.garbage_collector.do_update();
+			api::app.input_manager.on_update();
             amogpu::matrix();
 
             glViewport(0, 0, api::app.screen_width, api::app.screen_height);
@@ -195,15 +196,22 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->mode = buffer_builder_mode::normal;
 
     model->bind();
-    model->send_data((int32_t) data.vertices.size(), data.vertices.data(), GL_STATIC_DRAW);
+    model->send_data(sizeof(float) * data.vertices.size(), &data.vertices[0], GL_STATIC_DRAW);
     model->shader(0, 3, 0, 0);
 
     model->bind();
-    model->send_data((int32_t) data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
+    model->send_data(sizeof(float) * data.normals.size(), &data.normals[0], GL_STATIC_DRAW);
     model->shader(1, 3, 0, 0);
 
     model->bind();
-    model->send_data((int32_t) data.texture_coordinates.size(), data.texture_coordinates.data(), GL_STATIC_DRAW);
+    model->send_data(sizeof(float) * data.texture_coordinates.size(), &data.texture_coordinates[0], GL_STATIC_DRAW);
     model->shader(2, 3, 0, 0);
+
+    model->bind_ebo();
+    model->send_indexing_data(sizeof(uint32_t) * data.vertices_index.size(), &data.vertices_index[0], GL_STATIC_DRAW);
     model->revoke();
+}
+
+bool api::input::pressed(std::string_view input_tag) {
+	return api::app.input_manager.input_map[input_tag.data()];
 }

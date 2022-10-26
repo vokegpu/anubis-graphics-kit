@@ -16,6 +16,7 @@ public:
     uint32_t id {};
 
 	GLuint vao {0};
+    GLuint ebo {};
     uint32_t vbo_bound {};
     GLuint primitive {GL_TRIANGLES};
     GLint vert_amount {};
@@ -29,6 +30,8 @@ public:
 	void send_data(GLint size, void* data, GLuint draw_mode);
 	void shader(GLuint location, GLint vec_rows, GLint begin, GLsizeiptr end);
 	void shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns);
+    void bind_ebo();
+    void send_indexing_data(GLint size, void* data, GLuint draw_mode);
 
 	void invoke();
 	void revoke();
