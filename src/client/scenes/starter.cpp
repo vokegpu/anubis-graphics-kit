@@ -13,13 +13,13 @@ void client::scenes::starter::on_create() {
     auto model {api::world::render().gen_model("hi")};
     auto cat_object {new object {}};
     cat_object->model_id = model->id;
+    cat_object->scale = glm::vec3(0.25f, 0.25f, 0.25f);
 
     mesh::data cat {mesh::format::obj};
-    api::mesh::load(cat, "./data/models/cube.obj");
+    api::mesh::load(cat, "./data/models/cat.obj");
 
     api::world::create(cat_object);
     api::mesh::compile(cat, model);
-    api::world::camera3d().position = glm::vec3(0, 0, -10);
     api::world::current().camera_movement = true;
 }
 

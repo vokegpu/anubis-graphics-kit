@@ -10,6 +10,7 @@ public:
     uint32_t model_id {};
     glm::vec3 position {};
     glm::vec3 rotation {};
+    glm::vec3 scale {};
 
     void on_create() override;
     void on_destroy() override;

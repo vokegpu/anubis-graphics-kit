@@ -28,6 +28,8 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     size_t y {2};
     size_t z {3};
 
+    bool contains_normals {};
+
     switch (data.format) {
         case mesh::format::obj: {
             while (std::getline(ifs, string_buffer)) {
@@ -55,14 +57,16 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                     data.normals.push_back(std::stof(split[x]));
                     data.normals.push_back(std::stof(split[y]));
                     data.normals.push_back(std::stof(split[z]));
+                    contains_normals = true;
                 } else if (find == "f ") {
                     util::split(split_first, split[x], '/');
                     util::split(split_second, split[y], '/');
                     util::split(split_third, split[z], '/');
 
-                    if (split_first.size() == 3 && split_second.size() == 3 && split_third.size() == 3) {
-                        // the reason for substract -1 for every index is simple: opengl starts with 0 not 1.
+                    util::log(split[z]);
 
+                    if (split_first.size() >= 2 && split_second.size() >= 2 && split_third.size() >= 2) {
+                        // the reason for substract -1 for every index is simple: opengl starts with 0 not 1.
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_first[0])) - 1);
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_second[0])) - 1);
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_third[0])) - 1);
@@ -72,12 +76,16 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                         data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_second[1])) - 1);
                         data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_third[1])) - 1);
 
-                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_first[2])) - 1);
-                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_second[2])) - 1);
-                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_third[2])) - 1);
+                        if (contains_normals) {
+                            data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_first[2])) - 1);
+                            data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_second[2])) - 1);
+                            data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_third[2])) - 1);
+                        }
                     }
                 }
             }
+
+            util::log("mesh loader collected indexes: " + std::to_string(data.vertices_index.size()));
 
             break;
         }
