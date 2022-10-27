@@ -215,6 +215,20 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->revoke();
 }
 
+buffer_builder* api::mesh::model(std::string_view tag, std::string_view path) {
+	auto model {api::app.world_render_manager.gen_model(tag)};
+	::mesh::data data {};
+
+	api::mesh::load(data, path);
+	api::mesh::compile(data, model);
+
+	return model;
+}
+
+void api::mesh::assign(object* target, std::string_view tag) {
+	target->model_id = api::app.world_render_manager.get_model_id_by_tag(tag);
+}
+
 bool api::input::pressed(std::string_view input_tag) {
 	return api::app.input_manager.input_map[input_tag.data()];
 }

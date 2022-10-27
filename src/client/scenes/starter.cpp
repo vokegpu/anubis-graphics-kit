@@ -10,13 +10,10 @@ void client::scenes::starter::on_create() {
 		1.0f, -1.0f, 0.0f
 	};
 
-    auto model {api::world::render().gen_model("hi")};
+    auto model {api::mesh::model("cat", mesh::format::obj, "./data/models/cat.obj");
     auto cat_object {new object {}};
-    cat_object->model_id = model->id;
-    cat_object->scale = glm::vec3(0.25f, 0.25f, 0.25f);
 
-    mesh::data cat {mesh::format::obj};
-    api::mesh::load(cat, "./data/models/cat.obj");
+    cat_object->scale = glm::vec3(0.25f, 0.25f, 0.25f);
 
     api::world::create(cat_object);
     api::mesh::compile(cat, model);

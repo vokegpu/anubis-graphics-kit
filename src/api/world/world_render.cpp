@@ -77,6 +77,7 @@ void world_render::on_render() {
         model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
         model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
         model = glm::scale(model, objects->scale);
+
         normal = glm::mat3(model);
         normal = glm::inverseTranspose(normal);
 
@@ -92,12 +93,23 @@ void world_render::on_render() {
 buffer_builder *world_render::gen_model(const char* tag) {
     auto model {new buffer_builder {tag}};
     api::gc::create(model);
+
     this->loaded_model_list.push_back(model);
     model->id = this->loaded_model_list.size() - 1;
+    this->registered_models_map[std::string(model->tag)] = model->id;
+
     return model;
 }
 
 void world_render::update_perspective_matrix() {
     float aspect_ration {static_cast<float>(api::app.screen_width) / static_cast<float>(api::app.screen_height)};
     this->matrix_perspective = glm::perspective(glm::radians(api::app.world_camera3d.field_of_view), aspect_ration, 0.1f, 1000.0f);
+}
+
+buffer_builder* world_render::get_model_by_tag(std::string_view tag) {
+    return this->loaded_model_list[this->registered_models_map[tag]];
+}
+
+buffer_builder* world_render::get_model_id_by_tag(std::string_view tag) {
+    return this->registered_models_map[tag];
 }
