@@ -5,6 +5,8 @@
 
 namespace api {
 	extern core app;
+    extern float dt;
+
 	void mainloop(feature*);
     void path(const char*);
 

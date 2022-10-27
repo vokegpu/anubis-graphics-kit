@@ -63,7 +63,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[0])));
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[1])));
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[2])));
-                        data.vert_amount++;
+                        data.vert_amount += 3;
 
                         data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[0])));
                         data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[1])));

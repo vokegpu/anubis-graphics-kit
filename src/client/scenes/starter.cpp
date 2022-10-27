@@ -20,6 +20,7 @@ void client::scenes::starter::on_create() {
     api::world::create(cat_object);
     api::mesh::compile(cat, model);
     api::world::camera3d().position = glm::vec3(0, 0, -10);
+    api::world::current().camera_movement = true;
 }
 
 void client::scenes::starter::on_destroy() {

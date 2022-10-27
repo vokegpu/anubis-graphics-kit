@@ -2,6 +2,7 @@
 #include "api/api.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include "api/util/env.hpp"
 
 void world_render::on_create() {
     feature::on_create();
@@ -98,5 +99,5 @@ buffer_builder *world_render::gen_model(const char* tag) {
 
 void world_render::update_perspective_matrix() {
     float aspect_ration {static_cast<float>(api::app.screen_width) / static_cast<float>(api::app.screen_height)};
-    this->matrix_perspective = glm::perspective(api::app.world_camera3d.field_of_view, aspect_ration, 0.1f, 100.0f);
+    this->matrix_perspective = glm::perspective(glm::radians(api::app.world_camera3d.field_of_view), aspect_ration, 0.1f, 100.0f);
 }

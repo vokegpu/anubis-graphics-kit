@@ -5,6 +5,7 @@
 #include "api/util/file.hpp"
 
 core api::app {};
+float api::dt {};
 
 void api::path(const char* str_path) {
 	util::log(str_path);
@@ -57,6 +58,8 @@ void api::mainloop(feature* initial_scene) {
 
 	while (api::app.mainloop) {
 		if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
+			api::dt = 100.0f / static_cast<float>(reduce_cpu_ticks_timing.ms_elapsed);
+
 			while (SDL_PollEvent(&sdl_event)) {
 				switch (sdl_event.type) {
 					case SDL_QUIT: {

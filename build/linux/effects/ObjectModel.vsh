@@ -14,7 +14,7 @@ uniform mat3 MatrixNormals;
 
 void main() {
     vec4 ModelTransform = MatrixModel * vec4(VertexMesh, 1.0f);
-    gl_Position = MatrixPerspective * MatrixCameraView * MatrixModel * vec4(VertexMesh, 1.0f);
+    gl_Position = MatrixPerspective * MatrixCameraView * ModelTransform;
     Normals = normalize(MatrixNormals * NormalsMesh);
     VertexPosition = ModelTransform.xyz;
 }
