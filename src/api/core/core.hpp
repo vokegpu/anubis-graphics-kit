@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "api/gc/gc.hpp"
-#include "api/renderer/shading_access.hpp"
+#include "api/gpu/shading_access.hpp"
 #include "api/world/world_render.hpp"
 #include "api/world/world.hpp"
 #include "api/world/camera/camera.hpp"

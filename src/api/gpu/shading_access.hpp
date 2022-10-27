@@ -1,5 +1,5 @@
-#ifndef AGK_RENDERER_SHADING_ACCESS_H
-#define AGK_RENDERER_SHADING_ACCESS_H
+#ifndef AGK_API_GPU_SHADING_ACCESS_H
+#define AGK_API_GPU_SHADING_ACCESS_H
 
 #include <iostream>
 #include "GL/glew.h"

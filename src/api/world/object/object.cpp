@@ -1,9 +1,4 @@
 #include "object.hpp"
-#include "api/api.hpp"
-
-void object::set_model(std::string_view tag) {
-    this->model_id = api::app.world_client.get_model_id_by_tag(tag);
-}
 
 void object::on_create() {
     feature::on_create();

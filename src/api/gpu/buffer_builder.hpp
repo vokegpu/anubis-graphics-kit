@@ -1,5 +1,5 @@
-#ifndef AGK_API_RENDERER_BUFFER_BUILDER_H
-#define AGK_API_RENDERER_BUFFER_BUILDER_H
+#ifndef AGK_API_GPU_BUFFER_BUILDER_H
+#define AGK_API_GPU_BUFFER_BUILDER_H
 
 #include <GL/glew.h>
 #include <iostream>

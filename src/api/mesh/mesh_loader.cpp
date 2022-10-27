@@ -40,10 +40,23 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 }
 
                 find = string_buffer.substr(0, 2);
-                util::split(split, string_buffer, ' ');
 
-                if (split.size() != 4 && split.size() != 3) {
+                if (find != "v " && find != "vt" && find != "vn" && find != "f ") {
                     continue;
+                }
+
+                util::split(split_first, string_buffer, ' ');
+
+                if (split_first.size() < 2) {
+                    continue;
+                }
+
+                split.clear();
+
+                for (std::string &s : split_first) {
+                    if (!s.empty()) {
+                        split.push_back(s);
+                    }
                 }
 
                 if (find == "v ") {
@@ -63,10 +76,8 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                     util::split(split_second, split[y], '/');
                     util::split(split_third, split[z], '/');
 
-                    util::log(split[z]);
-
                     if (split_first.size() >= 2 && split_second.size() >= 2 && split_third.size() >= 2) {
-                        // the reason for substract -1 for every index is simple: opengl starts with 0 not 1.
+                        // the reason for subtract -1: opengl starts with 0 not 1.
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_first[0])) - 1);
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_second[0])) - 1);
                         data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_third[0])) - 1);
@@ -85,8 +96,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 }
             }
 
-            util::log("mesh loader collected indexes: " + std::to_string(data.vertices_index.size()));
-
+            util::log("mesh loader collected indexes: " + std::to_string(data.vert_amount));
             break;
         }
 

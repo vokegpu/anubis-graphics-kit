@@ -27,7 +27,7 @@ void camera3d::on_event(SDL_Event &sdl_event) {
         case SDL_MOUSEMOTION: {
             auto x {static_cast<float>(sdl_event.motion.xrel)}, y {static_cast<float>(sdl_event.motion.yrel)};
             this->yaw += x * this->sensitivity;
-            this->pitch = util::clamp(this->pitch - (y * this->sensitivity), -90.0f, 90.0f);
+            this->pitch = util::clamp(this->pitch - (y * this->sensitivity), -89.0f, 89.0f);
             this->on_update();
             break;
         }

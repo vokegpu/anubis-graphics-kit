@@ -35,7 +35,7 @@ namespace api {
     namespace mesh {
         bool load(::mesh::data&, std::string_view);
         void compile(::mesh::data &data, buffer_builder *model);
-        buffer_builder* model(std::string_view, std::string_view);
+        buffer_builder* model(std::string_view, ::mesh::format, std::string_view);
         void assign(object*, std::string_view);
     };
 

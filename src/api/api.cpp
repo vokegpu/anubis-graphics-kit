@@ -68,11 +68,11 @@ void api::mainloop(feature* initial_scene) {
 					}
 
 					default: {
-						if (api::app.current_scene != nullptr) api::app.current_scene->on_event(sdl_event);
+                        api::app.input_manager.on_event(sdl_event);
+                        if (api::app.current_scene != nullptr) api::app.current_scene->on_event(sdl_event);
                         api::app.world_camera3d.on_event(sdl_event);
                         api::app.world_client.on_event(sdl_event);
                         api::app.world_render_manager.on_event(sdl_event);
-                        api::app.input_manager.on_event(sdl_event);
 						break;
 					}
 				}
@@ -215,9 +215,9 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->revoke();
 }
 
-buffer_builder* api::mesh::model(std::string_view tag, std::string_view path) {
-	auto model {api::app.world_render_manager.gen_model(tag)};
-	::mesh::data data {};
+buffer_builder* api::mesh::model(std::string_view tag, ::mesh::format format, std::string_view path) {
+	auto model {api::app.world_render_manager.gen_model(tag.data())};
+	::mesh::data data {format};
 
 	api::mesh::load(data, path);
 	api::mesh::compile(data, model);

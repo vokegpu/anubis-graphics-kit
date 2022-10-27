@@ -2,7 +2,7 @@
 #define AGK_CLIENT_SCENES_START_SCENE_H
 
 #include "api/feature/feature.hpp"
-#include "api/renderer/buffer_builder.hpp"
+#include "api/gpu/buffer_builder.hpp"
 
 namespace client::scenes {
 	class starter : public feature {

@@ -51,7 +51,7 @@ void world::do_camera_movement() {
         input.x = -1;
     }
 
-    float speed {4.2987f};
+    float speed {this->player->speed_base};
     float f {this->player->yaw};
     float x {glm::cos(glm::radians(f))};
     float z {glm::sin(glm::radians(f))};

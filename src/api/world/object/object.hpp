@@ -3,6 +3,7 @@
 
 #include "api/feature/feature.hpp"
 #include <glm/glm.hpp>
+#include <string>
 #include "api/world/material/material.hpp"
 
 class object : public feature {

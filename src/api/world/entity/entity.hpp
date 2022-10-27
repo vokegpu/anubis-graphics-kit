@@ -10,6 +10,7 @@ public:
 	glm::vec3 velocity {};
 	glm::vec3 scale {};
 	float yaw {}, pitch {};
+    float speed_base {4.2867f};
 
 	void on_create() override;
 	void on_destroy() override;

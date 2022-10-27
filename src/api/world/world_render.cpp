@@ -107,9 +107,9 @@ void world_render::update_perspective_matrix() {
 }
 
 buffer_builder* world_render::get_model_by_tag(std::string_view tag) {
-    return this->loaded_model_list[this->registered_models_map[tag]];
+    return this->loaded_model_list[this->registered_models_map[tag.data()]];
 }
 
-buffer_builder* world_render::get_model_id_by_tag(std::string_view tag) {
-    return this->registered_models_map[tag];
+int32_t world_render::get_model_id_by_tag(std::string_view tag) {
+    return this->registered_models_map[tag.data()];
 }
