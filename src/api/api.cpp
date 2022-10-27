@@ -203,15 +203,15 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->shader(0, 3, 0, 0);
 
     model->bind();
-    model->send_data(sizeof(float) * data.normals.size(), &data.normals[0], GL_STATIC_DRAW);
+    model->send_data(sizeof(float) * data.texture_coordinates.size(), &data.texture_coordinates[0], GL_STATIC_DRAW);
     model->shader(1, 3, 0, 0);
 
     model->bind();
-    model->send_data(sizeof(float) * data.texture_coordinates.size(), &data.texture_coordinates[0], GL_STATIC_DRAW);
+    model->send_data(sizeof(float) * data.normals.size(), &data.normals[0], GL_STATIC_DRAW);
     model->shader(2, 3, 0, 0);
 
     model->bind_ebo();
-    model->send_indexing_data(sizeof(uint32_t) * data.vertices_index.size(), &data.vertices_index[0], GL_STATIC_DRAW);
+    model->send_indexing_data(sizeof(uint32_t) * data.vert_amount, &data.vertices_index[0], GL_STATIC_DRAW);
     model->revoke();
 }
 

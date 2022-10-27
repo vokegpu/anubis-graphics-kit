@@ -2,10 +2,11 @@
 #include "api/util/env.hpp"
 #include <fstream>
 
-void mesh_loader::process_indexing_sequence(std::vector<int32_t> &indexes, std::vector<float> &data) {
+void mesh_loader::process_indexing_sequence(std::vector<uint32_t> &indexes, std::vector<float> &data) {
     const std::vector<float> reference {data};
+    data.clear();
 
-    for (int32_t &index : indexes) {
+    for (uint32_t &index : indexes) {
         data.push_back(reference[index - 1]);
     }
 }
@@ -20,7 +21,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     std::string string_buffer {};
     std::string find {};
     std::string values {};
-    std::vector<std::string> split {}, split_f_v {}, split_f_vt {}, split_f_vn {};
+    std::vector<std::string> split {}, split_first {}, split_second {}, split_third {};
 
     size_t line_size {};
     size_t x {1};
@@ -55,23 +56,25 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                     data.normals.push_back(std::stof(split[y]));
                     data.normals.push_back(std::stof(split[z]));
                 } else if (find == "f ") {
-                    util::split(split_f_v, split[x], '/');
-                    util::split(split_f_vt, split[y], '/');
-                    util::split(split_f_vn, split[z], '/');
+                    util::split(split_first, split[x], '/');
+                    util::split(split_second, split[y], '/');
+                    util::split(split_third, split[z], '/');
 
-                    if (split_f_v.size() == 3 && split_f_vt.size() == 3 && split_f_vn.size() == 3) {
-                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[0])));
-                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[1])));
-                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_f_v[2])));
+                    if (split_first.size() == 3 && split_second.size() == 3 && split_third.size() == 3) {
+                        // the reason for substract -1 for every index is simple: opengl starts with 0 not 1.
+
+                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_first[0])) - 1);
+                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_second[0])) - 1);
+                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_third[0])) - 1);
                         data.vert_amount += 3;
 
-                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[0])));
-                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[1])));
-                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vt[2])));
+                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_first[1])) - 1);
+                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_second[1])) - 1);
+                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_third[1])) - 1);
 
-                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vn[0])));
-                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vn[1])));
-                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_f_vn[2])));
+                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_first[2])) - 1);
+                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_second[2])) - 1);
+                        data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_third[2])) - 1);
                     }
                 }
             }

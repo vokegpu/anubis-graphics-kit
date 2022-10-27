@@ -1,8 +1,8 @@
 #version 450 core
 
 layout (location = 0) in vec3 VertexMesh;
-layout (location = 1) in vec3 NormalsMesh;
-layout (location = 2) in vec2 TextureCoordsMesh;
+layout (location = 1) in vec2 TextureCoordsMesh;
+layout (location = 2) in vec3 NormalsMesh;
 
 out vec3 Normals;
 out vec3 VertexPosition;

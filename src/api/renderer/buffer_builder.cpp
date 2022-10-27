@@ -86,7 +86,11 @@ void buffer_builder::on_render() {
 
     switch (this->mode) {
         case buffer_builder_mode::normal: {
-            glDrawElements(this->primitive, this->vert_amount, GL_UNSIGNED_INT, 0);
+        	if (this->ebo == 0) {
+        		glDrawArrays(this->primitive, 0, this->vert_amount);
+        	} else {
+            	glDrawElements(this->primitive, this->vert_amount, GL_UNSIGNED_INT, 0);
+        	}
             break;
         }
 
