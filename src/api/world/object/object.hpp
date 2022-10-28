@@ -17,6 +17,7 @@ public:
     glm::vec3 scale {};
 
     material::composition composition {};
+    glm::vec3 color {};
 
     void on_create() override;
     void on_destroy() override;
