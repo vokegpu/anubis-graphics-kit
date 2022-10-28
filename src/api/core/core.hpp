@@ -12,22 +12,22 @@
 
 class core {
 public:
-	SDL_Window* root {nullptr};
-	int32_t screen_width {1600};
-	int32_t screen_height {900};
+    SDL_Window* root {nullptr};
+    int32_t screen_width {1600};
+    int32_t screen_height {900};
 
-	bool mainloop {};
-	uint64_t fps {60};
-	uint64_t display_fps {};
+    bool mainloop {};
+    uint64_t fps {60};
+    uint64_t display_fps {};
 
-	feature* current_scene {nullptr};
-	gc garbage_collector {};
-	shading_manager shader_manger {};
-	world_render world_render_manager {};
-	world world_client {};
-	camera3d world_camera3d {};
-	mesh_loader mesh3d_loader {};
-	input input_manager {};
+    feature* current_scene {nullptr};
+    gc garbage_collector {};
+    shading_manager shader_manger {};
+    world_render world_render_manager {};
+    world world_client {};
+    camera3d world_camera3d {};
+    mesh_loader mesh3d_loader {};
+    input input_manager {};
 };
 
 #endif

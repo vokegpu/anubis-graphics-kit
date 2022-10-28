@@ -4,21 +4,21 @@
 #include "api/core/core.hpp"
 
 namespace api {
-	extern core app;
+    extern core app;
     extern float dt;
 
-	void mainloop(feature*);
+    void mainloop(feature*);
     void path(const char*);
 
-	namespace scene {
-		void load(feature*);
-		feature* &current();
-	}
+    namespace scene {
+        void load(feature*);
+        feature* &current();
+    }
 
-	namespace gc {
-		void destroy(feature*);
-		void create(feature*);
-	}
+    namespace gc {
+        void destroy(feature*);
+        void create(feature*);
+    }
 
     namespace shading {
         bool createprogram(std::string_view, ::shading::program &program, const std::vector<::shading::resource>&);

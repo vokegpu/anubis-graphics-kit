@@ -8,13 +8,13 @@ void world_render::on_create() {
     feature::on_create();
 
     api::shading::createprogram("object-model", this->object_model_shading, {
-        {"./effects/ObjectModel.vsh", shading::stage::vertex},
-        {"./effects/ObjectModel.fsh", shading::stage::fragment}
+            {"./effects/ObjectModel.vsh", shading::stage::vertex},
+            {"./effects/ObjectModel.fsh", shading::stage::fragment}
     });
 
     api::shading::createprogram("entity-model", this->entity_model_shading, {
-        {"./effects/EntityModel.vsh", shading::stage::vertex},
-        {"./effects/EntityModel.fsh", shading::stage::fragment}
+            {"./effects/EntityModel.vsh", shading::stage::vertex},
+            {"./effects/EntityModel.fsh", shading::stage::fragment}
     });
 }
 
