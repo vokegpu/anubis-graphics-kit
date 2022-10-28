@@ -56,6 +56,8 @@ void api::mainloop(feature* initial_scene) {
     api::gc::create(&api::app.world_camera3d);
     api::world::render().update_perspective_matrix();
 
+    glEnable(GL_DEPTH_TEST);
+
     while (api::app.mainloop) {
         if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
             api::dt = 100.0f / static_cast<float>(reduce_cpu_ticks_timing.ms_elapsed);

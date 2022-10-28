@@ -61,8 +61,16 @@ void world_render::on_render() {
     this->object_model_shading.set_uniform_mat4("MatrixPerspective", &this->matrix_perspective[0][0]);
     this->object_model_shading.set_uniform_mat4("MatrixCameraView", &api::app.world_camera3d.get_matrix_camera_view()[0][0]);
 
-    this->object_model_shading.set_uniform_vec4("LightInfo[0].Position", &api::app.world_camera3d.position[0]);
-    this->object_model_shading.set_uniform_vec3("LightInfo[0].L", &glm::vec3(0.04f, 0.04f, 0.04f)[0]);
+    auto pos = glm::vec4(api::app.world_camera3d.position.x, api::app.world_camera3d.position.y, api::app.world_camera3d.position.z, 1.0f);
+
+    this->object_model_shading.set_uniform_vec4("Light[0].Position", &pos[0]);
+    this->object_model_shading.set_uniform_vec3("Light[0].L", &glm::vec3(0.4f, 0.4f, 0.4f)[0]);
+
+    this->object_model_shading.set_uniform_vec4("Light[1].Position", &pos[0]);
+    this->object_model_shading.set_uniform_vec3("Light[1].L", &glm::vec3(0.4f, 0.4f, 0.4f)[0]);
+    this->object_model_shading.set_uniform_vec4("Light[2].Position", &pos[0]);
+    this->object_model_shading.set_uniform_vec3("Light[2].L", &glm::vec3(0.4f, 0.4f, 0.4f)[0]);
+
 
     for (object* &objects : api::app.world_client.loaded_object_list) {
         if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
@@ -86,9 +94,9 @@ void world_render::on_render() {
 
         this->object_model_shading.set_uniform_mat3("MatrixNormals", &normal[0][0]);
         this->object_model_shading.set_uniform_mat4("MatrixModel", &model[0][0]);
-        this->object_model_shading.set_uniform_vec3("MaterialInfo.Color", &objects->color[0]);
-        this->object_model_shading.set_uniform_bool("MaterialInfo.Metal", objects->composition == material::composition::metal);
-        this->object_model_shading.set_uniform_float("MaterialInfo.Rough", objects->composition == material::composition::metal);
+        this->object_model_shading.set_uniform_vec3("Material.Color", &objects->color[0]);
+        this->object_model_shading.set_uniform_bool("Material.Metal", objects->composition == material::composition::metal);
+        this->object_model_shading.set_uniform_float("Material.Rough", 1.0f);
 
         current_buffer_builder->on_render();
     }
