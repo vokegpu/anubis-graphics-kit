@@ -54,6 +54,7 @@ void world_render::on_render() {
 
     glm::mat4 model {};
     glm::mat3 normal {};
+
     buffer_builder* current_buffer_builder {};
     auto loaded_model_list_size {this->loaded_model_list.size()};
 
@@ -61,16 +62,7 @@ void world_render::on_render() {
     this->object_model_shading.set_uniform_mat4("MatrixPerspective", &this->matrix_perspective[0][0]);
     this->object_model_shading.set_uniform_mat4("MatrixCameraView", &api::app.world_camera3d.get_matrix_camera_view()[0][0]);
 
-    auto pos = glm::vec4(api::app.world_camera3d.position.x, api::app.world_camera3d.position.y, api::app.world_camera3d.position.z, 1.0f);
-
-    this->object_model_shading.set_uniform_vec4("Light[0].Position", &pos[0]);
-    this->object_model_shading.set_uniform_vec3("Light[0].L", &glm::vec3(0.4f, 0.4f, 0.4f)[0]);
-
-    this->object_model_shading.set_uniform_vec4("Light[1].Position", &pos[0]);
-    this->object_model_shading.set_uniform_vec3("Light[1].L", &glm::vec3(0.4f, 0.4f, 0.4f)[0]);
-    this->object_model_shading.set_uniform_vec4("Light[2].Position", &pos[0]);
-    this->object_model_shading.set_uniform_vec3("Light[2].L", &glm::vec3(0.4f, 0.4f, 0.4f)[0]);
-
+    uint32_t light_iterations_id {};
 
     for (object* &objects : api::app.world_client.loaded_object_list) {
         if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
@@ -82,23 +74,36 @@ void world_render::on_render() {
             continue;
         }
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, objects->position);
-        model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
-        model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
-        model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
-        model = glm::scale(model, objects->scale);
+        switch (objects->material->composition) {
+            case material::composition::light: {
+                auto lighting {(material::light*) objects->material};
 
-        normal = glm::mat3(model);
-        normal = glm::inverseTranspose(normal);
+                this->object_model_shading.set_uniform_vec4("Light[" + std::to_string(light_iterations_id) + "].Position", &objects->position[0]);
+                this->object_model_shading.set_uniform_vec3("Light[" + std::to_string(light_iterations_id) + "].Intensity", &objects->material->color[0]);
+                this->object_model_shading.set_uniform_int("Light[" + std::to_string(light_iterations_id) + "].Shininess", lighting->shininess);
+                light_iterations_id++;
+                break;
+            }
 
-        this->object_model_shading.set_uniform_mat3("MatrixNormals", &normal[0][0]);
-        this->object_model_shading.set_uniform_mat4("MatrixModel", &model[0][0]);
-        this->object_model_shading.set_uniform_vec3("Material.Color", &objects->color[0]);
-        this->object_model_shading.set_uniform_bool("Material.Metal", objects->composition == material::composition::metal);
-        this->object_model_shading.set_uniform_float("Material.Rough", 1.0f);
+            default: {
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, objects->position);
+                model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
+                model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
+                model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
+                model = glm::scale(model, objects->scale);
+                normal = glm::inverseTranspose(glm::mat3(model));
 
-        current_buffer_builder->on_render();
+                this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
+                this->object_model_shading.set_uniform_mat4("MatrixModel", &model[0][0]);
+                this->object_model_shading.set_uniform_vec3("Material.Color", &objects->material->color[0]);
+                this->object_model_shading.set_uniform_bool("Material.Metal", objects->material->composition == material::composition::metal);
+                this->object_model_shading.set_uniform_float("Material.Rough", 1.0f);
+
+                current_buffer_builder->on_render();
+                break;
+            }
+        }
     }
 
     glUseProgram(0);

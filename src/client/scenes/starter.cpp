@@ -7,11 +7,19 @@ void client::scenes::starter::on_create() {
     api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
 
     auto cat_object {new object {}};
-    cat_object->scale = glm::vec3(0.2, 0.2, 0.2);
-    cat_object->color = glm::vec3(0.4, 0, 0);
+    cat_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
+    cat_object->color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+    auto ct_object {new object {}};
+    ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
+    ct_object->color = glm::vec3(0.0, 0.0, 1.0f);
+    ct_object->position = glm::vec3(0, 20, 0);
+
     api::mesh::assign(cat_object, "cat");
+    api::mesh::assign(ct_object, "cat");
 
     api::world::create(cat_object);
+    api::world::create(ct_object);
     api::world::current().camera_movement = true;
     api::world::camera3d().enabled = false;
 }

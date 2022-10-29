@@ -1,7 +1,9 @@
 #include "object.hpp"
+#include "api/api.hpp"
 
 void object::on_create() {
     feature::on_create();
+    this->material = &api::world::render().undefined_material;
 }
 
 void object::on_destroy() {

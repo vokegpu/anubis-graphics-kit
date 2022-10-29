@@ -39,6 +39,7 @@ void api::mainloop(feature* initial_scene) {
     font_renderer f_renderer {};
     f_renderer.load("./data/fonts/impact.ttf", 36);
     f_renderer.from(amogpu::invoked);
+    batch.set_frustum_depth(false);
 
     util::timing reduce_cpu_ticks_timing {};
     util::timing counter_fps_timing {};
@@ -57,6 +58,7 @@ void api::mainloop(feature* initial_scene) {
     api::world::render().update_perspective_matrix();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     while (api::app.mainloop) {
         if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
@@ -197,7 +199,7 @@ bool api::mesh::load(::mesh::data &data, std::string_view path) {
 void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->invoke();
     model->primitive = GL_TRIANGLES;
-    model->vert_amount = data.vert_amount;
+    model->vert_amount = data.faces_amount;
     model->mode = buffer_builder_mode::normal;
 
     model->bind();
@@ -213,7 +215,7 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->shader(2, 3, 0, 0);
 
     model->bind_ebo();
-    model->send_indexing_data(sizeof(uint32_t) * data.vert_amount, &data.vertices_index[0], GL_STATIC_DRAW);
+    model->send_indexing_data(sizeof(uint32_t) * data.faces_amount, &data.vertices_index[0], GL_STATIC_DRAW);
     model->revoke();
 }
 

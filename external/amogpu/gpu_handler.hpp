@@ -13,35 +13,40 @@
  **/
 struct dynamic_batching {
 protected:
-	std::vector<float> concurrent_allocated_textures;
-	std::vector<float> concurrent_allocated_vertices;
-	std::vector<float> concurrent_allocated_texture_coords;
+	std::vector<GLuint> concurrent_allocated_textures {};
+	std::vector<float> concurrent_allocated_vertices {};
+	std::vector<float> concurrent_allocated_texture_coords {};
 
-	uint32_t sizeof_allocated_gpu_data;
-	uint32_t sizeof_previous_allocated_gpu_data;
+	uint32_t sizeof_allocated_gpu_data {};
+	uint32_t sizeof_previous_allocated_gpu_data {};
 
-	uint32_t sizeof_allocated_vertices;
-	uint32_t sizeof_instanced_allocated_vertices;
+	uint32_t sizeof_allocated_vertices {};
+	uint32_t sizeof_instanced_allocated_vertices {};
 
-	amogpu::gpu_data allocated_gpu_data[2048];
-	bool should_alloc_new_buffers;
-	bool should_not_create_buffers;
+	std::vector<amogpu::gpu_data> allocated_data {};
+    std::vector<amogpu::gpu_data> allocated_data_copy {};
 
-	GLuint vertex_arr_object;
-	GLuint vbo_vertices;
-	GLuint vbo_texture_coords;
+	bool should_alloc_new_buffers {};
+	bool should_not_create_buffers {};
+
+	GLuint vertex_arr_object {};
+	GLuint vbo_vertices {};
+	GLuint vbo_texture_coords {};
+    bool frustum_depth {};
+    float depth {};
 
 	static amogpu::gpu_gl_program fx_shape;
 public:
+    void set_depth(float depth_test);
+    float get_depth();
+
+    void set_frustum_depth(bool depth_test);
+    bool get_frustum_depth();
+
 	/*
 	 * The current invoked batch.
 	 */
 	static dynamic_batching* invoked;
-
-	/*
-	 * The current z depth position of all draws.
-	 */
-	static uint32_t depth;
 
 	/*
 	 * Init the dynamic batching.

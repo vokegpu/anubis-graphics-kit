@@ -1,15 +1,15 @@
 #version 450 core
+#define PI 3.1415926535897932384626433832795
 
 layout (location = 0) out vec4 FinalColor;
 
-in vec3 Normals;
+in vec3 Normal;
 in vec3 VertexPosition;
-
-const float PI = 3.1415926535897932384626433832795;
 
 uniform struct LightInfo {
     vec4 Position;
-    vec3 L;
+    vec3 Intensity;
+    int Shininess;
 } Light[3];
 
 uniform struct MaterialInfo {
@@ -23,7 +23,7 @@ vec3 ShlickFresnel(float lDotH) {
     if (Material.Metal) {
         f0 = Material.Color;
     }
-    return f0 + (1 - f0) * pow(1.0 - lDotH, 5);
+    return f0 + (1 - f0) * pow(1.0 - lDotH, 5.0);
 }
 
 float GeometrySmith(float dotProd) {
@@ -38,36 +38,84 @@ float ggxDistribution(float nDotH) {
     return alpha2 / (PI * d * d);
 }
 
-vec3 MicrofacetModel(int lightIndice, vec3 position, vec3 normal) {
-    vec3 diffuseBrdf = vec3(1.0);
+vec3 MicrofacetModel(int lightIndice, vec3 normal) {
+    vec3 diffuseBrdf = vec3(0.0);
     if (!Material.Metal) {
         diffuseBrdf = Material.Color;
     }
 
-    vec3 l = vec3(1.0), lightI = Light[lightIndice].L;
+    vec3 l = vec3(0.0), lightI = Light[lightIndice].Intensity;
     if (Light[lightIndice].Position.w == 0.0) {
         l = normalize(Light[lightIndice].Position.xyz);
+    } else {
+        l = Light[lightIndice].Position.xyz - VertexPosition;
         float dist = length(l);
         l = normalize(l);
-        lightI /= dist * dist;
+        lightI /= (dist * dist);
     }
 
-    vec3 v = normalize(-position);
-    vec3 h = normalize(v + 1);
+    vec3 v = normalize(-VertexPosition);
+    vec3 h = normalize(v + l);
+
     float nDotH = dot(normal, h);
     float lDotH = dot(l, normal);
     float nDotL = max(dot(normal, l), 0.0);
     float nDotV = dot(normal, v);
     vec3 specBrdf = 0.25 * ggxDistribution(nDotH) * ShlickFresnel(lDotH) * GeometrySmith(nDotL) * GeometrySmith(nDotV);
-    return  (diffuseBrdf + PI * specBrdf) * lightI * nDotL;
+
+    return (diffuseBrdf + PI * specBrdf) * lightI * nDotL;
+}
+
+vec3 DoBRDF(vec3 normal) {
+    vec3 sum = vec3(0);
+    for (int i = 0; i < 1; i++) {
+        sum += MicrofacetModel(i, normal);
+    }
+
+    return pow(sum, vec3(1.0 / 2.2));
+}
+
+vec3 PhongModel(int lightIndice, vec3 normal) {
+    vec3 s = vec3(0);
+
+    if (Light[lightIndice].Position.w == 0.0) {
+        s = normalize(Light[lightIndice].Position.xyz);
+    } else {
+        s = normalize(Light[lightIndice].Position.xyz - VertexPosition);
+    }
+
+    vec3 ambient = Material.Color * vec3(0.2f);
+    float sDotN = max(dot(s, normal), 0.0);
+    vec3 diffuse = Material.Color * sDotN;
+    vec3 spec = vec3(0.0);
+
+    if (sDotN > 0.0) {
+        vec3 v = normalize(-VertexPosition.xyz);
+        vec3 r = reflect(-s, normal);
+        spec = Material.Color * pow(max(dot(r, v), 0.0), Light[lightIndice].Shininess + 0.0f);
+    }
+
+    return ambient + Light[lightIndice].Intensity * (diffuse + spec);
+}
+
+vec3 DoPhongModel(vec3 normal) {
+    vec3 sum = vec3(0);
+    for (int i = 0; i < 1; i++) {
+        sum += PhongModel(i, normal);
+    }
+
+    return pow(sum, vec3(1.0 / 2.2));
 }
 
 void main() {
-    vec3 sum = vec3(0), n = normalize(Normals);
-    for (int i = 0; i < 3; i++) {
-        sum += MicrofacetModel(i, VertexPosition, n);
+    vec3 Color = vec3(0);
+    vec3 n = Normal;
+    n = normalize(n);
+
+    if (!gl_FrontFacing) {
+        n = -n;
     }
 
-    sum = pow(sum, vec3(1.0 / 2.0));
-    FinalColor = vec4(sum, 1.0f);
+    Color += DoBRDF(n);
+    FinalColor = vec4(Color, 1.0);
 }

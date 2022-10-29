@@ -62,4 +62,5 @@ void world::do_camera_movement() {
     this->player->pitch = api::app.world_camera3d.pitch;
     this->player->velocity.x = input.z * speed * x + input.x * speed * z;
     this->player->velocity.z = input.z * speed * z - input.x * speed * x;
+    this->player->velocity.y = input.z * (this->player->pitch * 0.148f);
 }

@@ -5,6 +5,7 @@
 #include "api/feature/feature.hpp"
 #include "api/gpu/buffer_builder.hpp"
 #include <glm/glm.hpp>
+#include "api/world/material/material.hpp"
 
 class world_render : public feature {
 public:
@@ -14,6 +15,7 @@ public:
 
     std::map<std::string, int32_t> registered_models_map {};
     std::vector<buffer_builder*> loaded_model_list {};
+    material::data undefined_material {};
 
     buffer_builder* gen_model(const char*);
     buffer_builder* get_model_by_tag(std::string_view);
