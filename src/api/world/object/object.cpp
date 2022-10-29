@@ -3,7 +3,6 @@
 
 void object::on_create() {
     feature::on_create();
-    this->material = &api::world::render().undefined_material;
 }
 
 void object::on_destroy() {
@@ -20,4 +19,17 @@ void object::on_update() {
 
 void object::on_render() {
     feature::on_render();
+}
+
+object::object(material::data* data) {
+    if (this->material == nullptr) {
+        this->material = data;
+    }
+}
+
+object::~object() {
+    if (this->material != nullptr) {
+        delete this->material;
+        this->material = nullptr;
+    }
 }

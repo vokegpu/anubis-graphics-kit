@@ -17,6 +17,8 @@ public:
     glm::vec3 scale {};
 
     material::data* material {};
+    object(material::data*);
+    ~object();
 
     void on_create() override;
     void on_destroy() override;

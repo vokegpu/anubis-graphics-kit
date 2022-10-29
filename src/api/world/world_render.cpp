@@ -61,8 +61,10 @@ void world_render::on_render() {
     glUseProgram(this->object_model_shading.id);
     this->object_model_shading.set_uniform_mat4("MatrixPerspective", &this->matrix_perspective[0][0]);
     this->object_model_shading.set_uniform_mat4("MatrixCameraView", &api::app.world_camera3d.get_matrix_camera_view()[0][0]);
+    this->object_model_shading.set_uniform_float("Material.Rough", 1.0f);
 
-    uint32_t light_iterations_id {};
+    int32_t light_iterations_id {};
+    std::string id {};
 
     for (object* &objects : api::app.world_client.loaded_object_list) {
         if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
@@ -77,10 +79,12 @@ void world_render::on_render() {
         switch (objects->material->composition) {
             case material::composition::light: {
                 auto lighting {(material::light*) objects->material};
+                id = std::to_string(light_iterations_id);
 
-                this->object_model_shading.set_uniform_vec4("Light[" + std::to_string(light_iterations_id) + "].Position", &objects->position[0]);
-                this->object_model_shading.set_uniform_vec3("Light[" + std::to_string(light_iterations_id) + "].Intensity", &objects->material->color[0]);
-                this->object_model_shading.set_uniform_int("Light[" + std::to_string(light_iterations_id) + "].Shininess", lighting->shininess);
+                this->object_model_shading.set_uniform_vec4("Light[" + id + "].Position", &objects->position[0]);
+                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Intensity", &objects->material->color[0]);
+                this->object_model_shading.set_uniform_int("Light[" + id + "].Shininess", lighting->shininess);
+                this->object_model_shading.set_uniform_bool("Light[" + id + "].PhysicallyAccurate", lighting->physically_accurate);
                 light_iterations_id++;
                 break;
             }
@@ -98,13 +102,18 @@ void world_render::on_render() {
                 this->object_model_shading.set_uniform_mat4("MatrixModel", &model[0][0]);
                 this->object_model_shading.set_uniform_vec3("Material.Color", &objects->material->color[0]);
                 this->object_model_shading.set_uniform_bool("Material.Metal", objects->material->composition == material::composition::metal);
-                this->object_model_shading.set_uniform_float("Material.Rough", 1.0f);
 
                 current_buffer_builder->on_render();
                 break;
             }
         }
     }
+
+    if (this->spot_lights_on_world != light_iterations_id) {
+        this->spot_lights_on_world = light_iterations_id;
+        this->object_model_shading.set_uniform_int("LoadedLightsIndex", light_iterations_id);
+    }
+
 
     glUseProgram(0);
 }

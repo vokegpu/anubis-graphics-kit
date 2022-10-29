@@ -10,13 +10,16 @@ uniform struct LightInfo {
     vec4 Position;
     vec3 Intensity;
     int Shininess;
-} Light[3];
+    bool PhysicallyAccurate;
+} Light[100];
 
 uniform struct MaterialInfo {
     float Rough;
     bool Metal;
     vec3 Color;
 } Material;
+
+uniform int LoadedLightsIndex;
 
 vec3 ShlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04);
@@ -66,15 +69,6 @@ vec3 MicrofacetModel(int lightIndice, vec3 normal) {
     return (diffuseBrdf + PI * specBrdf) * lightI * nDotL;
 }
 
-vec3 DoBRDF(vec3 normal) {
-    vec3 sum = vec3(0);
-    for (int i = 0; i < 1; i++) {
-        sum += MicrofacetModel(i, normal);
-    }
-
-    return pow(sum, vec3(1.0 / 2.2));
-}
-
 vec3 PhongModel(int lightIndice, vec3 normal) {
     vec3 s = vec3(0);
 
@@ -98,24 +92,21 @@ vec3 PhongModel(int lightIndice, vec3 normal) {
     return ambient + Light[lightIndice].Intensity * (diffuse + spec);
 }
 
-vec3 DoPhongModel(vec3 normal) {
-    vec3 sum = vec3(0);
-    for (int i = 0; i < 1; i++) {
-        sum += PhongModel(i, normal);
-    }
-
-    return pow(sum, vec3(1.0 / 2.2));
-}
-
 void main() {
-    vec3 Color = vec3(0);
-    vec3 n = Normal;
-    n = normalize(n);
+    vec3 sun = vec3(0);
+    vec3 n = normalize(Normal);
 
     if (!gl_FrontFacing) {
         n = -n;
     }
 
-    Color += DoBRDF(n);
-    FinalColor = vec4(Color, 1.0);
+    for (int i = 0; i < LoadedLightsIndex; i++) {
+        if (Light[i].PhysicallyAccurate) {
+            sun += MicrofacetModel(i, n);
+        } else {
+            sun += PhongModel(i, n);
+        }
+    }
+
+    FinalColor = vec4(pow(sun, vec3(1.0 / 2.2)), 1.0);
 }
