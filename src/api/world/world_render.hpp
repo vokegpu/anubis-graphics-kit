@@ -15,7 +15,6 @@ public:
 
     std::map<std::string, int32_t> registered_models_map {};
     std::vector<buffer_builder*> loaded_model_list {};
-    material::data undefined_material {};
     int32_t spot_lights_on_world {};
 
     buffer_builder* gen_model(const char*);

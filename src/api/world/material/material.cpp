@@ -1,5 +1,5 @@
 #include "material.hpp"
 
-material::light::light() {
-    this->composition = material::composition::light;
+material::data::data(material::composition comp) {
+    this->composition = comp;
 }

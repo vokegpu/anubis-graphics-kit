@@ -14,6 +14,7 @@ namespace material {
     public:
         material::composition composition {};
         float color[3] {1, 0, 1};
+        data(material::composition);
     };
 
     struct light : public data {
@@ -21,8 +22,7 @@ namespace material {
         bool physically_accurate {true};
         float intensity[3] {1, 1, 1};
         int32_t shininess {32};
-
-        light();
+        bool incoming {};
     };
 }
 

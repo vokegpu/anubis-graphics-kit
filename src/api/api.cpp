@@ -48,7 +48,7 @@ void api::mainloop(feature* initial_scene) {
     uint64_t fps_interval {1000};
     uint64_t ticked_frames {};
     SDL_Event sdl_event {};
-    glm::vec3 prev_camera {};
+    glm::vec4 prev_camera {};
 
     api::app.mainloop = true;
     api::scene::load(initial_scene);

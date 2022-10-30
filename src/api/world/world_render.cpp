@@ -67,21 +67,13 @@ void world_render::on_render() {
     std::string id {};
 
     for (object* &objects : api::app.world_client.loaded_object_list) {
-        if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
-            continue;
-        }
-
-        current_buffer_builder = this->loaded_model_list.at(objects->model_id);
-        if (current_buffer_builder == nullptr) {
-            continue;
-        }
-
         switch (objects->material->composition) {
             case material::composition::light: {
                 auto lighting {(material::light*) objects->material};
                 id = std::to_string(light_iterations_id);
 
-                this->object_model_shading.set_uniform_vec4("Light[" + id + "].Position", &objects->position[0]);
+                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Position", &objects->position[0]);
+                this->object_model_shading.set_uniform_bool("Light[" + id + "].Incoming", lighting->incoming);
                 this->object_model_shading.set_uniform_vec3("Light[" + id + "].Intensity", &objects->material->color[0]);
                 this->object_model_shading.set_uniform_int("Light[" + id + "].Shininess", lighting->shininess);
                 this->object_model_shading.set_uniform_bool("Light[" + id + "].PhysicallyAccurate", lighting->physically_accurate);
@@ -90,6 +82,15 @@ void world_render::on_render() {
             }
 
             default: {
+                if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
+                    break;
+                }
+
+                current_buffer_builder = this->loaded_model_list.at(objects->model_id);
+                if (current_buffer_builder == nullptr) {
+                    break;
+                }
+
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, objects->position);
                 model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
@@ -113,7 +114,6 @@ void world_render::on_render() {
         this->spot_lights_on_world = light_iterations_id;
         this->object_model_shading.set_uniform_int("LoadedLightsIndex", light_iterations_id);
     }
-
 
     glUseProgram(0);
 }

@@ -10,11 +10,12 @@ out vec3 VertexPosition;
 uniform mat4 MatrixCameraView;
 uniform mat4 MatrixPerspective;
 uniform mat4 MatrixModel;
-uniform mat3 MatrixNormals;
+uniform mat3 MatrixNormal;
 
 void main() {
     vec4 ModelTransform = MatrixModel * vec4(VertexMesh, 1.0f);
     gl_Position = MatrixPerspective * MatrixCameraView * ModelTransform;
-    Normal = normalize(MatrixNormals * NormalsMesh);
+
+    Normal = normalize(MatrixNormal * NormalsMesh);
     VertexPosition = ModelTransform.xyz;
 }

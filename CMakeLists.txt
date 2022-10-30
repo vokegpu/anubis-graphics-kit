@@ -3,6 +3,7 @@ project(agk)
 
 set(LINKED_LIBRARIES "")
 set(BUILD_LOCATION "")
+set(CMAKE_BINARY_DIR "build-debug-build/")
 
 if(WIN32)
 	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/win/libamogpu.a" mingw32 opengl32 glew32 SDL2main SDL2 freetype)
