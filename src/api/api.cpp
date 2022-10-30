@@ -99,7 +99,7 @@ void api::mainloop(feature* initial_scene) {
 
             glViewport(0, 0, api::app.screen_width, api::app.screen_height);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
 
             api::app.world_render_manager.on_render();
 

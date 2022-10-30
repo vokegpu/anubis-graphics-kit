@@ -18,7 +18,7 @@ public:
     float sensitivity {0.2f};
     bool enabled {true};
 
-    glm::mat4 get_matrix_camera_view();
+    glm::mat3 get_matrix_camera_view();
     void on_create() override;
     void on_destroy() override;
     void on_event(SDL_Event &sdl_event) override;

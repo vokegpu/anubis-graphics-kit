@@ -54,29 +54,30 @@ void world_render::on_render() {
 
     glm::mat4 model {};
     glm::mat3 normal {};
+    glm::mat4 mvp {};
 
     buffer_builder* current_buffer_builder {};
     auto loaded_model_list_size {this->loaded_model_list.size()};
+    glm::mat4 camera_view {api::app.world_camera3d.get_matrix_camera_view()};
 
     glUseProgram(this->object_model_shading.id);
     this->object_model_shading.set_uniform_mat4("MatrixPerspective", &this->matrix_perspective[0][0]);
-    this->object_model_shading.set_uniform_mat4("MatrixCameraView", &api::app.world_camera3d.get_matrix_camera_view()[0][0]);
     this->object_model_shading.set_uniform_float("Material.Rough", 1.0f);
 
     int32_t light_iterations_id {};
     std::string id {};
+    material::light* light_material {};
+    material::solid* solid_material {};
 
     for (object* &objects : api::app.world_client.loaded_object_list) {
         switch (objects->material->composition) {
             case material::composition::light: {
-                auto lighting {(material::light*) objects->material};
+                light_material = (material::light*) objects->material;
                 id = std::to_string(light_iterations_id);
 
-                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Position", &objects->position[0]);
-                this->object_model_shading.set_uniform_bool("Light[" + id + "].Incoming", lighting->incoming);
-                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Intensity", &objects->material->color[0]);
-                this->object_model_shading.set_uniform_int("Light[" + id + "].Shininess", lighting->shininess);
-                this->object_model_shading.set_uniform_bool("Light[" + id + "].PhysicallyAccurate", lighting->physically_accurate);
+                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Position", &(glm::mat3(camera_view) * objects->position)[0]);
+                this->object_model_shading.set_uniform_bool("Light[" + id + "].Incoming", light_material->incoming);
+                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Intensity", &light_material->intensity[0]);
                 light_iterations_id++;
                 break;
             }
@@ -91,17 +92,21 @@ void world_render::on_render() {
                     break;
                 }
 
+                solid_material = (material::solid*) objects->material;
+
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, objects->position);
                 model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
                 model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
                 model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
                 model = glm::scale(model, objects->scale);
-                normal = glm::inverseTranspose(glm::mat3(model));
+                model = camera_view * model;
+                mvp = this->matrix_perspective * model;
 
-                this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
-                this->object_model_shading.set_uniform_mat4("MatrixModel", &model[0][0]);
-                this->object_model_shading.set_uniform_vec3("Material.Color", &objects->material->color[0]);
+                this->object_model_shading.set_uniform_mat3("NormalMatrix", &glm::mat3(model)[0][0]);
+                this->object_model_shading.set_uniform_mat4("ModelViewMatrix", &model[0][0]);
+                this->object_model_shading.set_uniform_mat4("MVP", &mvp[0][0]);
+                this->object_model_shading.set_uniform_vec3("Material.Color", solid_material->color);
                 this->object_model_shading.set_uniform_bool("Material.Metal", objects->material->composition == material::composition::metal);
 
                 current_buffer_builder->on_render();

@@ -13,15 +13,17 @@ namespace material {
     struct data {
     public:
         material::composition composition {};
-        float color[3] {1, 0, 1};
         data(material::composition);
+    };
+
+    struct solid : public data {
+    public:
+        float color[3] {1, 0, 1};
     };
 
     struct light : public data {
     public:
-        bool physically_accurate {true};
         float intensity[3] {1, 1, 1};
-        int32_t shininess {32};
         bool incoming {};
     };
 }
