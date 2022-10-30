@@ -6,10 +6,12 @@
 void client::scenes::starter::on_create() {
     api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
 
-    auto solid {new material::solid {material::composition::metal}};
+    auto solid {new material::solid {material::composition::opaque}};
     auto cat_object {new object {solid}};
     cat_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
-    solid->color[0] = 0;
+    solid->color[0] = 1.022f;
+    solid->color[1] = 0.782f;
+    solid->color[2] = 0.334f;
 
     auto ct_object {new object {solid}};
     ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -57,7 +59,7 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 }
 
 void client::scenes::starter::on_update() {
-    if (this->obj != nullptr) this->obj->position = api::world::camera3d().position;
+    if (this->obj != nullptr && api::input::pressed("space")) this->obj->position = api::world::camera3d().position;
 }
 
 void client::scenes::starter::on_render() {

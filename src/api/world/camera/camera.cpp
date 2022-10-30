@@ -2,7 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "api/util/math.hpp"
 
-glm::mat3 camera3d::get_matrix_camera_view() {
+glm::mat4 camera3d::get_matrix_camera_view() {
     return glm::lookAt(this->position, this->position + this->front, this->up);
 }
 

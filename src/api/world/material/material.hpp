@@ -19,6 +19,7 @@ namespace material {
     struct solid : public data {
     public:
         float color[3] {1, 0, 1};
+        float rough {0.47f};
     };
 
     struct light : public data {

@@ -70,7 +70,7 @@ vec3 MicrofacetModel(int lightIndice, vec3 normal) {
 
 void main() {
     vec3 sun = vec3(0);
-    vec3 n = Normal;
+    vec3 n = normalize(Normal);
 
     if (!gl_FrontFacing) {
         n = -n;
