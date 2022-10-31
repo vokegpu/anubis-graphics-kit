@@ -16,6 +16,8 @@ void world_render::on_create() {
             {"./effects/EntityModel.vsh", shading::stage::vertex},
             {"./effects/EntityModel.fsh", shading::stage::fragment}
     });
+
+    api::mesh::model("debug-lighting", mesh::format::obj, "./data/models/cube.obj");
 }
 
 void world_render::on_destroy() {
@@ -55,7 +57,6 @@ void world_render::on_render() {
     glm::mat4 model {};
     glm::mat3 normal {};
     glm::mat4 camera_view {api::app.world_camera3d.get_matrix_camera_view()};
-    glm::vec4 lv {glm::vec4(1)};
     glm::mat4 mvp {};
     glm::mat4 empty {glm::mat4(1)};
 
@@ -65,6 +66,7 @@ void world_render::on_render() {
     glUseProgram(this->object_model_shading.id);
     this->object_model_shading.set_uniform_mat4("MatrixPerspective", &this->matrix_perspective[0][0]);
     this->object_model_shading.set_uniform_mat4("MatrixCameraView", &camera_view[0][0]);
+    this->object_model_shading.set_uniform_vec3("CameraPosition", &api::app.world_camera3d.position[0]);
 
     int32_t light_iterations_id {};
     std::string id {};
@@ -77,20 +79,51 @@ void world_render::on_render() {
                 light_material = (material::light*) objects->material;
                 id = std::to_string(light_iterations_id);
 
-                lv.w = 1;
-                lv.x = objects->position.x;
-                lv.y = objects->position.y;
-                lv.z = objects->position.z;
-                lv = lv;
-
-                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Position", &glm::vec3(lv)[0]);
+                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Position", &objects->position[0]);
                 this->object_model_shading.set_uniform_bool("Light[" + id + "].Incoming", light_material->incoming);
                 this->object_model_shading.set_uniform_vec3("Light[" + id + "].Intensity", &light_material->intensity[0]);
+
                 light_iterations_id++;
+
+                if (objects->model_id == -1) {
+                    break;
+                }
+
+                if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
+                    break;
+                }
+
+                current_buffer_builder = this->loaded_model_list.at(objects->model_id);
+                if (current_buffer_builder == nullptr) {
+                    break;
+                }
+
+                this->object_model_shading.set_uniform_bool("DebugLighting", (this->debug_lighting_enabled = true));
+
+                model = empty;
+                model = glm::translate(model, objects->position);
+                model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
+                model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
+                model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
+                model = glm::scale(model, objects->scale);
+
+                mvp = this->matrix_perspective * camera_view;
+                normal = glm::mat3(model);
+
+                this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
+                this->object_model_shading.set_uniform_mat4("ModelMatrix", &model[0][0]);
+                this->object_model_shading.set_uniform_mat4("MVP", &mvp[0][0]);
+                this->object_model_shading.set_uniform_vec3("Material.Color", light_material->intensity);
+                current_buffer_builder->on_render();
+
                 break;
             }
 
             default: {
+                if (this->debug_lighting_enabled) {
+                    this->object_model_shading.set_uniform_bool("DebugLighting", (this->debug_lighting_enabled = false));
+                }
+
                 if (objects->model_id > loaded_model_list_size || objects->model_id < 0) {
                     break;
                 }
@@ -104,13 +137,12 @@ void world_render::on_render() {
 
                 model = empty;
                 model = glm::translate(model, objects->position);
-                model = glm::scale(model, objects->scale);
                 model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
                 model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
                 model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
-                normal = glm::mat3(camera_view * model);
-                mvp = this->matrix_perspective * camera_view * model;
-                model = camera_view * model;
+                model = glm::scale(model, objects->scale);
+                mvp = this->matrix_perspective * camera_view;
+                normal = glm::mat3(model);
 
                 this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
                 this->object_model_shading.set_uniform_mat4("ModelMatrix", &model[0][0]);
@@ -138,7 +170,7 @@ buffer_builder *world_render::gen_model(const char* tag) {
     api::gc::create(model);
 
     this->loaded_model_list.push_back(model);
-    model->id = this->loaded_model_list.size() - 1;
+    model->id = static_cast<int32_t>(this->loaded_model_list.size()) - 1;
     this->registered_models_map[std::string(model->tag)] = model->id;
 
     return model;

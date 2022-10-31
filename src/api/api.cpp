@@ -51,10 +51,10 @@ void api::mainloop(feature* initial_scene) {
     glm::vec4 prev_camera {};
 
     api::app.mainloop = true;
-    api::scene::load(initial_scene);
     api::gc::create(&api::app.world_render_manager);
     api::gc::create(&api::app.world_client);
     api::gc::create(&api::app.world_camera3d);
+    api::scene::load(initial_scene);
     api::world::render().update_perspective_matrix();
 
     glEnable(GL_DEPTH_TEST);
@@ -62,7 +62,7 @@ void api::mainloop(feature* initial_scene) {
 
     while (api::app.mainloop) {
         if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
-            api::dt = 100.0f / static_cast<float>(reduce_cpu_ticks_timing.ms_elapsed);
+            api::dt = static_cast<float>(reduce_cpu_ticks_timing.ms_current) / 100.0f;
 
             while (SDL_PollEvent(&sdl_event)) {
                 switch (sdl_event.type) {
@@ -99,7 +99,7 @@ void api::mainloop(feature* initial_scene) {
 
             glViewport(0, 0, api::app.screen_width, api::app.screen_height);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
             api::app.world_render_manager.on_render();
 

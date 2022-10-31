@@ -13,7 +13,7 @@ enum buffer_builder_mode {
 class buffer_builder : public feature {
 public:
     const char* tag {};
-    uint32_t id {};
+    int32_t id {};
 
 	GLuint vao {0};
     GLuint ebo {};

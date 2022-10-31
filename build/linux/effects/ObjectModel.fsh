@@ -19,6 +19,7 @@ uniform struct MaterialInfo {
 } Material;
 
 uniform int LoadedLightsIndex;
+uniform bool DebugLighting;
 
 vec3 ShlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04);
@@ -70,15 +71,22 @@ vec3 MicrofacetModel(int lightIndice, vec3 normal) {
 
 void main() {
     vec3 sun = vec3(0);
-    vec3 n = normalize(Normal);
 
-    if (!gl_FrontFacing) {
-        n = -n;
+    if (!DebugLighting) {
+        vec3 n = normalize(Normal);
+
+        if (!gl_FrontFacing) {
+            n = -n;
+        }
+
+        for (int i = 0; i < LoadedLightsIndex; i++) {
+            sun += MicrofacetModel(i, n);
+        }
+
+        sun = pow(sun, vec3(1.0 / 2.2));
+    } else {
+        //tsun = Material.Color;
     }
 
-    for (int i = 0; i < LoadedLightsIndex; i++) {
-        sun += MicrofacetModel(i, n);
-    }
-
-    FinalColor = vec4(pow(sun, vec3(1.0 / 2.2)), 1.0);
+    FinalColor = vec4(sun, 1.0);
 }

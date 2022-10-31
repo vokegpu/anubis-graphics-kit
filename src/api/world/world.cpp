@@ -33,22 +33,22 @@ void world::on_render() {
 }
 
 void world::do_camera_movement() {
-    glm::vec3 input {};
+    glm::vec3 input {this->player->velocity};
 
     if (api::input::pressed("w")) {
-        input.z = 1;
+        input.z += 1;
     }
 
     if (api::input::pressed("s")) {
-        input.z = -1;   
+        input.z -= 1;
     }
 
     if (api::input::pressed("a")) {
-        input.x = 1;
+        input.x += 1;
     }
 
     if (api::input::pressed("d")) {
-        input.x = -1;
+        input.x -= 1;
     }
 
     float speed {this->player->speed_base};
@@ -62,5 +62,5 @@ void world::do_camera_movement() {
     this->player->pitch = api::app.world_camera3d.pitch;
     this->player->velocity.x = input.z * speed * x + input.x * speed * z;
     this->player->velocity.z = input.z * speed * z - input.x * speed * x;
-    this->player->velocity.y = input.z * (this->player->pitch * 0.148f);
+    this->player->velocity.y = input.z * (this->player->pitch * 0.0148f);
 }

@@ -8,13 +8,13 @@
 
 class object : public feature {
 public:
-    uint32_t id {};
-    uint32_t model_id {};
+    int32_t id {};
+    int32_t model_id {-1};
     std::string model_tag {};
 
     glm::vec3 position {};
     glm::vec3 rotation {};
-    glm::vec3 scale {};
+    glm::vec3 scale {1, 1, 1};
 
     material::data* material {};
     object(material::data*);

@@ -6,12 +6,13 @@
 void client::scenes::starter::on_create() {
     api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
 
-    auto solid {new material::solid {material::composition::opaque}};
+    auto solid {new material::solid {material::composition::metal}};
     auto cat_object {new object {solid}};
     cat_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
     solid->color[0] = 1.022f;
     solid->color[1] = 0.782f;
     solid->color[2] = 0.334f;
+    solid->rough = 0.4f;
 
     auto ct_object {new object {solid}};
     ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -19,10 +20,13 @@ void client::scenes::starter::on_create() {
 
     auto mate {new material::light {material::composition::light}};
     this->obj = new object {mate};
+    this->obj->scale = {0.5f, 0.5f, 0.5f};
     mate->intensity[0] = 0.4f;
     mate->intensity[1] = 0.4f;
     mate->intensity[2] = 0.4f;
+    mate->incoming = true;
 
+    api::mesh::assign(obj, "debug-lighting");
     api::mesh::assign(cat_object, "cat");
     api::mesh::assign(ct_object, "cat");
 
@@ -52,6 +56,15 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
             if (api::world::camera3d().enabled && !api::input::pressed("mouse-left")) {
                 api::world::camera3d().enabled = false;
                 SDL_SetRelativeMouseMode(SDL_FALSE);
+            }
+
+            break;
+        }
+
+        case SDL_MOUSEMOTION: {
+            if (api::input::pressed("mouse-right")) {
+                api::world::current().player->velocity.x += static_cast<float>(sdl_event.motion.xrel);
+                api::world::current().player->velocity.z += static_cast<float>(sdl_event.motion.yrel);
             }
             break;
         }
