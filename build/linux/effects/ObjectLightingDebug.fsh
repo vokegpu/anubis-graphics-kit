@@ -2,9 +2,9 @@
 
 layout (location = 0) out vec4 FinalColor;
 
-in vec3 Normals;
-in vec3 VertexPosition;
+out vec3 Position;
+uniform vec3 Color;
 
 void main() {
-    FinalColor = vec4(1.0f);
+    FinalColor = vec4(Position, 1);
 }

@@ -12,7 +12,7 @@ void client::scenes::starter::on_create() {
     solid->color[0] = 1.022f;
     solid->color[1] = 0.782f;
     solid->color[2] = 0.334f;
-    solid->rough = 0.4f;
+    solid->rough = 0.9f;
 
     auto ct_object {new object {solid}};
     ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -24,7 +24,7 @@ void client::scenes::starter::on_create() {
     mate->intensity[0] = 0.4f;
     mate->intensity[1] = 0.4f;
     mate->intensity[2] = 0.4f;
-    mate->incoming = true;
+    mate->incoming = false;
 
     api::mesh::assign(obj, "debug-lighting");
     api::mesh::assign(cat_object, "cat");
