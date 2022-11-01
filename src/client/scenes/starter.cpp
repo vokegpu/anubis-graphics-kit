@@ -4,7 +4,7 @@
 #include "api/api.hpp"
 
 void client::scenes::starter::on_create() {
-    api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
+    api::mesh::model("cat", mesh::format::obj, "./data/models/cube.obj");
 
     auto solid {new material::solid {material::composition::metal}};
     auto cat_object {new object {solid}};
@@ -19,6 +19,7 @@ void client::scenes::starter::on_create() {
     ct_object->position = glm::vec3(0, 20, 0);
 
     auto mate {new material::light {material::composition::light}};
+    mate->lighting = material::lighting::blinn;
     this->obj = new object {mate};
     this->obj->scale = {0.5f, 0.5f, 0.5f};
     mate->intensity[0] = 0.4f;
@@ -47,7 +48,6 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
         case SDL_MOUSEBUTTONDOWN: {
             if (!api::world::camera3d().enabled && api::input::pressed("mouse-left")) {
                 api::world::camera3d().enabled = true;
-                SDL_SetRelativeMouseMode(SDL_TRUE);
             }
             break;
         }
@@ -55,7 +55,6 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
         case SDL_MOUSEBUTTONUP: {
             if (api::world::camera3d().enabled && !api::input::pressed("mouse-left")) {
                 api::world::camera3d().enabled = false;
-                SDL_SetRelativeMouseMode(SDL_FALSE);
             }
 
             break;

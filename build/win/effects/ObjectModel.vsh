@@ -14,5 +14,5 @@ uniform mat3 MatrixNormal;
 void main() {
     Normal = normalize(MatrixNormal * VertexNormal);
     Position = (ModelMatrix * vec4(VertexPosition, 1.0f)).xyz;
-    gl_Position = MVP * vec4(Position, 1.0f);
+    gl_Position = MVP * ModelMatrix * vec4(VertexPosition, 1.0f);
 }

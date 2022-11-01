@@ -59,13 +59,12 @@ void world_render::on_render() {
     glm::mat4 camera_view {api::app.world_camera3d.get_matrix_camera_view()};
     glm::mat4 mvp {};
     glm::mat4 empty {glm::mat4(1)};
+    mvp = this->matrix_perspective * camera_view;
 
     buffer_builder* current_buffer_builder {};
     auto loaded_model_list_size {this->loaded_model_list.size()};
 
     glUseProgram(this->object_model_shading.id);
-    this->object_model_shading.set_uniform_mat4("MatrixPerspective", &this->matrix_perspective[0][0]);
-    this->object_model_shading.set_uniform_mat4("MatrixCameraView", &camera_view[0][0]);
     this->object_model_shading.set_uniform_vec3("CameraPosition", &api::app.world_camera3d.position[0]);
 
     int32_t light_iterations_id {};
@@ -141,15 +140,11 @@ void world_render::on_render() {
 
                 model = empty;
                 model = glm::translate(model, objects->position);
-                model = glm::rotate(model, objects->rotation.x, glm::vec3(1, 0, 0));
-                model = glm::rotate(model, objects->rotation.y, glm::vec3(0, 1, 0));
-                model = glm::rotate(model, objects->rotation.z, glm::vec3(0, 0, 1));
                 model = glm::scale(model, objects->scale);
-                mvp = this->matrix_perspective * camera_view;
-                normal = glm::inverseTranspose(glm::mat3(camera_view * model));
+                normal = glm::inverseTranspose(glm::mat3(model));
 
-                this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
                 this->object_model_shading.set_uniform_mat4("ModelMatrix", &model[0][0]);
+                this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
                 this->object_model_shading.set_uniform_mat4("MVP", &mvp[0][0]);
                 this->object_model_shading.set_uniform_vec3("Material.Color", &solid_material->color[0]);
                 this->object_model_shading.set_uniform_bool("Material.Metal", objects->material->composition == material::composition::metal);
