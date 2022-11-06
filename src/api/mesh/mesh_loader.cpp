@@ -2,13 +2,77 @@
 #include "api/util/env.hpp"
 #include <fstream>
 
-void mesh_loader::process_indexing_sequence(std::vector<uint32_t> &indexes, std::vector<float> &data) {
-    const std::vector<float> reference {data};
-    data.clear();
+void mesh_loader::process_indexing(mesh::data &data) {
+    const std::vector<mesh::vertex> vertex_pos_copy {this->vertex_positions_list}, vertex_tex_copy {this->vertex_texture_coordinates_list}, vertex_norm_copy {this->vertex_normals_list};
 
-    for (uint32_t &index : indexes) {
-        data.push_back(reference[index]);
+    this->vertex_positions_list.clear();
+    this->vertex_texture_coordinates_list.clear();
+    this->vertex_normals_list.clear();
+
+    for (uint32_t index {}; index < data.faces_amount; index++) {
+        if (data.contains_vertices) {
+            this->vertex_positions_list.emplace_back() = vertex_pos_copy[data.vertices_index[index]];
+        }
+
+        if (data.contains_texture_coordinates) {
+            this->vertex_texture_coordinates_list.emplace_back() = vertex_tex_copy[data.texture_coordinates_index[index]];
+        }
+
+        if (data.contains_normals) {
+            this->vertex_normals_list.emplace_back() = vertex_norm_copy[data.normals_index[index]];
+        }
     }
+
+    std::map<mesh::packed_vertex, uint32_t> packed_vertexes_map {};
+
+    data.vertices.clear();
+    data.texture_coordinates.clear();
+    data.normals.clear();
+
+    for (uint32_t index {}; index < data.faces_amount; index++) {
+        mesh::packed_vertex packed_vertex {};
+
+        if (data.contains_vertices) {
+            packed_vertex.vert = this->vertex_positions_list[index];
+        }
+
+        if (data.contains_texture_coordinates) {
+            packed_vertex.text = this->vertex_texture_coordinates_list[index];
+        }
+
+        if (data.contains_normals) {
+            packed_vertex.norm = this->vertex_normals_list[index];
+        }
+
+        auto it {packed_vertexes_map.find(packed_vertex)};
+        bool found {it == packed_vertexes_map.end()};
+
+        if (!found) {
+            data.indexes.push_back(it->second);
+            continue;
+        }
+
+        if (data.contains_vertices) {
+            data.vertices.push_back(packed_vertex.vert.x);
+            data.vertices.push_back(packed_vertex.vert.y);
+            data.vertices.push_back(packed_vertex.vert.z);
+        }
+
+        if (data.contains_texture_coordinates) {
+            data.texture_coordinates.push_back(packed_vertex.text.x);
+            data.texture_coordinates.push_back(packed_vertex.text.y);
+        }
+        
+        if (data.contains_normals) {
+            data.normals.push_back(packed_vertex.norm.x);
+            data.normals.push_back(packed_vertex.norm.y);
+            data.normals.push_back(packed_vertex.norm.z);
+        }
+
+        data.indexes.push_back((packed_vertexes_map[packed_vertex] = data.indexes.size() - 1));
+    }
+
+    bool s {};
 }
 
 bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
@@ -29,6 +93,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     size_t z {3};
 
     bool contains_normals {};
+    mesh::vertex vertex {};
 
     switch (data.format) {
         case mesh::format::obj: {
@@ -60,39 +125,55 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 }
 
                 if (find == "v ") {
-                    data.vertices.push_back(std::stof(split[x]));
-                    data.vertices.push_back(std::stof(split[y]));
-                    data.vertices.push_back(std::stof(split[z]));
-                } else if (find == "vt") {
-                    data.texture_coordinates.push_back(std::stof(split[x]));
-                    data.texture_coordinates.push_back(std::stof(split[y]));
+                    vertex.x = std::stof(split[x]);
+                    vertex.y = std::stof(split[y]);
+                    vertex.z = std::stof(split[z]);
+                    vertex.length = 3;
 
-                    if (!contains_normals) {
-                        data.normals.push_back(0);
-                        data.normals.push_back(0);
-                        data.normals.push_back(1);
-                    }
+                    this->vertex_positions_list.push_back(vertex);
+                    data.contains_vertices = true;
+                } else if (find == "vt") {
+                    vertex.x = std::stof(split[x]);
+                    vertex.y = std::stof(split[y]);
+                    vertex.length = 2;
+
+                    this->vertex_texture_coordinates_list.push_back(vertex);
+                    data.contains_texture_coordinates = true;
                 } else if (find == "vn") {
-                    data.normals.push_back(std::stof(split[x]));
-                    data.normals.push_back(std::stof(split[y]));
-                    data.normals.push_back(std::stof(split[z]));
-                    contains_normals = true;
+                    vertex.x = std::stof(split[x]);
+                    vertex.y = std::stof(split[y]);
+                    vertex.z = std::stof(split[z]);
+                    vertex.length = 3;
+
+                    this->vertex_normals_list.push_back(vertex);
+                    data.contains_normals = true;
                 } else if (find == "f ") {
+                    /* get the faces vertex indexes  */
+
                     for (int32_t indexes {1}; indexes < split.size(); indexes++) {
                         util::split(split_first, split[indexes], '/');
-
-                        data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_first[0])) - 1);
                         data.faces_amount++;
-                        data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_first[1])) - 1);
 
-                        if (contains_normals) {
-                            data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_first[2])) - 1);
+                        /* send geometry indices to be used later in rendering */
+
+                        if (data.contains_vertices) {
+                            data.vertices_index.push_back(static_cast<uint32_t>(std::stoi(split_first[0])) - 1);
+                        }
+
+                        if (data.contains_texture_coordinates) {
+                            data.texture_coordinates_index.push_back(static_cast<uint32_t>(std::stoi(split_first[1])) - 1);
+                        }
+
+                        if (data.contains_normals) {
+                            // subtract using the boolean type @data.contains_texture_coordinates
+                            data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_first[2 - (!data.contains_texture_coordinates)])) - 1);
                         }
                     }
                 }
             }
 
-            util::log("mesh loader collected indexes: " + std::to_string(data.faces_amount));
+            this->process_indexing(data);
+            util::log("mesh loader collected indexes: " + std::to_string(data.indexes.size()));
             break;
         }
 
@@ -104,6 +185,10 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
             break;
         }
     }
+
+    this->vertex_positions_list.clear();
+    this->vertex_texture_coordinates_list.clear();
+    this->vertex_normals_list.clear();
 
     util::log("mesh loaded successfully!");
     ifs.close();

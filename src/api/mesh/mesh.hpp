@@ -2,6 +2,7 @@
 #define AGK_API_MESH_H
 
 #include <vector>
+#include <iostream>
 
 namespace mesh {
     enum class format {
@@ -12,7 +13,22 @@ namespace mesh {
         mesh::format format {};
         int32_t faces_amount {};
         std::vector<float> vertices {}, texture_coordinates {}, normals {};
-        std::vector<uint32_t> vertices_index {}, texture_coordinates_index {}, normals_index {};
+        std::vector<uint32_t> vertices_index {}, texture_coordinates_index {}, normals_index {}, indexes {};
+        bool contains_vertices {}, contains_normals {}, contains_texture_coordinates {};
+    };
+
+    struct vertex {
+        float x {},  y {}, z {};
+        int32_t  length {3};
+    };
+
+    struct packed_vertex {
+        mesh::vertex vert {}, text {}, norm {};
+
+        /*
+         * From: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-9-vbo-indexing/
+         */
+        bool operator < (const packed_vertex) const;
     };
 }
 

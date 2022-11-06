@@ -84,6 +84,10 @@ void buffer_builder::on_destroy() {
 void buffer_builder::on_render() {
     glBindVertexArray(this->vao);
 
+    if (this->ebo) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ebo);
+    }
+
     switch (this->mode) {
         case buffer_builder_mode::normal: {
             if (this->ebo == 0) {
@@ -91,6 +95,7 @@ void buffer_builder::on_render() {
             } else {
                 glDrawElements(this->primitive, this->vert_amount, GL_UNSIGNED_INT, 0);
             }
+
             break;
         }
 
@@ -100,6 +105,7 @@ void buffer_builder::on_render() {
             } else {
                 glDrawElementsInstanced(this->primitive, this->vert_amount, GL_UNSIGNED_INT, (void*) 0, this->instanced_size);
             }
+
             break;
         }
     }

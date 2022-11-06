@@ -4,7 +4,7 @@
 #include "api/api.hpp"
 
 void client::scenes::starter::on_create() {
-    api::mesh::model("cat", mesh::format::obj, "./data/models/cube.obj");
+    api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
 
     auto solid {new material::solid {material::composition::metal}};
     auto cat_object {new object {solid}};

@@ -58,7 +58,7 @@ void api::mainloop(feature* initial_scene) {
     api::world::render().update_perspective_matrix();
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
 
     while (api::app.mainloop) {
         if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
@@ -202,20 +202,36 @@ void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
     model->vert_amount = data.faces_amount;
     model->mode = buffer_builder_mode::normal;
 
-    model->bind();
-    model->send_data(sizeof(float) * data.vertices.size(), &data.vertices[0], GL_STATIC_DRAW);
-    model->shader(0, 3, 0, 0);
+    if (data.contains_vertices) {
+        model->bind();
+        model->send_data(sizeof(float) * data.vertices.size(), &data.vertices[0], GL_STATIC_DRAW);
+        model->shader(0, 3, 0, 0);
 
-    model->bind();
-    model->send_data(sizeof(float) * data.texture_coordinates.size(), &data.texture_coordinates[0], GL_STATIC_DRAW);
-    model->shader(1, 3, 0, 0);
+        util::log("compiled buffer vertex positions: " + std::to_string(data.vertices.size()));
+    }
 
-    model->bind();
-    model->send_data(sizeof(float) * data.normals.size(), &data.normals[0], GL_STATIC_DRAW);
-    model->shader(2, 3, 0, 0);
+    if (data.contains_texture_coordinates) {
+        model->bind();
+        model->send_data(sizeof(float) * data.texture_coordinates.size(), &data.texture_coordinates[0], GL_STATIC_DRAW);
+        model->shader(1, 2, 0, 0);
+        
+        util::log("compiled buffer vertex texture coords: " + std::to_string(data.vertices.size()));
+    }
 
-    model->bind_ebo();
-    model->send_indexing_data(sizeof(uint32_t) * data.faces_amount, &data.vertices_index[0], GL_STATIC_DRAW);
+    if (data.contains_normals) {
+        model->bind();
+        model->send_data(sizeof(float) * data.normals.size(), &data.normals[0], GL_STATIC_DRAW);
+        model->shader(2, 3, 0, 0);
+
+        util::log("compiled buffer vertex normals: " + std::to_string(data.vertices.size()));
+    }
+
+    if (!data.indexes.empty()) {
+        model->vert_amount = data.indexes.size();
+        model->bind_ebo();
+        model->send_indexing_data(sizeof(uint32_t) * data.indexes.size(), &data.indexes[0], GL_STATIC_DRAW);
+    }
+
     model->revoke();
 }
 
