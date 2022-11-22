@@ -44,7 +44,7 @@ void api::mainloop(feature* initial_scene) {
     util::timing reduce_cpu_ticks_timing {};
     util::timing counter_fps_timing {};
 
-    uint64_t cpu_ticks_interval {1000 / api::app.fps};
+    uint64_t cpu_ticks_interval {1000 / api::app.fps}, cpu_ticks_now {}, cpu_ticks_last {};
     uint64_t fps_interval {1000};
     uint64_t ticked_frames {};
     SDL_Event sdl_event {};
@@ -61,66 +61,67 @@ void api::mainloop(feature* initial_scene) {
     glDisable(GL_CULL_FACE);
 
     while (api::app.mainloop) {
-        if (util::resetifreach(reduce_cpu_ticks_timing, cpu_ticks_interval)) {
-            api::dt = static_cast<float>(reduce_cpu_ticks_timing.ms_current) / 100.0f;
+        cpu_ticks_last = cpu_ticks_now;
+        cpu_ticks_now = SDL_GetPerformanceCounter();
+        api::dt = static_cast<float>(cpu_ticks_now - cpu_ticks_last) / static_cast<float>(SDL_GetPerformanceFrequency());
 
-            while (SDL_PollEvent(&sdl_event)) {
-                switch (sdl_event.type) {
-                    case SDL_QUIT: {
-                        api::app.mainloop = false;
-                        break;
-                    }
+        while (SDL_PollEvent(&sdl_event)) {
+            switch (sdl_event.type) {
+                case SDL_QUIT: {
+                    api::app.mainloop = false;
+                    break;
+                }
 
-                    default: {
-                        api::app.input_manager.on_event(sdl_event);
-                        if (api::app.current_scene != nullptr) api::app.current_scene->on_event(sdl_event);
-                        api::app.world_camera3d.on_event(sdl_event);
-                        api::app.world_client.on_event(sdl_event);
-                        api::app.world_render_manager.on_event(sdl_event);
-                        break;
-                    }
+                default: {
+                    api::app.input_manager.on_event(sdl_event);
+                    if (api::app.current_scene != nullptr) api::app.current_scene->on_event(sdl_event);
+                    api::app.world_camera3d.on_event(sdl_event);
+                    api::app.world_client.on_event(sdl_event);
+                    api::app.world_render_manager.on_event(sdl_event);
+                    break;
                 }
             }
-
-            if (util::resetifreach(reduce_cpu_ticks_timing, fps_interval)) {
-                api::app.display_fps = ticked_frames;
-                ticked_frames = 0;
-            }
-
-            if (api::app.current_scene != nullptr) {
-                api::app.current_scene->on_update();
-            }
-
-            api::app.world_client.on_update();
-            api::app.world_render_manager.on_update();
-            api::app.garbage_collector.do_update();
-            api::app.input_manager.on_update();
-            amogpu::matrix();
-
-            glViewport(0, 0, api::app.screen_width, api::app.screen_height);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            glClearColor(0.5f, 0.0f, 0.0f, 1.0f);
-
-            api::app.world_render_manager.on_render();
-
-            if (api::app.current_scene != nullptr) {
-                api::app.current_scene->on_render();
-            }
-
-            if (prev_camera.x != api::app.world_camera3d.yaw || prev_camera.y != api::app.world_camera3d.pitch) {
-                prev_camera.x = api::app.world_camera3d.yaw;
-                prev_camera.y = api::app.world_camera3d.pitch;
-
-                batch.invoke();
-                f_renderer.render("Yaw Pitch [" + std::to_string(prev_camera.x) + ", " + std::to_string(prev_camera.y) + "]", 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
-                batch.revoke();
-            }
-
-            batch.draw();
-
-            ticked_frames++;
-            SDL_GL_SwapWindow(api::app.root);
         }
+
+        if (util::resetifreach(reduce_cpu_ticks_timing, fps_interval)) {
+            api::app.display_fps = ticked_frames;
+            ticked_frames = 0;
+        }
+
+        if (api::app.current_scene != nullptr) {
+            api::app.current_scene->on_update();
+        }
+
+        api::app.world_client.on_update();
+        api::app.world_render_manager.on_update();
+        api::app.garbage_collector.do_update();
+        api::app.input_manager.on_update();
+        amogpu::matrix();
+
+        glViewport(0, 0, api::app.screen_width, api::app.screen_height);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        glClearColor(0.5f, 0.0f, 0.0f, 1.0f);
+
+        api::app.world_render_manager.on_render();
+
+        if (api::app.current_scene != nullptr) {
+            api::app.current_scene->on_render();
+        }
+
+        if (prev_camera.x != api::app.world_camera3d.yaw || prev_camera.y != api::app.world_camera3d.pitch) {
+            prev_camera.x = api::app.world_camera3d.yaw;
+            prev_camera.y = api::app.world_camera3d.pitch;
+
+            batch.invoke();
+            f_renderer.render("Yaw Pitch [" + std::to_string(prev_camera.x) + ", " + std::to_string(prev_camera.y) + "]", 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
+            batch.revoke();
+        }
+
+        batch.draw();
+
+        ticked_frames++;
+        SDL_GL_SwapWindow(api::app.root);
+        SDL_Delay(cpu_ticks_interval);
     }
 
     api::app.shader_manger.quit();
