@@ -14,7 +14,7 @@ public:
     std::vector<entity*> loaded_entity_list {};
 
     bool camera_movement {};
-    entity* player {};
+    entity *player {};
 
     void do_camera_movement();
     void on_create() override;

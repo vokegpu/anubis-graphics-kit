@@ -11,21 +11,12 @@ uniform struct LightInfo {
     vec3 Intensity;
     bool Incoming;
     bool Blinn;
-
-    vec3 La;
-    vec3 Ld;
-    vec3 Ls;
 } Light[100];
 
 uniform struct MaterialInfo {
     float Rough;
     bool Metal;
     vec3 Color;
-
-    vec3 Ka;
-    vec3 Kd;
-    vec3 Ks;
-
     int Shininess;
 } Material;
 
@@ -84,7 +75,7 @@ vec3 BlinnPhongModel(vec3 v, int lightIndice, vec3 n) {
     float str = 0.1;
     vec3 ambient = str * Light[lightIndice].Intensity;
 
-    vec3 lightDir = normalize(Light[lightIndice].Position - CameraPosition);
+    vec3 lightDir = normalize(Light[lightIndice].Position - Position);
     float diff = max(dot(n, lightDir), 0.0);
     vec3 diffuse = diff * Light[lightIndice].Intensity;
 
@@ -101,6 +92,10 @@ void main() {
     if (!DebugLighting) {
         vec3 n = normalize(Normal);
         vec3 v = normalize(CameraPosition - Position);
+
+        if (!gl_FrontFacing) {
+            n = -n;
+        }
 
         for (int i = 0; i < LoadedLightsIndex; i++) {
             if (Light[i].Blinn) {

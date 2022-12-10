@@ -81,9 +81,6 @@ void world_render::on_render() {
                 this->object_model_shading.set_uniform_vec3("Light[" + id + "].Position", &objects->position[0]);
                 this->object_model_shading.set_uniform_bool("Light[" + id + "].Incoming", light_material->incoming);
                 this->object_model_shading.set_uniform_vec3("Light[" + id + "].Intensity", &light_material->intensity[0]);
-                this->object_model_shading.set_uniform_vec3("Light[" + id + "].La", &light_material->la[0]);
-                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Ld", &light_material->ld[0]);
-                this->object_model_shading.set_uniform_vec3("Light[" + id + "].Ls", &light_material->ls[0]);
                 this->object_model_shading.set_uniform_bool("Light[" + id + "].Blinn", light_material->lighting == material::lighting::blinn);
                 light_iterations_id++;
 
@@ -110,7 +107,7 @@ void world_render::on_render() {
                 model = glm::scale(model, objects->scale);
 
                 mvp = this->matrix_perspective * camera_view;
-                normal = glm::mat3(model);
+                normal = glm::inverseTranspose(model);
 
                 this->object_model_shading.set_uniform_mat3("MatrixNormal", &normal[0][0]);
                 this->object_model_shading.set_uniform_mat4("ModelMatrix", &model[0][0]);
@@ -149,9 +146,6 @@ void world_render::on_render() {
                 this->object_model_shading.set_uniform_vec3("Material.Color", &solid_material->color[0]);
                 this->object_model_shading.set_uniform_bool("Material.Metal", objects->material->composition == material::composition::metal);
                 this->object_model_shading.set_uniform_float("Material.Rough", solid_material->rough);
-                this->object_model_shading.set_uniform_vec3("Material.Ka", &solid_material->ka[0]);
-                this->object_model_shading.set_uniform_vec3("Material.Kd", &solid_material->kd[0]);
-                this->object_model_shading.set_uniform_vec3("Material.Ks", &solid_material->ks[0]);
 
                 current_buffer_builder->on_render();
                 break;

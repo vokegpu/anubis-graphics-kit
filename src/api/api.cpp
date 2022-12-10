@@ -64,6 +64,7 @@ void api::mainloop(feature* initial_scene) {
         cpu_ticks_last = cpu_ticks_now;
         cpu_ticks_now = SDL_GetPerformanceCounter();
         api::dt = static_cast<float>(cpu_ticks_now - cpu_ticks_last) / static_cast<float>(SDL_GetPerformanceFrequency());
+        api::dt *= 100.0f;
 
         while (SDL_PollEvent(&sdl_event)) {
             switch (sdl_event.type) {
@@ -100,7 +101,7 @@ void api::mainloop(feature* initial_scene) {
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        glClearColor(0.5f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         api::app.world_render_manager.on_render();
 

@@ -12,19 +12,19 @@ void client::scenes::starter::on_create() {
     solid->color[0] = 1.022f;
     solid->color[1] = 0.782f;
     solid->color[2] = 0.334f;
-    solid->rough = 0.9f;
+    solid->rough = 0.43f;
 
     auto ct_object {new object {solid}};
     ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
     ct_object->position = glm::vec3(0, 20, 0);
 
     auto mate {new material::light {material::composition::light}};
-    mate->lighting = material::lighting::blinn;
+    mate->lighting = material::lighting::pbr;
     this->obj = new object {mate};
     this->obj->scale = {0.5f, 0.5f, 0.5f};
-    mate->intensity[0] = 0.4f;
-    mate->intensity[1] = 0.4f;
-    mate->intensity[2] = 0.4f;
+    mate->intensity[0] = 50.0f;
+    mate->intensity[1] = 50.0f;
+    mate->intensity[2] = 50.0f;
     mate->incoming = false;
 
     api::mesh::assign(obj, "debug-lighting");
@@ -44,17 +44,19 @@ void client::scenes::starter::on_destroy() {
 }
 
 void client::scenes::starter::on_event(SDL_Event &sdl_event) {
+    auto &camera {api::world::camera3d()};
+
     switch (sdl_event.type) {
         case SDL_MOUSEBUTTONDOWN: {
-            if (!api::world::camera3d().enabled && api::input::pressed("mouse-left")) {
-                api::world::camera3d().enabled = true;
+            if (!camera.enabled && api::input::pressed("mouse-left")) {
+                camera.enabled = true;
             }
             break;
         }
 
         case SDL_MOUSEBUTTONUP: {
-            if (api::world::camera3d().enabled && !api::input::pressed("mouse-left")) {
-                api::world::camera3d().enabled = false;
+            if (camera.enabled && !api::input::pressed("mouse-left")) {
+                camera.enabled = false;
             }
 
             break;

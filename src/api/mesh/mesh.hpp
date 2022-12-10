@@ -16,20 +16,6 @@ namespace mesh {
         std::vector<uint32_t> vertices_index {}, texture_coordinates_index {}, normals_index {}, indexes {};
         bool contains_vertices {}, contains_normals {}, contains_texture_coordinates {};
     };
-
-    struct vertex {
-        float x {},  y {}, z {};
-        int32_t  length {3};
-    };
-
-    struct packed_vertex {
-        mesh::vertex vert {}, text {}, norm {};
-
-        /*
-         * From: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-9-vbo-indexing/
-         */
-        bool operator < (const packed_vertex) const;
-    };
 }
 
 #endif
