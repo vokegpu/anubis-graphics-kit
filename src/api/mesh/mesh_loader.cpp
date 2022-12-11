@@ -134,17 +134,16 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                         }
 
                         if (data.contains_normals) {
-                            // subtract using the boolean type @data.contains_texture_coordinates
                             data.normals_index.push_back(static_cast<uint32_t>(std::stoi(split_first[2 - (!data.contains_texture_coordinates)])) - 1);
                         }
                     }
                 }
             }
 
+            util::log("mesh loader collected indexes: " + std::to_string(data.vertices_index.size()));
             this->process_indexing(data);
             data.indexes = data.vertices_index;
 
-            util::log("mesh loader collected indexes: " + std::to_string(data.indexes.size()));
             break;
         }
 

@@ -11,6 +11,7 @@ class world_render : public feature {
 public:
     shading::program object_model_shading {};
     shading::program entity_model_shading {};
+    shading::program terrain_model_shading {};
     glm::mat4 matrix_perspective {};
 
     std::map<std::string, int32_t> registered_models_map {};
@@ -18,8 +19,8 @@ public:
     int32_t spot_lights_on_world {};
     bool debug_lighting_enabled {};
 
-    buffer_builder* gen_model(const char*);
-    buffer_builder* get_model_by_tag(std::string_view);
+    buffer_builder *gen_model(const char*);
+    buffer_builder *get_model_by_tag(std::string_view);
     int32_t get_model_id_by_tag(std::string_view);
     void update_perspective_matrix();
 

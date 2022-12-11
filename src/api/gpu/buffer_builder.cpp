@@ -24,13 +24,12 @@ void buffer_builder::shader(GLuint location, GLint vec_rows, GLint begin, GLsize
     glVertexAttribPointer(location, vec_rows, GL_FLOAT, GL_FALSE, begin, (void*) end);
 }
 
-void buffer_builder::shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns) {
-    GLint vec_area {static_cast<GLint>(vec_rows * vec_columns)};
+void buffer_builder::shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns, GLsizeiptr size) {
     GLsizeiptr stride_size {};
 
     for (GLuint shader_location {location}; shader_location < location + vec_columns; shader_location++) {
         glEnableVertexAttribArray(shader_location);
-        glVertexAttribPointer(shader_location, vec_rows, GL_FLOAT, GL_FALSE, vec_area, (void*) stride_size);
+        glVertexAttribPointer(shader_location, vec_rows, GL_FLOAT, GL_FALSE, size, (void*) stride_size);
         glVertexAttribDivisor(shader_location, 1);
         stride_size += vec_rows;
     }

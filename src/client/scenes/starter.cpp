@@ -6,13 +6,14 @@
 void client::scenes::starter::on_create() {
     api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
 
-    auto solid {new material::solid {material::composition::metal}};
-    auto cat_object {new object {solid}};
+    this->solid = new material::solid {material::composition::metal};
+    auto cat_object {new object {this->solid}};
+
     cat_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
-    solid->color[0] = 1.022f;
-    solid->color[1] = 0.782f;
-    solid->color[2] = 0.334f;
-    solid->rough = 0.43f;
+    solid->color[0] = 80 / 255.0f;
+    solid->color[1] = 200 / 255.0f;
+    solid->color[2] = 120 / 255.0f;
+    solid->rough = 0.1f;
 
     auto ct_object {new object {solid}};
     ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -22,18 +23,24 @@ void client::scenes::starter::on_create() {
     mate->lighting = material::lighting::pbr;
     this->obj = new object {mate};
     this->obj->scale = {0.5f, 0.5f, 0.5f};
+
+
+    this->l2 = new object {mate};
+
     mate->intensity[0] = 50.0f;
     mate->intensity[1] = 50.0f;
     mate->intensity[2] = 50.0f;
     mate->incoming = false;
 
     api::mesh::assign(obj, "debug-lighting");
+    api::mesh::assign(l2, "debug-lighting");
     api::mesh::assign(cat_object, "cat");
     api::mesh::assign(ct_object, "cat");
 
     api::world::create(cat_object);
     api::world::create(ct_object);
     api::world::create(this->obj);
+    api::world::create(this->l2);
 
     api::world::current().camera_movement = true;
     api::world::camera3d().enabled = false;
@@ -62,6 +69,12 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
             break;
         }
 
+        case SDL_KEYDOWN: {
+            this->solid->rough += 0.05f * api::input::pressed("v");
+            this->solid->rough -= 0.05f * api::input::pressed("c");
+            break;
+        }
+
         case SDL_MOUSEMOTION: {
             if (api::input::pressed("mouse-right")) {
                 api::world::current().player->velocity.x += static_cast<float>(sdl_event.motion.xrel);
@@ -74,6 +87,7 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 
 void client::scenes::starter::on_update() {
     if (this->obj != nullptr && api::input::pressed("space")) this->obj->position = api::world::camera3d().position;
+    if (this->obj != nullptr && api::input::pressed("x")) this->l2->position = api::world::camera3d().position;
 }
 
 void client::scenes::starter::on_render() {

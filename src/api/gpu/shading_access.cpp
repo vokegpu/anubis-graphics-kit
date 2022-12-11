@@ -49,6 +49,7 @@ bool shading_manager::create_shading_program(std::string_view shading_program_na
         flag = flag && this->compile_shader(resource.shader_id, resource.stage, shader_src.data());
 
         if (!flag) {
+            util::log(shading_program_name.data());
             break;
         }
 

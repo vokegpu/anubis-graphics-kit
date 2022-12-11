@@ -8,13 +8,18 @@ void world_render::on_create() {
     feature::on_create();
 
     api::shading::createprogram("object-model", this->object_model_shading, {
-            {"./effects/ObjectModel.vsh", shading::stage::vertex},
-            {"./effects/ObjectModel.fsh", shading::stage::fragment}
+            {"./effects/vsh_object.glsl", shading::stage::vertex},
+            {"./effects/fsh_object.glsl", shading::stage::fragment}
     });
 
     api::shading::createprogram("entity-model", this->entity_model_shading, {
-            {"./effects/EntityModel.vsh", shading::stage::vertex},
-            {"./effects/EntityModel.fsh", shading::stage::fragment}
+            {"./effects/vsh_entity.glsl", shading::stage::vertex},
+            {"./effects/fsh_entity.glsl", shading::stage::fragment}
+    });
+
+    api::shading::createprogram("terrain-model",  this->terrain_model_shading, {
+        {"./effects/vsh_terrain.glsl", shading::stage::vertex},
+        {"./effects/fsh_terrain.glsl", shading::stage::fragment}
     });
 
     api::mesh::model("debug-lighting", mesh::format::obj, "./data/models/cube.obj");

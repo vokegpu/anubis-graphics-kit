@@ -8,7 +8,8 @@
 namespace client::scenes {
     class starter : public feature {
     public:
-        object* obj {};
+        object *obj {}, *l2 {};
+        material::solid *solid {};
 
         void on_create() override;
         void on_destroy() override;

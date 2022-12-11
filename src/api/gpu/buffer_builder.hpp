@@ -27,9 +27,10 @@ public:
     buffer_builder(const char*);
 
 	void bind();
-	void send_data(GLint size, void* data, GLuint draw_mode);
+    void send_data(GLint size, void* data, GLuint draw_mode);
 	void shader(GLuint location, GLint vec_rows, GLint begin, GLsizeiptr end);
-	void shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns);
+	void shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns, GLsizeiptr size);
+
     void bind_ebo();
     void send_indexing_data(GLint size, void* data, GLuint draw_mode);
 
