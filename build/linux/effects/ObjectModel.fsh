@@ -108,7 +108,7 @@ void main() {
 
         for (int i = 0; i < LoadedLightsIndex; i++) {
             if (Light[i].Blinn) {
-                sun += BlinnPhongModel(v, i, n);
+                sun += MicrofacetModel(v, i, n);
             } else {
                 sun += MicrofacetModel(v, i, n);
             }
