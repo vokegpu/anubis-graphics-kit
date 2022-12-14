@@ -27,7 +27,6 @@ namespace api {
     namespace world {
         camera3d &camera3d();
         ::world &current();
-        world_render &render();
         void create(object*);
         void destroy(object*);
     };

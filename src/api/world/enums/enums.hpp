@@ -3,7 +3,7 @@
 
 namespace enums {
 	enum class material {
-		pbrlight, pbrterrain, pbrobject
+		empty, light, light, nondialetric
 	};
 
 	enum class state {

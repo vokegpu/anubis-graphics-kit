@@ -44,7 +44,11 @@ void world::on_event(SDL_Event &sdl_event) {
 }
 
 void world::on_update() {
-
+	while (!this->wf_draw_list.empty()) {
+		auto &wf {this->wf_process_queue.front()};
+		if (wf != nullptr) wf->on_update();
+		this->wf_process_queue.pop();
+	}
 }
 
 void world::on_render() {
