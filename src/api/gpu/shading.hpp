@@ -1,5 +1,5 @@
-#ifndef AGK_API_GPU_SHADING_ACCESS_H
-#define AGK_API_GPU_SHADING_ACCESS_H
+#ifndef AGK_API_GPU_SHADING_H
+#define AGK_API_GPU_SHADING_H
 
 #include <iostream>
 #include "GL/glew.h"
@@ -19,6 +19,9 @@ namespace shading {
     struct program {
         GLuint id {};
 
+        program();
+        ~program();
+
         void set_uniform_vec4(std::string_view, const float*);
         void set_uniform_vec3(std::string_view, const float*);
         void set_uniform_vec2(std::string_view, const float*);
@@ -34,17 +37,8 @@ namespace shading {
     struct resource {
         std::string_view path {};
         shading::stage stage {};
-        GLuint shader_id {};
+        bool is_source_code {};
     };
 }
-
-struct shading_manager {
-protected:
-    std::map<std::string_view, GLuint> shading_programs_map {};
-public:
-    bool compile_shader(GLuint&, GLuint, const char*);
-    bool create_shading_program(std::string_view, shading::program&, const std::vector<shading::resource>&);
-    void quit();
-};
 
 #endif

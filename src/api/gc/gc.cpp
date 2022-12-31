@@ -4,21 +4,25 @@
 std::queue<feature*> gc::queue_uncreated {};
 std::queue<feature*> gc::queue_undead {};
 
-void gc::destroy(feature* target) {
-    gc::queue_undead.push(target);
+void gc::destroy(feature *p_feature) {
+    gc::queue_undead.push(p_feature);
     this->should_poll_undead = true;
 }
 
-void gc::create(feature* target) {
-    gc::queue_uncreated.push(target);
+void gc::create(feature *p_feature) {
+    if (p_feature == nullptr) {
+        p_feature = new feature {};
+    }
+
+    gc::queue_uncreated.push(p_feature);
     this->should_poll_uncreated = true;
 }
 
 void gc::do_update() {
     if (this->should_poll_uncreated) {
         while (!gc::queue_uncreated.empty()) {
-            auto &target {gc::queue_uncreated.front()};
-            if (target != nullptr) target->on_create();
+            auto &p_feature {gc::queue_uncreated.front()};
+            if (p_feature != nullptr) p_feature->on_create();
             gc::queue_uncreated.pop();
         }
 

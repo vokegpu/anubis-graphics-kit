@@ -1,30 +1,32 @@
-#ifndef AGK_API_GPU_BUFFER_BUILDER_H
-#define AGK_API_GPU_BUFFER_BUILDER_H
+#ifndef AGK_API_GPU_BUFFERING
+#define AGK_API_GPU_BUFFERING
 
-#include <GL/glew.h>
+#include "GL/glew.h"
 #include <iostream>
 #include <vector>
 #include "api/feature/feature.hpp"
 
-enum buffer_builder_mode {
+enum bufferingmode {
 	normal, instanced
 };
 
-class buffer_builder : public feature {
+class buffering : public feature {
 public:
     const char* tag {};
     int32_t id {};
 
-	GLuint vao {0};
-    GLuint ebo {};
-    uint32_t vbo_bound {};
-    GLuint primitive {GL_TRIANGLES};
-    GLint vert_amount {};
-    GLint instanced_size {};
+	uint32_t buffer_vao {0};
+    uint32_t buffer_ebo {};
 
-    std::vector<GLuint> vbo_list {};
-    buffer_builder_mode mode {};
-    buffer_builder(const char*);
+    uint32_t primitive {GL_TRIANGLES};
+    int32_t stride_begin {};
+    int32_t stride_end {};
+    int32_t instanced_size {};
+
+    std::vector<GLuint> buffer_list {};
+    uint32_t buffer_list_size {};
+
+    bufferingmode mode {};
 
 	void bind();
     void send_data(GLint size, void* data, GLuint draw_mode);
@@ -37,9 +39,8 @@ public:
 	void invoke();
 	void revoke();
 
-    void on_create() override;
-    void on_destroy() override;
-    void on_render() override;
+    void destroy();
+    void draw();
 };
 
 #endif

@@ -48,14 +48,12 @@ void api::mainloop(feature* initial_scene) {
     uint64_t fps_interval {1000};
     uint64_t ticked_frames {};
     SDL_Event sdl_event {};
-    glm::vec4 prev_camera {};
+    glm::vec3 previous_camera_rotation {};
 
     api::app.mainloop = true;
-    api::gc::create(&api::app.world_render_manager);
     api::gc::create(&api::app.world_client);
-    api::gc::create(&api::app.world_camera3d);
+    api::gc::create(api::app.p_current_camera);
     api::scene::load(initial_scene);
-    api::world::render().update_perspective_matrix();
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -75,10 +73,9 @@ void api::mainloop(feature* initial_scene) {
 
                 default: {
                     api::app.input_manager.on_event(sdl_event);
-                    if (api::app.current_scene != nullptr) api::app.current_scene->on_event(sdl_event);
-                    api::app.world_camera3d.on_event(sdl_event);
+                    if (api::app.p_current_scene != nullptr) api::app.p_current_scene->on_event(sdl_event);
+                    api::app.p_current_camera->on_event(sdl_event);
                     api::app.world_client.on_event(sdl_event);
-                    api::app.world_render_manager.on_event(sdl_event);
                     break;
                 }
             }
@@ -89,12 +86,11 @@ void api::mainloop(feature* initial_scene) {
             ticked_frames = 0;
         }
 
-        if (api::app.current_scene != nullptr) {
-            api::app.current_scene->on_update();
+        if (api::app.p_current_scene != nullptr) {
+            api::app.p_current_scene->on_update();
         }
 
         api::app.world_client.on_update();
-        api::app.world_render_manager.on_update();
         api::app.garbage_collector.do_update();
         api::app.input_manager.on_update();
         amogpu::matrix();
@@ -103,18 +99,15 @@ void api::mainloop(feature* initial_scene) {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        api::app.world_render_manager.on_render();
-
-        if (api::app.current_scene != nullptr) {
-            api::app.current_scene->on_render();
+        if (api::app.p_current_scene != nullptr) {
+            api::app.p_current_scene->on_render();
         }
 
-        if (prev_camera.x != api::app.world_camera3d.yaw || prev_camera.y != api::app.world_camera3d.pitch) {
-            prev_camera.x = api::app.world_camera3d.yaw;
-            prev_camera.y = api::app.world_camera3d.pitch;
+        if (api::app.p_current_camera->rotation != previous_camera_rotation) {
+            previous_camera_rotation = api::app.p_current_camera->rotation;
 
             batch.invoke();
-            f_renderer.render("Yaw Pitch [" + std::to_string(prev_camera.x) + ", " + std::to_string(prev_camera.y) + "]", 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
+            f_renderer.render("Yaw Pitch [" + std::to_string(previous_camera_rotation.x) + ", " + std::to_string(previous_camera_rotation.y) + "]", 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
             batch.revoke();
         }
 
@@ -124,8 +117,6 @@ void api::mainloop(feature* initial_scene) {
         SDL_GL_SwapWindow(api::app.root);
         SDL_Delay(cpu_ticks_interval);
     }
-
-    api::app.shader_manger.quit();
 }
 
 void api::scene::load(feature* scene) {
@@ -135,7 +126,7 @@ void api::scene::load(feature* scene) {
 
     if (scene == nullptr && current_scene != nullptr) {
         api::gc::destroy(current_scene);
-        api::app.current_scene = nullptr;
+        api::app.p_current_scene = nullptr;
         return;
     }
 
@@ -147,108 +138,111 @@ void api::scene::load(feature* scene) {
     if (scene != nullptr && current_scene != nullptr && current_scene != scene) {
         api::gc::destroy(current_scene);
         api::gc::create(scene);
-        api::app.current_scene = scene;
+        api::app.p_current_scene = scene;
         return;
     }
 
     if (scene != nullptr && current_scene == nullptr) {
         api::gc::create(scene);
-        api::app.current_scene = scene;
+        api::app.p_current_scene = scene;
     }
 }
 
 feature* &api::scene::current() {
-    return api::app.current_scene;
+    return api::app.p_current_scene;
 }
 
-void api::gc::destroy(feature* target) {
-    api::app.garbage_collector.destroy(target);
+void api::gc::destroy(feature *p_target) {
+    api::app.garbage_collector.destroy(p_target);
 }
 
-void api::gc::create(feature* target) {
-    api::app.garbage_collector.create(target);
+void api::gc::create(feature *p_target) {
+    api::app.garbage_collector.create(p_target);
 }
 
-bool api::shading::createprogram(std::string_view name, ::shading::program &program, const std::vector<::shading::resource> &resources) {
-    return api::app.shader_manger.create_shading_program(name, program, resources);
+bool api::shading::createprogram(std::string_view name, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list) {
+    bool flag {!resource_list.empty()};
+    uint32_t shader {};
+    const char *p_shader_resource {};
+    std::string shader_source {};
+    std::vector<uint32_t> compiled_shader_list {};
+
+    for (const ::shading::resource &resource : resource_list) {
+        if (resource.is_source_code) {
+            shader_source = resource.path.data();
+        } else {
+            flag = util::readfile(resource.path.data(), shader_source);
+        }
+
+        if (shader_source.empty()) {
+            break;
+        }
+
+        p_shader_resource = shader_source.data();
+
+        shader = glCreateShader(resource.stage);
+        glShaderSource(shader, 1, &p_shader_resource, nullptr);
+        glCompileShader(shader);
+
+        GLint status {};
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+
+        if (!status) {
+            char log[256];
+            glGetShaderInfoLog(shader, 256, nullptr, log);
+            util::log("Failed to compile shader!");
+            util::log(log);
+            return false;
+        }
+
+        if (!flag) {
+            util::log(name.data());
+            break;
+        }
+
+        glAttachShader(p_program->id, shader);
+        compiled_shader_list.push_back(shader);
+    }
+
+    if (flag) {
+        GLint status {};
+        glLinkProgram(p_program->id);
+        glGetProgramiv(p_program->id, GL_LINK_STATUS, &status);
+
+        if (!status) {
+            char log[256];
+            glGetProgramInfoLog(p_program->id, 256, nullptr, log);
+            util::log("Failed to link this shading program!");
+            util::log(log);
+        } else {
+            util::log(std::string(name.data()) + " shading program successfully linked");
+            api::shading::registry(name, p_program);
+        }
+
+        return status;
+    }
+
+    for (uint32_t &compiled_shaders : compiled_shader_list) {
+        glDeleteShader(compiled_shaders);
+    }
+
+    return false;
 }
 
-camera3d &api::world::camera3d() {
-    return api::app.world_camera3d;
+bool api::shading::find(std::string_view key, ::shading::program *p_program) {
+    p_program = api::app.shader_registry_map[key.data()];
+}
+
+::shading::program *api::shading::registry(std::string_view key, ::shading::program *p_program) {
+    return api::app.shader_registry_map[key.data()];
 }
 
 ::world &api::world::current() {
     return api::app.world_client;
 }
 
-world_render &api::world::render() {
-    return api::app.world_render_manager;
-}
-
-void api::world::create(object* target) {
-    api::app.world_client.loaded_object_list.push_back(target);
-    api::app.world_client.loaded_object_map[target->id] = target;
-}
-
-void api::world::destroy(object* target) {
-    // todo destroy/kill object/entity from the world client
-}
-
 bool api::mesh::load(::mesh::data &data, std::string_view path) {
     return api::app.mesh3d_loader.load_object(data, path);
-}
-
-void api::mesh::compile(::mesh::data &data, buffer_builder* model) {
-    model->invoke();
-    model->primitive = GL_TRIANGLES;
-    model->vert_amount = data.faces_amount;
-    model->mode = buffer_builder_mode::normal;
-
-    if (data.contains_vertices) {
-        model->bind();
-        model->send_data(sizeof(float) * data.vertices.size(), &data.vertices[0], GL_STATIC_DRAW);
-        model->shader(0, 3, 0, 0);
-
-        util::log("compiled buffer vertex positions: " + std::to_string(data.vertices.size()));
-    }
-
-    if (data.contains_texture_coordinates) {
-        model->bind();
-        model->send_data(sizeof(float) * data.texture_coordinates.size(), &data.texture_coordinates[0], GL_STATIC_DRAW);
-        model->shader(1, 2, 0, 0);
-        
-        util::log("compiled buffer vertex texture coords: " + std::to_string(data.vertices.size()));
-    }
-
-    if (data.contains_normals) {
-        model->bind();
-        model->send_data(sizeof(float) * data.normals.size(), &data.normals[0], GL_STATIC_DRAW);
-        model->shader(2, 3, 0, 0);
-
-        util::log("compiled buffer vertex normals: " + std::to_string(data.vertices.size()));
-    }
-
-    if (!data.indexes.empty()) {
-        model->vert_amount = data.indexes.size();
-        model->bind_ebo();
-        model->send_indexing_data(sizeof(uint32_t) * data.indexes.size(), &data.indexes[0], GL_STATIC_DRAW);
-    }
-
-    model->revoke();
-}
-
-buffer_builder* api::mesh::model(std::string_view tag, ::mesh::format format, std::string_view path) {
-    auto model {api::app.world_render_manager.gen_model(tag.data())};
-    ::mesh::data data {format};
-
-    api::mesh::load(data, path);
-    api::mesh::compile(data, model);
-
-    return model;
-}
-
-void api::mesh::assign(object* target, std::string_view tag) {
-    target->model_id = api::app.world_render_manager.get_model_id_by_tag(tag);
 }
 
 bool api::input::pressed(std::string_view input_tag) {

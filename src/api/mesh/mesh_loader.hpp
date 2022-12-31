@@ -13,6 +13,8 @@ protected:
 public:
     void process_indexing(mesh::data&);
     bool load_object(mesh::data&, std::string_view);
+
+    // todo: Add stl loader files.
 };
 
 #endif

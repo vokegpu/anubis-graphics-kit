@@ -16,9 +16,9 @@ public:
 	std::vector<world_feature*> wf_list {}, wf_draw_list {};
 	std::queue<world_feature*> wf_process_queue {};
 
-	void registry_wf(world_feature *wf);
-	void refresh_wf_renderable();
-	void append_process(world_feature *wf);
+	void registry_wf(world_feature *p_world_feature);
+	void refresh_wf_renderer();
+	void append_process(world_feature *p_world_feature);
 
 	void on_create() override;
 	void on_destroy() override;

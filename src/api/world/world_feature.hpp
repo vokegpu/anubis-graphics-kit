@@ -3,11 +3,15 @@
 
 #include "api/feature/feature.hpp"
 #include "api/world/enums/enums.hpp"
+#include "api/world/pbr/material.hpp"
+#include <glm/glm.hpp>
 
 class world_feature : public feature {
 public:
 	int32_t id {};
 	enums::state visible {enums::state::disable};
+    pbrm *p_pbrm {nullptr};
+    enums::type type {enums::type::abstract};
 
 	glm::vec3 position {};
 	glm::vec3 rotation {};

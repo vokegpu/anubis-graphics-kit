@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "api/gc/gc.hpp"
-#include "api/gpu/shading_access.hpp"
+#include "api/gpu/shading.hpp"
 #include "api/world/world.hpp"
 #include "api/world/camera/camera.hpp"
 #include "api/mesh/mesh_loader.hpp"
@@ -19,11 +19,13 @@ public:
     uint64_t fps {60};
     uint64_t display_fps {};
 
-    feature* current_scene {nullptr};
+    std::map<std::string, shading::program*> shader_registry_map {};
+
+    feature *p_current_scene {nullptr};
+    camera *p_current_camera {nullptr};
+
     gc garbage_collector {};
-    shading_manager shader_manger {};
     world world_client {};
-    camera3d world_camera3d {};
     mesh_loader mesh3d_loader {};
     input input_manager {};
 };

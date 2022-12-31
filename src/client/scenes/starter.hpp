@@ -2,7 +2,7 @@
 #define AGK_CLIENT_SCENES_START_SCENE_H
 
 #include "api/feature/feature.hpp"
-#include "api/gpu/buffer_builder.hpp"
+#include "api/gpu/buffering.hpp"
 #include "api/world/object/object.hpp"
 
 namespace client::scenes {

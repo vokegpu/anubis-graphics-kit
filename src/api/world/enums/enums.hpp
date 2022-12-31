@@ -3,12 +3,16 @@
 
 namespace enums {
 	enum class material {
-		empty, light, light, nondialetric
+		empty, light, metal, dialetric
 	};
 
 	enum class state {
 		enable, disable
 	};
+
+    enum class type {
+        abstract, entity, object, model
+    };
 };
 
 #endif

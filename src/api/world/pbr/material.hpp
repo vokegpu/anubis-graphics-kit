@@ -47,10 +47,10 @@ class pbrm_solid : public pbrm {
 protected:
 	float rough {0.43f};
 public:
-	pbrm_solid(enums::material mtype);
+	explicit pbrm_solid(enums::material material_type);
 	~pbrm_solid();
 
-	void set_rough_based_type(enums::material mtype);
+	void set_rough_based_type(enums::material material_type);
 	void set_rough(float rough_value);
 	float get_rough();
 };

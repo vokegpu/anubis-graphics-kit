@@ -1,49 +1,9 @@
 #include "starter.hpp"
-#include "api/gpu/buffer_builder.hpp"
+#include "api/gpu/buffering.hpp"
 #include "api/util/env.hpp"
 #include "api/api.hpp"
 
 void client::scenes::starter::on_create() {
-    api::mesh::model("cat", mesh::format::obj, "./data/models/Alien Animal.obj");
-
-    this->solid = new material::solid {material::composition::metal};
-    auto cat_object {new object {this->solid}};
-
-    cat_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
-    solid->color[0] = 80 / 255.0f;
-    solid->color[1] = 200 / 255.0f;
-    solid->color[2] = 120 / 255.0f;
-    solid->rough = 0.1f;
-
-    auto ct_object {new object {solid}};
-    ct_object->scale = glm::vec3(0.5f, 0.5f, 0.5f);
-    ct_object->position = glm::vec3(0, 20, 0);
-
-    auto mate {new material::light {material::composition::light}};
-    mate->lighting = material::lighting::pbr;
-    this->obj = new object {mate};
-    this->obj->scale = {0.5f, 0.5f, 0.5f};
-
-
-    this->l2 = new object {mate};
-
-    mate->intensity[0] = 50.0f;
-    mate->intensity[1] = 50.0f;
-    mate->intensity[2] = 50.0f;
-    mate->incoming = false;
-
-    api::mesh::assign(obj, "debug-lighting");
-    api::mesh::assign(l2, "debug-lighting");
-    api::mesh::assign(cat_object, "cat");
-    api::mesh::assign(ct_object, "cat");
-
-    api::world::create(cat_object);
-    api::world::create(ct_object);
-    api::world::create(this->obj);
-    api::world::create(this->l2);
-
-    api::world::current().camera_movement = true;
-    api::world::camera3d().enabled = false;
 }
 
 void client::scenes::starter::on_destroy() {

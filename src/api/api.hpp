@@ -7,35 +7,35 @@ namespace api {
     extern core app;
     extern float dt;
 
-    void mainloop(feature*);
+    void mainloop(feature *p_feature);
     void path(const char*);
 
     namespace scene {
-        void load(feature*);
+        void load(feature *p_feature);
         feature* &current();
     }
 
     namespace gc {
-        void destroy(feature*);
-        void create(feature*);
+        void destroy(feature *p_feature);
+        void create(feature *p_feature);
     }
 
     namespace shading {
-        bool createprogram(std::string_view, ::shading::program &program, const std::vector<::shading::resource>&);
+        bool createprogram(std::string_view, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list);
+        bool find(std::string_view key, ::shading::program *p_program);
+        ::shading::program *registry(std::string_view key, ::shading::program *p_program);
     };
 
     namespace world {
-        camera3d &camera3d();
+        camera *camera();
         ::world &current();
-        void create(object*);
-        void destroy(object*);
+        void create(world_feature *p_world_feature);
+        void destroy(world_feature *p_world_feature);
     };
 
     namespace mesh {
         bool load(::mesh::data&, std::string_view);
-        void compile(::mesh::data &data, buffer_builder *model);
-        buffer_builder* model(std::string_view, ::mesh::format, std::string_view);
-        void assign(object*, std::string_view);
+
     };
 
     namespace input {
