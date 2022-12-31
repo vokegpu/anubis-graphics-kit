@@ -28,6 +28,9 @@ namespace mesh {
         uint8_t t_len {2};
         uint8_t n_len {3};
     public:
+        mesh::format format {mesh::format::unknown};
+        uint32_t faces {};
+
         void append(mesh::type type, const glm::vec4 &vec);
         void append(mesh::type type, const glm::vec3 &vec);
         void append(mesh::type type, const glm::vec2 &vec);
@@ -36,6 +39,7 @@ namespace mesh {
 
         std::vector<uint32_t> &get_indexing_list(mesh::type type);
         std::vector<float> &get_float_list(mesh::type type);
+        bool contains(mesh::type type);
     };
 }
 

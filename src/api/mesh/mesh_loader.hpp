@@ -8,8 +8,11 @@
 
 class mesh_loader {
 protected:
-    std::vector<glm::vec3> vertex_positions_list {}, vertex_texture_coordinates_list {}, vertex_normals_list {};
+    std::vector<glm::vec3> v_packed_list {}, t_packed_list {}, n_packed_list {};
     std::map<uint32_t, bool> repeated_indexes {};
+
+    void load_wavefront_object(mesh::data &data, std::ifstream &ifs);
+    void load_stl_object(mesh::data &data, std::ifstream &ifs);
 public:
     void process_indexing(mesh::data&);
     bool load_object(mesh::data&, std::string_view);

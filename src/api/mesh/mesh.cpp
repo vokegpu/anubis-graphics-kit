@@ -160,3 +160,21 @@ std::vector<float> &mesh::data::get_float_list(mesh::type type) {
 
     return this->n_list;
 }
+
+bool mesh::data::contains(mesh::type type) {
+    switch (type) {
+        case mesh::type::vertex: {
+            return !this->v_list.empty();
+        }
+
+        case mesh::type::textcoord: {
+            return !this->t_list.empty();
+        }
+
+        default: {
+            break;
+        }
+    }
+
+    return !this->n_list.empty();
+}
