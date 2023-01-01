@@ -50,7 +50,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
             ifs.open(path.data(), std::ifstream::in);
 
             if (!ifs.is_open()) {
-                util::log("Failed to open/read object wavefront file '" + std::string(path.data()) + "'!");
+                util::log("Failed to open/read object wavefront file: '" + std::string(path.data()) + "'");
                 return true;
             }
 
@@ -65,7 +65,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
             ifs.open(path.data(), std::ifstream::in | std::ifstream::binary);
 
             if (!ifs.is_open()) {
-                util::log("Failed to open/read stl file '" + std::string(path.data()) + "'!");
+                util::log("Failed to open/read stl file: '" + std::string(path.data()) + "'");
                 return true;
             }
         

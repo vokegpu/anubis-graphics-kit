@@ -43,11 +43,14 @@ void world::on_destroy() {
 }
 
 void world::on_event(SDL_Event &sdl_event) {
-
+    auto camera {api::world::camera()};
+    if (sdl_event.type == SDL_WINDOWEVENT) {
+        camera->on_event(sdl_event);
+    }
 }
 
 void world::on_update() {
-	while (!this->wf_draw_list.empty()) {
+	while (!this->wf_process_queue.empty()) {
 		auto &p_world_feature {this->wf_process_queue.front()};
 		if (p_world_feature != nullptr) p_world_feature->on_update();
 		this->wf_process_queue.pop();
@@ -55,8 +58,8 @@ void world::on_update() {
 }
 
 void world::on_render() {
-    api::world::camera();
-    glm::mat4 mvp {};
+    auto camera {api::world::camera()};
+    glm::mat4 mvp {camera->get_perspective() * camera->get_view()};
 
     entity *p_entity {};
     model *p_model {};

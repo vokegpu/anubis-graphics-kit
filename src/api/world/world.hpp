@@ -8,6 +8,8 @@
 #include <queue>
 #include <map>
 
+static const float agk_perspective_clip_distance {1000.0f};
+
 class world : public feature {
 protected:
 	int32_t wf_token_id {};

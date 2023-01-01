@@ -11,17 +11,25 @@ protected:
     glm::vec3 up {};
     glm::vec3 world_up {};
     glm::mat4 view {};
+    glm::mat4 perspective {};
 
     std::vector<uint32_t> framebuffer_list {};
+    float fov {};
 public:
     glm::vec3 &get_front();
     glm::vec3 &get_right();
     glm::vec3 &get_up();
     glm::vec3 &get_world_up();
     glm::mat4 &get_view();
+    glm::mat4 &get_perspective();
+
+    void set_fov(float radians_angle);
+    float get_fov();
 
     void add_framebuffer(uint32_t framebuffer);
     std::vector<uint32_t> &get_framebuffer_list();
+
+    void on_event(SDL_Event &sdl_event) override;
 };
 
 #endif
