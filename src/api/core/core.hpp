@@ -11,7 +11,7 @@
 
 class core {
 public:
-    SDL_Window* root {nullptr};
+    SDL_Window *p_sdl_window {nullptr};
     int32_t screen_width {1600};
     int32_t screen_height {900};
 

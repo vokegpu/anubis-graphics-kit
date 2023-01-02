@@ -9,7 +9,7 @@ namespace api {
 
     void mainloop(feature *p_feature);
     void path(const char*);
-
+    
     namespace scene {
         void load(feature *p_feature);
         feature* &current();
@@ -27,7 +27,7 @@ namespace api {
     };
 
     namespace world {
-        camera *camera();
+        camera *currentcamera();
         ::world &current();
         void create(world_feature *p_world_feature);
         void destroy(world_feature *p_world_feature);
@@ -35,7 +35,6 @@ namespace api {
 
     namespace mesh {
         bool load(::mesh::data&, std::string_view);
-
     };
 
     namespace input {

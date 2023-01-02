@@ -1,6 +1,6 @@
 #include "memory.hpp"
 
-std::vector<int32_t, void*> memory::map {};
+std::map<int32_t, void*> memory::map {};
 
 void *memory::check(int32_t id) {
 	return memory::map[id];

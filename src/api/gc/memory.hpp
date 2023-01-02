@@ -2,6 +2,7 @@
 #define API_GC_CPU_RAM_H
 
 #include <map>
+#include <iostream>
 
 struct memory {
 protected:

@@ -23,8 +23,8 @@ void api::mainloop(feature* initial_scene) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-    api::app.root = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, api::app.screen_width, api::app.screen_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    SDL_GLContext sdl_gl_context {SDL_GL_CreateContext(api::app.root)};
+    api::app.p_sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, api::app.screen_width, api::app.screen_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    SDL_GLContext sdl_gl_context {SDL_GL_CreateContext(api::app.p_sdl_window)};
     util::log("window released");
 
     glewExperimental = true;
@@ -53,7 +53,7 @@ void api::mainloop(feature* initial_scene) {
     api::app.mainloop = true;
     api::gc::create(&api::app.world_client);
     api::gc::create(api::app.p_current_camera);
-    api::scene::load(initial_scene);
+    api::scene::load(initial_scene);;
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -114,7 +114,7 @@ void api::mainloop(feature* initial_scene) {
         batch.draw();
 
         ticked_frames++;
-        SDL_GL_SwapWindow(api::app.root);
+        SDL_GL_SwapWindow(api::app.p_sdl_window);
         SDL_Delay(cpu_ticks_interval);
     }
 }
@@ -235,6 +235,10 @@ bool api::shading::find(std::string_view key, ::shading::program *p_program) {
 
 ::shading::program *api::shading::registry(std::string_view key, ::shading::program *p_program) {
     return api::app.shader_registry_map[key.data()];
+}
+
+camera *api::world::currentcamera() {
+    return api::app.p_current_camera;
 }
 
 ::world &api::world::current() {

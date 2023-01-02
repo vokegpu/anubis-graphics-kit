@@ -11,7 +11,6 @@ public:
 
     void on_create() override;
     void on_destroy() override;
-
 };
 
 #endif
