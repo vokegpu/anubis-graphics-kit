@@ -1,4 +1,4 @@
-#version 450
+#version 450 core
 
 layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec2 TextureCoordinate;
@@ -13,9 +13,9 @@ uniform mat4 MatrixModel;
 uniform mat3 MatrixNormal;
 
 void main() {
-    Position = MatrixModel * vec4(VertexPosition, 1.0f);
+    Pos = (MatrixModel * vec4(VertexPosition, 1.0f)).xyz;
     Texcoord = TextureCoordinate;
-    Normal = FaceNormal * MatrixNormal;
+    Normal = MatrixNormal * FaceNormal;
 
-    gl_Position = MVP * vec4(VertexPos, 1.0f);
+    gl_Position = MVP * vec4(VertexPosition, 1.0f);
 }

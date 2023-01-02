@@ -5,41 +5,30 @@
 #include <iostream>
 #include <vector>
 #include "api/feature/feature.hpp"
-
-enum bufferingmode {
-	normal, instanced
-};
+#include <glm/glm.hpp>
 
 class buffering : public feature {
-public:
-    const char* tag {};
-    int32_t id {};
+protected:
+    static uint32_t current_type_bind[2];
 
-	uint32_t buffer_vao {0};
-    uint32_t buffer_ebo {};
-
-    uint32_t primitive {GL_TRIANGLES};
-    int32_t stride_begin {};
-    int32_t stride_end {};
-    int32_t instanced_size {};
-
-    std::vector<GLuint> buffer_list {};
+    std::vector<uint32_t> buffer_list {};
+    uint32_t buffer_vao {}, buffer_ebo {};
     uint32_t buffer_list_size {};
+public:
+    enum class type {
+        direct, instanced    
+    };
 
-    bufferingmode mode {};
+    buffering::type type {};
+    uint32_t primitive {GL_TRIANGLES};
+    int32_t stride[3] {};
 
-	void bind();
-    void send_data(GLint size, void* data, GLuint draw_mode);
-	void shader(GLuint location, GLint vec_rows, GLint begin, GLsizeiptr end);
-	void shader_instanced(GLuint location, GLint vec_rows, GLsizeiptr vec_columns, GLsizeiptr size);
-
-    void bind_ebo();
-    void send_indexing_data(GLint size, void* data, GLuint draw_mode);
-
-	void invoke();
-	void revoke();
-
-    void destroy();
+    void bind(const glm::ivec2 & = {GL_ARRAY_BUFFER, GL_FLOAT});
+    void send(size_t size, void *p_data, uint32_t gl_driver_read_mode);
+    void attach(uint32_t location, uint32_t vec, const glm::ivec2 &stride);
+    
+    void invoke();
+    void revoke();
     void draw();
 };
 

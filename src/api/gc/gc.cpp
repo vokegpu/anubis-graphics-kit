@@ -5,13 +5,17 @@ std::queue<feature*> gc::queue_uncreated {};
 std::queue<feature*> gc::queue_undead {};
 
 void gc::destroy(feature *p_feature) {
+    if (p_feature == nullptr) {
+        return;
+    }
+
     gc::queue_undead.push(p_feature);
     this->should_poll_undead = true;
 }
 
 void gc::create(feature *p_feature) {
     if (p_feature == nullptr) {
-        p_feature = new feature {};
+        return;
     }
 
     gc::queue_uncreated.push(p_feature);

@@ -22,7 +22,7 @@ namespace api {
 
     namespace shading {
         bool createprogram(std::string_view, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list);
-        bool find(std::string_view key, ::shading::program *p_program);
+        bool find(std::string_view key, ::shading::program *&p_program);
         ::shading::program *registry(std::string_view key, ::shading::program *p_program);
     };
 

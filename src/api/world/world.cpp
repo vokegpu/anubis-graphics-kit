@@ -28,7 +28,7 @@ void world::refresh_wf_renderer() {
 	}
 }
 
-void world::append_process(world_feature *p_world_feature) {
+void world::append_process(world_feature *&p_world_feature) {
 	if (memory::check(p_world_feature->id) == nullptr) {
 		memory::emmite(p_world_feature->id, p_world_feature);
 		this->wf_process_queue.push(p_world_feature);

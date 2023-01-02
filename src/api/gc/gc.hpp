@@ -12,8 +12,8 @@ public:
     bool should_poll_uncreated {};
     bool should_poll_undead {};
 
-    void create(feature*);
-    void destroy(feature*);
+    void create(feature *p_feature);
+    void destroy(feature *p_feature);
     void do_update();
 };
 

@@ -52,8 +52,10 @@ void api::mainloop(feature* initial_scene) {
 
     api::app.mainloop = true;
     api::gc::create(&api::app.world_client);
+    api::scene::load(initial_scene);
+
+    api::app.p_current_camera = new camera {};
     api::gc::create(api::app.p_current_camera);
-    api::scene::load(initial_scene);;
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -168,6 +170,8 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
     std::vector<uint32_t> compiled_shader_list {};
 
     for (const ::shading::resource &resource : resource_list) {
+        shader_source.clear();
+
         if (resource.is_source_code) {
             shader_source = resource.path.data();
         } else {
@@ -229,8 +233,9 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
     return false;
 }
 
-bool api::shading::find(std::string_view key, ::shading::program *p_program) {
+bool api::shading::find(std::string_view key, ::shading::program *&p_program) {
     p_program = api::app.shader_registry_map[key.data()];
+    return p_program != nullptr;
 }
 
 ::shading::program *api::shading::registry(std::string_view key, ::shading::program *p_program) {
