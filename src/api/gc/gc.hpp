@@ -7,10 +7,8 @@
 class gc {
 protected:
     std::queue<feature*> queue {};
-public:
-    bool should_poll_uncreated {};
     bool should_poll {};
-
+public:
     void create(feature *p_feature);
     void destroy(feature *p_feature);
     void do_update();

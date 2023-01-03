@@ -30,7 +30,7 @@ public:
     renderer world_renderer {};
 
     std::map<std::string, shading::program*> shader_registry_map {};
-
+    std::vector<feature*> loaded_service_list {};
 };
 
 #endif

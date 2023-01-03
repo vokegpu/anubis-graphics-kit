@@ -7,6 +7,7 @@ class feature {
 public:
     bool is_enable {true};
     bool is_dead {};
+    int32_t id {};
 
     virtual void on_create();
     virtual void on_destroy();

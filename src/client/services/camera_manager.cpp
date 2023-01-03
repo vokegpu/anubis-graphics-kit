@@ -1,7 +1,7 @@
 #include "camera_manager.hpp"
 #include "api/api.hpp"
 
-void camera_manager::on_create() {
+void client::services::camera_manager::on_create() {
     feature::on_create();
 
     this->setting_m_backward.set_value("s");
@@ -12,12 +12,15 @@ void camera_manager::on_create() {
     this->p_camera_linked = api::world::currentcamera();
 }
 
-void camera_manager::on_destroy() {
+void client::services::camera_manager::on_destroy() {
     feature::on_destroy();
 }
 
-void camera_manager::on_event(SDL_Event &sdl_event) {
+void client::services::camera_manager::on_event(SDL_Event &sdl_event) {
     feature::on_event(sdl_event);
+    if (this->p_camera_linked == nullptr) {
+        return;
+    }
 
     bool should_rotate {
         this->camera_rotation && !this->camera_editor || (this->camera_editor && api::input::pressed(this->setting_editor_rotate.get_value()))
@@ -27,30 +30,30 @@ void camera_manager::on_event(SDL_Event &sdl_event) {
     this->p_camera_linked->on_event(sdl_event);
 }
 
-void camera_manager::on_update() {
+void client::services::camera_manager::on_update() {
     feature::on_update();
 }
 
-void camera_manager::set_editor_enabled(bool enabled) {
+void client::services::camera_manager::set_editor_enabled(bool enabled) {
     this->camera_editor = enabled;
 }
 
-bool camera_manager::is_editor_enabled() {
+bool client::services::camera_manager::is_editor_enabled() {
     return this->camera_editor;
 }
 
-void camera_manager::set_movement_enabled(bool enabled) {
+void client::services::camera_manager::set_movement_enabled(bool enabled) {
     this->camera_movement = enabled;
 }
 
-bool camera_manager::is_movement_enabled() {
+bool client::services::camera_manager::is_movement_enabled() {
     return this->camera_movement;
 }
 
-void camera_manager::set_rotation_enabled(bool enabled) {
+void client::services::camera_manager::set_rotation_enabled(bool enabled) {
     this->camera_rotation = enabled;
 }
 
-bool camera_manager::is_rotation_enabled() {
+bool client::services::camera_manager::is_rotation_enabled() {
     return this->camera_rotation;
 }

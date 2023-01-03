@@ -9,6 +9,10 @@ namespace api {
 
     void mainloop(feature *p_feature);
     void path(const char*);
+
+    namespace service {
+        void registry(feature *p_feature);
+    };
     
     namespace scene {
         void load(feature *p_feature);

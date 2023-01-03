@@ -7,7 +7,7 @@
 profile api::app {};
 float api::dt {};
 
-void api::path(const char* str_path) {
+void api::path(const char *str_path) {
     util::log(str_path);
 }
 
@@ -34,12 +34,6 @@ void api::mainloop(feature* initial_scene) {
 
     amogpu::gl_version = "#version 450";
     amogpu::init();
-
-    dynamic_batching batch {};
-    font_renderer f_renderer {};
-    f_renderer.load("./data/fonts/impact.ttf", 36);
-    f_renderer.from(amogpu::invoked);
-    batch.set_frustum_depth(false);
 
     util::timing reduce_cpu_ticks_timing {};
     util::timing counter_fps_timing {};
@@ -76,8 +70,11 @@ void api::mainloop(feature* initial_scene) {
                 default: {
                     api::app.input_manager.on_event(sdl_event);
                     if (api::app.p_current_scene != nullptr) api::app.p_current_scene->on_event(sdl_event);
-                    api::app.p_current_camera->on_event(sdl_event);
                     api::app.world_client.on_event(sdl_event);
+
+                    for (feature *&p_feature : api::app.loaded_service_list) {
+                        p_feature->on_event(sdl_event);
+                    }
                     break;
                 }
             }
@@ -92,9 +89,14 @@ void api::mainloop(feature* initial_scene) {
             api::app.p_current_scene->on_update();
         }
 
+        for (feature *&p_feature : api::app.loaded_service_list) {
+            p_feature->on_update();
+        }
+
         api::app.world_client.on_update();
-        api::app.garbage_collector.do_update();
         api::app.input_manager.on_update();
+        api::app.garbage_collector.do_update();
+
         amogpu::matrix();
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
@@ -105,15 +107,9 @@ void api::mainloop(feature* initial_scene) {
             api::app.p_current_scene->on_render();
         }
 
-        if (api::app.p_current_camera->rotation != previous_camera_rotation) {
-            previous_camera_rotation = api::app.p_current_camera->rotation;
-
-            batch.invoke();
-            f_renderer.render("Yaw Pitch [" + std::to_string(previous_camera_rotation.x) + ", " + std::to_string(previous_camera_rotation.y) + "]", 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
-            batch.revoke();
+        for (feature *&p_feature : api::app.loaded_service_list) {
+            p_feature->on_render();
         }
-
-        batch.draw();
 
         ticked_frames++;
         SDL_GL_SwapWindow(api::app.p_sdl_window);
@@ -278,4 +274,16 @@ bool api::mesh::load(::mesh::data &data, std::string_view path) {
 
 bool api::input::pressed(std::string_view input_tag) {
     return api::app.input_manager.input_map[input_tag.data()];
+}
+
+void api::service::registry(feature *p_feature) {
+    if (p_feature == nullptr) {
+        return;
+    }
+
+    api::gc::create(p_feature);
+    api::app.loaded_service_list.push_back(p_feature);
+
+    p_feature->id = api::app.loaded_service_list.size();
+    util::log("Registered internal service ID (" + std::to_string(p_feature->id) + ")");
 }
