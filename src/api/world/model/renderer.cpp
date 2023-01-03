@@ -1,6 +1,5 @@
 #include "renderer.hpp"
 
-
 model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     model *p_model {this->find(tag)};
     if (p_model != nullptr) {
@@ -12,6 +11,8 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
 
     p_model = new model {};
     p_model->id = static_cast<int32_t>(this->loaded_model_list.size()) + 1;
+    this->loaded_model_list.push_back(p_model);
+    this->model_register_map[tag.data()] = p_model->id;
 
     auto &buffering = p_model->buffering;
     buffering.invoke();
@@ -37,8 +38,8 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
         buffering.attach(3);
     }
 
-    if (mesh_data.contains(mesh::type::vertex)) {
-        i_list = mesh_data.get_indexing_list(mesh::type::vertex);
+    if (mesh_data.contains(mesh::type::vertex, true)) {
+        i_list = mesh_data.get_uint_list(mesh::type::vertex);
         buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         buffering.send(sizeof(uint32_t) * i_list.size(), i_list.data(), GL_STATIC_DRAW);
         buffering.attach(1);

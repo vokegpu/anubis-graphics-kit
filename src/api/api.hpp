@@ -1,10 +1,10 @@
 #ifndef AGK_API_H
 #define AGK_API_H
 
-#include "api/core/core.hpp"
+#include "api/profile/profile.hpp"
 
 namespace api {
-    extern core app;
+    extern profile app;
     extern float dt;
 
     void mainloop(feature *p_feature);
@@ -29,6 +29,9 @@ namespace api {
     namespace world {
         camera *currentcamera();
         ::world &current();
+        renderer &renderer();
+
+        model *create(std::string_view tag, std::string_view path);
         void create(world_feature *p_world_feature);
         void destroy(world_feature *p_world_feature);
     };

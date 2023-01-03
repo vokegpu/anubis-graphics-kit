@@ -125,7 +125,7 @@ void mesh::data::append(mesh::type type, uint32_t index) {
     }
 }
 
-std::vector<uint32_t> &mesh::data::get_indexing_list(mesh::type type) {
+std::vector<uint32_t> &mesh::data::get_uint_list(mesh::type type) {
     switch (type) {
         case mesh::type::vertex: {
             return this->iv_list;

@@ -28,7 +28,7 @@ void world::refresh_wf_renderer() {
 	}
 }
 
-void world::append_process(world_feature *&p_world_feature) {
+void world::append_process(world_feature *p_world_feature) {
 	if (memory::check(p_world_feature->id) == nullptr) {
 		memory::emmite(p_world_feature->id, p_world_feature);
 		this->wf_process_queue.push(p_world_feature);
@@ -38,8 +38,8 @@ void world::append_process(world_feature *&p_world_feature) {
 void world::on_create() {
     shading::program *p_program_material_pbr {new ::shading::program {}};
     api::shading::createprogram("MaterialPBR", p_program_material_pbr,  {
-        {"./effects/MaterialPBR.vsh", shading::stage::vertex},
-        {"./effects/MaterialPBR.fsh", shading::stage::fragment}
+        {"./data/effects/MaterialPBR.vsh", shading::stage::vertex},
+        {"./data/effects/MaterialPBR.fsh", shading::stage::fragment}
     });
 }
 
@@ -149,4 +149,14 @@ void world::on_render() {
     }
 
     glUseProgram(0);
+}
+
+world_feature *world::unregister_wf(world_feature *p_world_feature) {
+    if (p_world_feature != nullptr) {
+        this->registered_wf_map.erase(p_world_feature->id);
+        api::gc::destroy(p_world_feature);
+        return p_world_feature;
+    }
+
+    return nullptr;
 }

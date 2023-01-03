@@ -8,7 +8,7 @@ void mesh_loader::process_indexing(mesh::data &data) {
     uint32_t v[3] {}, cur {};
     nb_seen.resize(this->v_packed_list.size(), 0);
 
-    auto &i_list {data.get_indexing_list(mesh::type::vertex)};
+    auto &i_list {data.get_uint_list(mesh::type::vertex)};
 
     for (int32_t it {}; it < i_list.size(); it += 3) {
         uint32_t ia {i_list[it]}, ib {i_list[it + 1]}, ic {i_list[it + 2]};

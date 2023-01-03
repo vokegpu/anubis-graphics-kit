@@ -4,7 +4,7 @@
 #include <amogpu/amogpu.hpp>
 #include "api/util/file.hpp"
 
-core api::app {};
+profile api::app {};
 float api::dt {};
 
 void api::path(const char* str_path) {
@@ -12,10 +12,10 @@ void api::path(const char* str_path) {
 }
 
 void api::mainloop(feature* initial_scene) {
-    util::log("initialising");
+    util::log("Initialising");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
-        util::log("failed to init SDL");
+        util::log("Failed to init SDL");
         return;
     }
 
@@ -25,14 +25,14 @@ void api::mainloop(feature* initial_scene) {
 
     api::app.p_sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, api::app.screen_width, api::app.screen_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext sdl_gl_context {SDL_GL_CreateContext(api::app.p_sdl_window)};
-    util::log("window released");
+    util::log("SDL window released");
 
     glewExperimental = true;
     glewInit();
     SDL_GL_SetSwapInterval(1);
     util::log("OpenGL 4 context created");
 
-    amogpu::gl_version = "#version 450 core";
+    amogpu::gl_version = "#version 450";
     amogpu::init();
 
     dynamic_batching batch {};
@@ -248,6 +248,28 @@ camera *api::world::currentcamera() {
 
 ::world &api::world::current() {
     return api::app.world_client;
+}
+
+renderer &api::world::renderer() {
+    return api::app.world_renderer;
+}
+
+void api::world::create(world_feature *p_world_feature) {
+    api::app.world_client.registry_wf(p_world_feature);
+}
+
+void api::world::destroy(world_feature *p_world_feature) {
+    api::app.world_client.unregister_wf(p_world_feature);
+}
+
+model *api::world::create(std::string_view tag, std::string_view path) {
+    ::mesh::data mesh {};
+    mesh.format = ::mesh::format::stl;
+    if (api::mesh::load(mesh, path.data())) {
+        return nullptr;
+    }
+
+    return api::app.world_renderer.add(tag, mesh);
 }
 
 bool api::mesh::load(::mesh::data &data, std::string_view path) {
