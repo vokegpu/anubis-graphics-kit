@@ -6,11 +6,10 @@
 
 class gc {
 protected:
-    static std::queue<feature*> queue_uncreated;
-    static std::queue<feature*> queue_undead;
+    std::queue<feature*> queue {};
 public:
     bool should_poll_uncreated {};
-    bool should_poll_undead {};
+    bool should_poll {};
 
     void create(feature *p_feature);
     void destroy(feature *p_feature);

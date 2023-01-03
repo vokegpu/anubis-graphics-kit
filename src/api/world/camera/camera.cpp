@@ -9,28 +9,10 @@ float camera::get_mouse_sensitivity() {
 }
 
 void camera::on_event(SDL_Event &sdl_event) {
+    frustum::on_event(sdl_event);
     if (!this->mouse_locked) {
         return;
     }
-
-    switch (this->visible) {
-        case enums::state::enable: {
-            if (!this->mouse_shown) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
-                this->mouse_shown = true;
-            }
-            break;
-        }
-
-        case enums::state::disable: {
-            if (this->mouse_shown) {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-                this->mouse_shown = false;
-            }
-        }
-    }
-
-    feature::on_event(sdl_event);
 
     switch (sdl_event.type) {
         case SDL_MOUSEMOTION: {
@@ -69,4 +51,33 @@ void camera::update_rotation() {
     this->front = glm::normalize(f);
     this->right = glm::normalize(glm::cross(this->front, this->world_up));
     this->up = glm::normalize(glm::cross(this->right, this->front));
+}
+
+void camera::set_mouse_locked(bool state) {
+    if (this->mouse_locked == state) {
+        return;
+    }
+
+    switch (this->visible) {
+        case enums::state::enable: {
+            if (!this->mouse_shown) {
+                SDL_SetRelativeMouseMode(SDL_TRUE);
+                this->mouse_shown = true;
+            }
+            break;
+        }
+
+        case enums::state::disable: {
+            if (this->mouse_shown) {
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+                this->mouse_shown = false;
+            }
+        }
+    }
+
+    this->mouse_locked = state;
+}
+
+bool camera::is_mouse_locked() {
+    return this->mouse_locked;
 }

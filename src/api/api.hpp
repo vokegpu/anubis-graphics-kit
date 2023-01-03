@@ -12,7 +12,7 @@ namespace api {
     
     namespace scene {
         void load(feature *p_feature);
-        feature* &current();
+        feature *&current();
     }
 
     namespace gc {
@@ -27,7 +27,7 @@ namespace api {
     };
 
     namespace world {
-        camera *currentcamera();
+        camera *&currentcamera();
         ::world &current();
         renderer &renderer();
 

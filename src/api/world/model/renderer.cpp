@@ -1,8 +1,9 @@
 #include "renderer.hpp"
 
 model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
-    model *p_model {this->find(tag)};
-    if (p_model != nullptr) {
+    model *p_model {nullptr};
+
+    if (this->find(tag, p_model)) {
         return p_model;
     }
 
@@ -49,13 +50,14 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     return p_model;
 }
 
-model *renderer::find(std::string_view tag) {
+bool renderer::find(std::string_view tag, model *& p_model) {
     int32_t index {this->model_register_map[tag.data()] - 1};
     if (index == -1 || index > this->loaded_model_list.size()) {
-        return nullptr;
+        return false;
     }
 
-    return this->loaded_model_list.at(index);
+    p_model = this->loaded_model_list.at(index);
+    return true;
 }
 
 bool renderer::contains(std::string_view tag) {

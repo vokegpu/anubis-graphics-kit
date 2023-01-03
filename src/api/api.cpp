@@ -48,7 +48,7 @@ void api::mainloop(feature* initial_scene) {
     uint64_t fps_interval {1000};
     uint64_t ticked_frames {};
     SDL_Event sdl_event {};
-    glm::vec3 previous_camera_rotation {};
+    glm::vec3 previous_camera_rotation {2, 2, 2};
 
     api::app.mainloop = true;
     api::gc::create(&api::app.world_client);
@@ -150,7 +150,7 @@ void api::scene::load(feature* scene) {
     }
 }
 
-feature* &api::scene::current() {
+feature *&api::scene::current() {
     return api::app.p_current_scene;
 }
 
@@ -242,7 +242,7 @@ bool api::shading::find(std::string_view key, ::shading::program *&p_program) {
     return api::app.shader_registry_map[key.data()];
 }
 
-camera *api::world::currentcamera() {
+camera *&api::world::currentcamera() {
     return api::app.p_current_camera;
 }
 

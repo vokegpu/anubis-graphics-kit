@@ -12,7 +12,7 @@ private:
     std::map<std::string, int32_t> model_register_map {};
 public:
     model *add(std::string_view tag, mesh::data &mesh_data);
-    model *find(std::string_view tag);
+    bool find(std::string_view tag, model *& p_model);
     bool contains(std::string_view tag);
 
 };
