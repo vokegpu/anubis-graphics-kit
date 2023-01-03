@@ -24,9 +24,12 @@ void buffering::send(size_t size, void *p_data, uint32_t gl_driver_read_mode) {
     glBufferData(buffering::current_type_bind[0], size, p_data, gl_driver_read_mode);
 }
 
-void buffering::attach(uint32_t location, uint32_t vec, const glm::ivec2 &stride) {
-    glEnableVertexAttribArray(location);
-    glVertexAttribPointer(location, vec, buffering::current_type_bind[1], GL_FALSE, stride.x, (void*) (stride.y));
+void buffering::attach(int32_t vec, const glm::ivec2 &array_stride) {
+    glEnableVertexAttribArray(this->shader_location_index);
+    glVertexAttribPointer(this->shader_location_index, vec, buffering::current_type_bind[1], GL_FALSE, array_stride.x, (void*) static_cast<uint64_t>(array_stride.y));
+
+    /* Pass to next shader location. */
+    this->shader_location_index++;
 }
 
 void buffering::invoke() {
@@ -35,6 +38,7 @@ void buffering::invoke() {
     }
 
     glBindVertexArray(this->buffer_vao);
+    this->shader_location_index = 0;
 }
 
 void buffering::revoke() {

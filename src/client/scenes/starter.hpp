@@ -1,5 +1,5 @@
-#ifndef AGK_CLIENT_SCENES_START_SCENE_H
-#define AGK_CLIENT_SCENES_START_SCENE_H
+#ifndef AGK_IMPL_SCENE_STARTER_H
+#define AGK_IMPL_SCENE_STARTER_H
 
 #include "api/feature/feature.hpp"
 #include "api/gpu/buffering.hpp"

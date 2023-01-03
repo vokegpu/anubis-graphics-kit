@@ -14,6 +14,7 @@ protected:
     std::vector<uint32_t> buffer_list {};
     uint32_t buffer_vao {}, buffer_ebo {};
     uint32_t buffer_list_size {};
+    uint32_t shader_location_index {};
 public:
     enum class type {
         direct, instanced    
@@ -23,9 +24,9 @@ public:
     uint32_t primitive {GL_TRIANGLES};
     int32_t stride[3] {};
 
-    void bind(const glm::ivec2 & = {GL_ARRAY_BUFFER, GL_FLOAT});
+    void bind(const glm::ivec2 &buffer_type);
     void send(size_t size, void *p_data, uint32_t gl_driver_read_mode);
-    void attach(uint32_t location, uint32_t vec, const glm::ivec2 &stride);
+    void attach(int32_t vec, const glm::ivec2 &array_stride = {0, 0});
     
     void invoke();
     void revoke();

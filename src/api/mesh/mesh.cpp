@@ -161,14 +161,14 @@ std::vector<float> &mesh::data::get_float_list(mesh::type type) {
     return this->n_list;
 }
 
-bool mesh::data::contains(mesh::type type) {
+bool mesh::data::contains(mesh::type type, bool indexing) {
     switch (type) {
         case mesh::type::vertex: {
-            return !this->v_list.empty();
+            return indexing ? !this->iv_list.empty() : !this->v_list.empty();
         }
 
         case mesh::type::textcoord: {
-            return !this->t_list.empty();
+            indexing ? !this->it_list.empty() : !this->t_list.empty();
         }
 
         default: {
@@ -176,5 +176,5 @@ bool mesh::data::contains(mesh::type type) {
         }
     }
 
-    return !this->n_list.empty();
+    return indexing ? !this->in_list.empty() : !this->n_list.empty();
 }

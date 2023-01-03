@@ -39,7 +39,7 @@ namespace mesh {
 
         std::vector<uint32_t> &get_indexing_list(mesh::type type);
         std::vector<float> &get_float_list(mesh::type type);
-        bool contains(mesh::type type);
+        bool contains(mesh::type type, bool indexing = false);
     };
 }
 
