@@ -22,42 +22,16 @@ void input::on_event(SDL_Event &sdl_event) {
         }
 
         case SDL_MOUSEBUTTONDOWN: {
-            switch (sdl_event.button.button) {
-                case SDL_BUTTON_LEFT: {
-                    this->input_map["mouse-left"] = true;
-                    break;
-                }
-
-                case SDL_BUTTON_MIDDLE: {
-                    this->input_map["mouse-middle"] = true;
-                    break;
-                }
-
-                case SDL_BUTTON_RIGHT: {
-                    this->input_map["mouse-right"] = true;
-                    break;
-                }
-            }
+            std::string tag {"mouse-"};
+            tag += std::to_string(sdl_event.button.button);
+            this->input_map[tag] = true;
             break;
         }
 
         case SDL_MOUSEBUTTONUP: {
-            switch (sdl_event.button.button) {
-                case SDL_BUTTON_LEFT: {
-                    this->input_map["mouse-left"] = false;
-                    break;
-                }
-
-                case SDL_BUTTON_MIDDLE: {
-                    this->input_map["mouse-middle"] = false;
-                    break;
-                }
-
-                case SDL_BUTTON_RIGHT: {
-                    this->input_map["mouse-right"] = false;
-                    break;
-                }
-            }
+            std::string tag {"mouse-"};
+            tag += std::to_string(sdl_event.button.button);
+            this->input_map[tag] = false;
             break;
         }
     }
