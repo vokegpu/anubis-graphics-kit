@@ -4,6 +4,7 @@
 #include "api/feature/feature.hpp"
 #include "api/world/camera/camera.hpp"
 #include "api/value/value.hpp"
+#include "api/world/environment/entity.hpp"
 #include <iostream>
 
 namespace client::services {
@@ -13,7 +14,20 @@ namespace client::services {
         bool camera_movement{};
         bool camera_editor{};
     public:
-        camera *p_camera_linked{};
+        camera *p_camera_linked {};
+        entity *p_entity_linked {};
+
+        value<std::string> bind_m_forward {};
+        value<std::string> bind_m_backward {};
+        value<std::string> bind_m_strafe_left {};
+        value<std::string> bind_m_strafe_right {};
+        value<std::string> bind_m_jump {};
+        value<std::string> bind_m_crouch {};
+        value<std::string> bind_editor_rotate {};
+
+        value<float> m_strafing {};
+        value<float> m_ward {};
+        value<float> m_speed {};
 
         void set_editor_enabled(bool enabled);
         bool is_editor_enabled();
@@ -23,12 +37,6 @@ namespace client::services {
 
         void set_rotation_enabled(bool enabled);
         bool is_rotation_enabled();
-
-        value<std::string> setting_m_forward{};
-        value<std::string> setting_m_backward{};
-        value<std::string> setting_m_strafe_left{};
-        value<std::string> setting_m_strafe_right{};
-        value<std::string> setting_editor_rotate{};
 
         void on_create() override;
         void on_destroy() override;

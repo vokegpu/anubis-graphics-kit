@@ -9,6 +9,7 @@
 #include "api/mesh/mesh_loader.hpp"
 #include "api/input/input.hpp"
 #include "api/world/model/renderer.hpp"
+#include "api/world/environment/entity.hpp"
 
 class profile {
 public:
@@ -22,6 +23,7 @@ public:
 
     feature *p_current_scene {nullptr};
     camera *p_current_camera {nullptr};
+    entity *p_current_player {nullptr};
 
     gc garbage_collector {};
     world world_client {};

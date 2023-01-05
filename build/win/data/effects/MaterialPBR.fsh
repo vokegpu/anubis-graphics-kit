@@ -8,7 +8,6 @@ in vec2 Texcoord;
 in vec3 Normal;
 
 uniform vec3 CameraPosition;
-uniform bool MaterialLightSpot;
 uniform struct {
     vec3 Color;
     bool Metal;
@@ -18,7 +17,7 @@ uniform struct {
 uniform int LoadedLightLen;
 uniform struct {
     vec3 Intensity;
-    bool Indirect;
+    bool Directional;
     vec3 POD;
 } Light[100];
 
@@ -56,7 +55,7 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
     vec3 intensity = Light[lightIndex].Intensity;
     vec3 l = vec3(0.0);
 
-    if (Light[lightIndex].Indirect) {
+    if (Light[lightIndex].Directional) {
         l = Light[lightIndex].POD;
     } else {
         l = Light[lightIndex].POD - Pos;
@@ -78,7 +77,7 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
 void main() {
     vec3 color = vec3(1.0f);
     
-    if (MaterialLightSpot) {
+    if (Material.Rough == 0.0f) {
         color = Material.Color;
     } else {
         vec3 n = normalize(Normal);

@@ -4,14 +4,15 @@
 #ifndef AGK_WORLD_PBR_MATERIAL_H
 #define AGK_WORLD_PBR_MATERIAL_H
 
-class pbrm {
+class material {
 protected:
 	int32_t texture {};
 	glm::vec3 color {};
+    float rough {0.43f};
 	enums::material type {enums::material::empty};
 public:
-	pbrm();
-	~pbrm();
+	explicit material(enums::material material_type);
+	~material();
 
 	void set_color(glm::vec3 color3f);
 	glm::vec3 get_color();
@@ -19,40 +20,11 @@ public:
 	void set_texture(int32_t id);
 	int32_t get_texture();
 
+    void set_rough_based_type(enums::material material_type);
+    void set_rough(float rough_value);
+    float get_rough();
+
 	enums::material get_type();
-};
-
-#endif
-
-#ifndef AGK_WORLD_PBR_MATERIAL_LIGHT_H
-#define AGK_WORLD_PBR_MATERIAL_LIGHT_H
-
-class pbrm_light : public pbrm {
-protected:
-	glm::vec3 intensity {0.4f, 0.4f, 0.4f};
-public:
-	pbrm_light();
-	~pbrm_light();
-
-	void set_intensity(glm::vec3 light_intensity);
-	glm::vec3 get_intensity();
-};
-
-#endif
-
-#ifndef AGK_WORLD_PBR_MATERIAL_SOLID_H
-#define AGK_WORLD_PBR_MATERIAL_SOLID_H
-
-class pbrm_solid : public pbrm {
-protected:
-	float rough {0.43f};
-public:
-	explicit pbrm_solid(enums::material material_type);
-	~pbrm_solid();
-
-	void set_rough_based_type(enums::material material_type);
-	void set_rough(float rough_value);
-	float get_rough();
 };
 
 #endif

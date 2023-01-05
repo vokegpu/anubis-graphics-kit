@@ -13,15 +13,23 @@ static const float agk_perspective_clip_distance {1000.0f};
 class world : public feature {
 protected:
 	int32_t wf_token_id {};
+    bool poll_low_priority_queue {};
 public:
+    int32_t loaded_light_size {};
 	std::map<int32_t, world_feature*> registered_wf_map {};
-	std::vector<world_feature*> wf_list {}, wf_draw_list {};
-	std::queue<world_feature*> wf_process_queue {};
+    std::queue<world_feature*> wf_low_priority_queue {};
+
+    std::vector<world_feature*> wf_list {};
+	std::vector<world_feature*> wf_high_priority_list {};
+    std::vector<world_feature*> wf_draw_list {};
 
 	void registry_wf(world_feature *p_world_feature);
     world_feature *unregister_wf(world_feature *p_world_feature);
-	void refresh_wf_renderer();
-	void append_process(world_feature *p_world_feature);
+    world_feature *find(int32_t wf_id);
+
+    void on_event_refresh_draw(SDL_Event &sdl_event);
+    void on_event_refresh_low_priority(SDL_Event &sdl_event);
+    void on_event_refresh_high_priority(SDL_Event &sdl_event);
 
 	void on_create() override;
 	void on_destroy() override;

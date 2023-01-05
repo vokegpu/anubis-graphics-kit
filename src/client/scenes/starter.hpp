@@ -3,10 +3,13 @@
 
 #include "api/feature/feature.hpp"
 #include "api/gpu/buffering.hpp"
+#include "client/services/camera_manager.hpp"
 
 namespace client::scenes {
     class starter : public feature {
     public:
+        client::services::camera_manager *p_camera_manager {};
+
         void on_create() override;
         void on_destroy() override;
         void on_event(SDL_Event &sdl_event) override;

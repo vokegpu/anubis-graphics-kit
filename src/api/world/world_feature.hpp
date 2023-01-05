@@ -9,12 +9,16 @@
 class world_feature : public feature {
 public:
 	enums::state visible {enums::state::disable};
-    pbrm *p_pbrm {nullptr};
+    enums::priority priority {enums::priority::high};
+
+    material *p_material {nullptr};
     enums::type type {enums::type::abstract};
 
 	glm::vec3 position {};
 	glm::vec3 rotation {};
-	glm::vec3 scale {};
+	glm::vec3 scale {1, 1, 1};
+
+    virtual void on_low_update();
 };
 
 #endif

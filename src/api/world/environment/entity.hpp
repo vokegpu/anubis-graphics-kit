@@ -7,6 +7,12 @@
 class entity : public world_feature {
 public:
     model *p_model {};
+    float speed_base {0.2867f};
+
+    glm::vec3 velocity {};
+    glm::vec3 acceleration {};
+
+    void on_update() override;
 };
 
 #endif

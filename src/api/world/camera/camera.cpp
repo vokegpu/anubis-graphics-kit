@@ -1,4 +1,5 @@
 #include "camera.hpp"
+#include "api/util/env.hpp"
 
 void camera::set_mouse_sensitivity(float value) {
     this->mouse_sensitivity = value;
@@ -59,15 +60,18 @@ void camera::set_mouse_locked(bool state) {
     }
 
     switch (this->visible) {
-        case enums::state::enable: {
-            if (!this->mouse_shown) {
+        case enums::state::disable: {
+            if (state) {
                 SDL_SetRelativeMouseMode(SDL_TRUE);
-                this->mouse_shown = true;
+            } else {
+                SDL_SetRelativeMouseMode(SDL_FALSE);
             }
+
+            this->mouse_shown = !state;
             break;
         }
 
-        case enums::state::disable: {
+        case enums::state::enable: {
             if (this->mouse_shown) {
                 SDL_SetRelativeMouseMode(SDL_FALSE);
                 this->mouse_shown = false;

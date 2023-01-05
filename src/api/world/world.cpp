@@ -1,10 +1,11 @@
 #include "world.hpp"
 #include "api/api.hpp"
-#include "api/gc/memory.hpp"
 #include "api/world/environment/entity.hpp"
 #include "api/world/model/model.hpp"
 #include "api/world/environment/object.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include "api/event/event.hpp"
+#include "api/util/env.hpp"
 
 void world::registry_wf(world_feature *p_world_feature) {
 	if (p_world_feature == nullptr) {
@@ -16,23 +17,6 @@ void world::registry_wf(world_feature *p_world_feature) {
 
 	this->registered_wf_map[p_world_feature->id] = p_world_feature;
 	this->wf_list.push_back(p_world_feature);
-}
-
-void world::refresh_wf_renderer() {
-	this->wf_draw_list.clear();
-
-	for (world_feature *&p_world_feature : this->wf_list) {
-		if (p_world_feature != nullptr && p_world_feature->visible == enums::state::enable) {
-			this->wf_draw_list.push_back(p_world_feature);
-		}
-	}
-}
-
-void world::append_process(world_feature *p_world_feature) {
-	if (memory::check(p_world_feature->id) == nullptr) {
-		memory::emmite(p_world_feature->id, p_world_feature);
-		this->wf_process_queue.push(p_world_feature);
-	}
 }
 
 void world::on_create() {
@@ -48,18 +32,48 @@ void world::on_destroy() {
 }
 
 void world::on_event(SDL_Event &sdl_event) {
-    auto camera {api::world::currentcamera()};
-    if (sdl_event.type == SDL_WINDOWEVENT) {
-        camera->on_event(sdl_event);
+    switch (sdl_event.type) {
+        case SDL_WINDOWEVENT: {
+            api::app.p_current_camera->on_event(sdl_event);
+            break;
+        }
+
+        case SDL_USEREVENT: {
+            switch (sdl_event.user.code) {
+                case event::WORLD_REFRESH_DRAW: {
+                    this->on_event_refresh_draw(sdl_event);
+                    break;
+                }
+
+                case event::WORLD_REFRESH_LOW_PRIORITY: {
+                    this->on_event_refresh_low_priority(sdl_event);
+                    break;
+                }
+
+                case event::WORLD_REFRESH_HIGH_PRIORITY: {
+                    this->on_event_refresh_high_priority(sdl_event);
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 
 void world::on_update() {
-	while (!this->wf_process_queue.empty()) {
-		auto &p_world_feature {this->wf_process_queue.front()};
-		if (p_world_feature != nullptr) p_world_feature->on_update();
-		this->wf_process_queue.pop();
-	}
+    if (this->poll_low_priority_queue) {
+        for (;!this->wf_low_priority_queue.empty();) {
+            auto &p_world_feature {this->wf_low_priority_queue.front()};
+            if (p_world_feature != nullptr) p_world_feature->on_low_update();
+            this->wf_low_priority_queue.pop();
+        }
+    }
+
+    for (world_feature *&p_world_feature : this->wf_list) {
+        if (p_world_feature != nullptr) {
+            p_world_feature->on_update();
+        }
+    }
 }
 
 void world::on_render() {
@@ -80,11 +94,11 @@ void world::on_render() {
     model *p_model {};
     object *p_object {};
 
-    pbrm_light *p_pbrm_light {};
-    pbrm_solid *p_pbrm_solid {};
     enums::material material_type {};
 
     glUseProgram(p_program_material_pbr->id);
+    int32_t current_light_loaded {};
+    std::string light_index_tag {};
 
 	for (world_feature *&p_world_feature : this->wf_draw_list) {
         if (p_world_feature == nullptr) {
@@ -109,7 +123,7 @@ void world::on_render() {
             }
         }
 
-        if (p_model == nullptr) {
+        if (p_model == nullptr || p_object->p_material == nullptr) {
             continue;
         }
 
@@ -124,30 +138,17 @@ void world::on_render() {
         mat4x4_model = mvp * mat4x4_model;
         p_program_material_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
 
-        material_type = p_world_feature->p_pbrm->get_type();
-        switch (material_type) {
-            case enums::material::light: {
-                p_pbrm_light = (pbrm_light*) p_world_feature->p_pbrm;
-
-                p_program_material_pbr->set_uniform_bool("Material.Color", &p_pbrm_light->get_intensity()[0]);
-                p_program_material_pbr->set_uniform_bool("MaterialLightSpot", true);
-                break;
-            }
-
-            default: {
-                p_pbrm_solid = (pbrm_solid*) p_world_feature->p_pbrm;
-
-                p_program_material_pbr->set_uniform_bool("MaterialLightSpot", false);
-                p_program_material_pbr->set_uniform_bool("Material.Solid.Metal", material_type == enums::material::metal);
-                p_program_material_pbr->set_uniform_float("Material.Solid.Rough",p_pbrm_solid->get_rough());
-
-                break;
-            }
-        }
+        material_type = p_object->p_material->get_type();
+        p_program_material_pbr->set_uniform_bool("Material.Metal", material_type == enums::material::metal);
+        p_program_material_pbr->set_uniform_float("Material.Rough", p_object->p_material->get_rough());
 
         p_model->buffering.draw();
     }
 
+    if (this->loaded_light_size != current_light_loaded) {
+        this->loaded_light_size = current_light_loaded;
+        p_program_material_pbr->set_uniform_int("LoadedLightLen", current_light_loaded);
+    };
     glUseProgram(0);
 }
 
@@ -158,5 +159,56 @@ world_feature *world::unregister_wf(world_feature *p_world_feature) {
         return p_world_feature;
     }
 
+    // todo: unregister object from world.
     return nullptr;
+}
+
+void world::on_event_refresh_draw(SDL_Event &sdl_event) {
+    auto *p_to_remove {static_cast<bool*>(sdl_event.user.data1)};
+    auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
+
+    if (*p_to_remove) {
+        this->wf_draw_list.clear();
+
+        for (world_feature *&p_world_feature : this->wf_list) {
+            if (p_world_feature == nullptr && p_world_feature->visible == enums::state::enable) {
+                this->wf_draw_list.push_back(p_world_feature);
+            }
+        }
+    } else {
+        world_feature *p_world_feature {this->find(*p_wf_id)};
+        if (p_world_feature != nullptr && p_world_feature->visible == enums::state::disable) this->wf_draw_list.push_back(p_world_feature);
+        p_world_feature->visible = enums::state::enable;
+    }
+
+    delete p_to_remove;
+    delete p_wf_id;
+}
+
+void world::on_event_refresh_low_priority(SDL_Event &sdl_event) {
+    auto *p_wf_id {static_cast<bool*>(sdl_event.user.data1)};
+    world_feature *p_world_feature_target {this->find(*p_wf_id)};
+
+    if (p_world_feature_target != nullptr && p_world_feature_target->priority == enums::priority::high) {
+        this->wf_high_priority_list.clear();
+
+        for (world_feature *&p_world_feature : this->wf_list) {
+            if (p_world_feature != nullptr && p_world_feature != p_world_feature_target) {
+                this->wf_high_priority_list.push_back(p_world_feature);
+            }
+        }
+    } else if (p_world_feature_target != nullptr && p_world_feature_target->priority == enums::priority::low) {
+        this->wf_low_priority_queue.push(p_world_feature_target);
+        this->poll_low_priority_queue = true;
+    }
+
+    delete p_wf_id;
+}
+
+void world::on_event_refresh_high_priority(SDL_Event &sdl_event) {
+
+}
+
+world_feature *world::find(int32_t wf_id) {
+    return this->registered_wf_map[wf_id];
 }

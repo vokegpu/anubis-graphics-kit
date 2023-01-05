@@ -9,8 +9,8 @@ OpenGL 4, used to learn shading algorithms.
 Using the agk API:
 ```c++
 api::scene::load(new your_scene());
-api::scene::load(nullptr); // close the current scene.
-api::scene::current(); // get current scene.
+api::scene::load(nullptr); // close the get scene.
+api::scene::current(); // get get scene.
 
 api::gc::destroy(feature_going_on);
 api::gc::create(your_feature);

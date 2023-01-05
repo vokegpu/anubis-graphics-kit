@@ -1,59 +1,39 @@
 #include "material.hpp"
 
-pbrm::pbrm() {
-
+material::material(enums::material material_type) {
+    this->type = material_type;
 }
 
-pbrm::~pbrm() = default;
+material::~material() = default;
 
-enums::material pbrm::get_type() {
+enums::material material::get_type() {
 	return this->type;
 }
 
-void pbrm::set_texture(int32_t id) {
+void material::set_texture(int32_t id) {
 	this->texture = id;
 }
 
-int32_t pbrm::get_texture() {
+int32_t material::get_texture() {
 	return this->texture;
 }
 
-void pbrm::set_color(glm::vec3 color3f) {
+void material::set_color(glm::vec3 color3f) {
 	this->color = color3f;
 }
 
-glm::vec3 pbrm::get_color() {
+glm::vec3 material::get_color() {
 	return this->color;
 }
 
-pbrm_light::pbrm_light() {
-	this->type = enums::material::light;
-}
-
-pbrm_light::~pbrm_light() = default;
-
-void pbrm_light::set_intensity(glm::vec3 color3f) {
-	this->intensity = color3f;
-}
-
-glm::vec3 pbrm_light::get_intensity() {
-	return this->intensity;
-}
-
-pbrm_solid::pbrm_solid(enums::material material_type) {
-	this->set_rough_based_type(material_type);
-}
-
-pbrm_solid::~pbrm_solid() = default;
-
-void pbrm_solid::set_rough_based_type(enums::material material_type) {
+void material::set_rough_based_type(enums::material material_type) {
 	this->set_rough(material_type == enums::material::metal ? 0.43f : 1.0f);
 }
 
-void pbrm_solid::set_rough(float rough_value) {
+void material::set_rough(float rough_value) {
 	this->rough = rough_value;
 }
 
-float pbrm_solid::get_rough() {
+float material::get_rough() {
 	return this->rough;
 }

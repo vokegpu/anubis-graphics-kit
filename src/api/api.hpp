@@ -7,7 +7,7 @@ namespace api {
     extern profile app;
     extern float dt;
 
-    void mainloop(feature *p_feature);
+    void mainloop(feature *p_scene_initial);
     void path(const char*);
 
     namespace service {
@@ -32,7 +32,9 @@ namespace api {
 
     namespace world {
         camera *&currentcamera();
-        ::world &current();
+        entity *&currentplayer();
+
+        ::world &get();
         renderer &renderer();
 
         model *create(std::string_view tag, std::string_view path);

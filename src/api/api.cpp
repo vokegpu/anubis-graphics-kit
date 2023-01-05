@@ -7,11 +7,11 @@
 profile api::app {};
 float api::dt {};
 
-void api::path(const char *str_path) {
-    util::log(str_path);
+void api::path(const char *p_arg_path) {
+    util::log(p_arg_path);
 }
 
-void api::mainloop(feature* initial_scene) {
+void api::mainloop(feature *p_scene_initial) {
     util::log("Initialising");
 
     if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -46,10 +46,13 @@ void api::mainloop(feature* initial_scene) {
 
     api::app.mainloop = true;
     api::gc::create(&api::app.world_client);
-    api::scene::load(initial_scene);
+    api::scene::load(p_scene_initial);
 
     api::app.p_current_camera = new camera {};
     api::gc::create(api::app.p_current_camera);
+
+    api::app.p_current_player = new entity {};
+    api::world::create(api::app.p_current_player);
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -57,6 +60,7 @@ void api::mainloop(feature* initial_scene) {
     while (api::app.mainloop) {
         cpu_ticks_last = cpu_ticks_now;
         cpu_ticks_now = SDL_GetPerformanceCounter();
+
         api::dt = static_cast<float>(cpu_ticks_now - cpu_ticks_last) / static_cast<float>(SDL_GetPerformanceFrequency());
         api::dt *= 100.0f;
 
@@ -242,7 +246,7 @@ camera *&api::world::currentcamera() {
     return api::app.p_current_camera;
 }
 
-::world &api::world::current() {
+::world &api::world::get() {
     return api::app.world_client;
 }
 
@@ -268,6 +272,10 @@ model *api::world::create(std::string_view tag, std::string_view path) {
     return api::app.world_renderer.add(tag, mesh);
 }
 
+entity *&api::world::currentplayer() {
+    return api::app.p_current_player;
+}
+
 bool api::mesh::load(::mesh::data &data, std::string_view path) {
     return api::app.mesh3d_loader.load_object(data, path);
 }
@@ -284,6 +292,6 @@ void api::service::registry(feature *p_feature) {
     api::gc::create(p_feature);
     api::app.loaded_service_list.push_back(p_feature);
 
-    p_feature->id = api::app.loaded_service_list.size();
+    p_feature->id = (int32_t) api::app.loaded_service_list.size();
     util::log("Registered internal service ID (" + std::to_string(p_feature->id) + ")");
 }
