@@ -7,17 +7,19 @@
 
 void client::scenes::starter::on_create() {
     model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl")};
-    object *p_object_dino {new object {p_model_dino}};
+    object *p_object_dino {new object(p_model_dino)};
     material *p_material {new material(enums::material::metal)};
+
     p_material->set_color({1.0f, 1.0f, 0.0f});
     p_object_dino->p_material = p_material;
 
     light *p_light_spot {new light()};
+    p_light_spot->intensity = {50, 50, 50};
     p_light_spot->position = {0, 15, 0};
-    p_light_spot->update();
 
     api::world::create(p_object_dino);
     api::world::create(p_light_spot);
+    p_light_spot->update();
 
     this->p_camera_manager->set_editor_enabled(true);
     this->p_camera_manager->set_movement_enabled(true);

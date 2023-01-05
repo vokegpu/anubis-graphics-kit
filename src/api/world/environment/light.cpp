@@ -5,6 +5,10 @@
 
 light::light(model *p_model_linked) {
     this->p_model = p_model_linked;
+    this->id = feature::token++;
+
+    this->set_visible(enums::state::disable);
+    this->set_priority(enums::priority::low);
 }
 
 light::~light() {
@@ -22,20 +26,15 @@ void light::on_low_update() {
     glUseProgram(p_program_material_pbr->id);
     p_program_material_pbr->set_uniform_vec3(light_index_tag + ".Intensity", &this->intensity[0]);
     p_program_material_pbr->set_uniform_bool(light_index_tag + ".Directional", this->directional);
-    p_program_material_pbr->set_uniform_vec3(light_index_tag + ".DirOrPos", &this->position[0]);
+    p_program_material_pbr->set_uniform_vec3(light_index_tag + ".POD", &this->position[0]);
     glUseProgram(0);
 
-    util::log("low priority ticking");
     this->low_update_ticking = false;
 }
 
 void light::update() {
     if (!this->low_update_ticking) {
-        int32_t *p_wf_id {new int32_t(this->id)};
-
-        SDL_Event sdl_event {};
-        sdl_event.user.data1 = p_wf_id;
-        event::dispatch(sdl_event, event::WORLD_REFRESH_LOW_PRIORITY);
+        this->set_priority(enums::priority::low);
     }
 
     this->low_update_ticking = true;

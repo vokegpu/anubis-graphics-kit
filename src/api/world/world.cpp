@@ -12,7 +12,6 @@ void world::registry_wf(world_feature *p_world_feature) {
 		return;
 	}
 
-    p_world_feature->id = ++this->wf_token_id;
 	api::gc::create(p_world_feature);
 
 	this->registered_wf_map[p_world_feature->id] = p_world_feature;
@@ -45,16 +44,12 @@ void world::on_event(SDL_Event &sdl_event) {
                     break;
                 }
 
-                case event::WORLD_REFRESH_LOW_PRIORITY: {
-                    this->on_event_refresh_low_priority(sdl_event);
-                    break;
-                }
-
-                case event::WORLD_REFRESH_HIGH_PRIORITY: {
-                    this->on_event_refresh_high_priority(sdl_event);
+                case event::WORLD_REFRESH_PRIORITY: {
+                    this->on_event_refresh_priority(sdl_event);
                     break;
                 }
             }
+
             break;
         }
     }
@@ -149,6 +144,7 @@ void world::on_render() {
         this->loaded_light_size = current_light_loaded;
         p_program_material_pbr->set_uniform_int("LoadedLightLen", current_light_loaded);
     };
+
     glUseProgram(0);
 }
 
@@ -167,29 +163,33 @@ void world::on_event_refresh_draw(SDL_Event &sdl_event) {
     auto *p_to_remove {static_cast<bool*>(sdl_event.user.data1)};
     auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
 
+    world_feature *p_world_feature {this->find(*p_wf_id)};
     if (*p_to_remove) {
         this->wf_draw_list.clear();
+        if (p_world_feature != nullptr) p_world_feature->set_visible(enums::state::disable, true);
 
-        for (world_feature *&p_world_feature : this->wf_list) {
-            if (p_world_feature == nullptr && p_world_feature->visible == enums::state::enable) {
-                this->wf_draw_list.push_back(p_world_feature);
+        for (world_feature *&p_world_features : this->wf_list) {
+            if (p_world_features == nullptr && p_world_features->get_visible() == enums::state::enable) {
+                this->wf_draw_list.push_back(p_world_features);
             }
         }
-    } else {
-        world_feature *p_world_feature {this->find(*p_wf_id)};
-        if (p_world_feature != nullptr && p_world_feature->visible == enums::state::disable) this->wf_draw_list.push_back(p_world_feature);
-        p_world_feature->visible = enums::state::enable;
+    } else if (p_world_feature != nullptr && p_world_feature->get_visible() == enums::state::disable) {
+        this->wf_draw_list.push_back(p_world_feature);
+        p_world_feature->set_visible(enums::state::enable, true);
     }
 
     delete p_to_remove;
     delete p_wf_id;
 }
 
-void world::on_event_refresh_low_priority(SDL_Event &sdl_event) {
-    auto *p_wf_id {static_cast<bool*>(sdl_event.user.data1)};
+void world::on_event_refresh_priority(SDL_Event &sdl_event) {
+    auto *p_high {static_cast<bool*>(sdl_event.user.data1)};
+    auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
+
     world_feature *p_world_feature_target {this->find(*p_wf_id)};
 
-    if (p_world_feature_target != nullptr && p_world_feature_target->priority == enums::priority::high) {
+    if (p_world_feature_target != nullptr && !p_high && p_world_feature_target->get_priority() == enums::priority::high) {
+        p_world_feature_target->set_priority(enums::priority::low, false);
         this->wf_high_priority_list.clear();
 
         for (world_feature *&p_world_feature : this->wf_list) {
@@ -197,16 +197,18 @@ void world::on_event_refresh_low_priority(SDL_Event &sdl_event) {
                 this->wf_high_priority_list.push_back(p_world_feature);
             }
         }
-    } else if (p_world_feature_target != nullptr && p_world_feature_target->priority == enums::priority::low) {
+    } else if (p_world_feature_target != nullptr && p_high && p_world_feature_target->get_priority() == enums::priority::low) {
+        p_world_feature_target->set_priority(enums::priority::high, false);
+        this->wf_high_priority_list.push_back(p_world_feature_target);
+    }
+
+    if (p_world_feature_target != nullptr && p_world_feature_target->get_priority() == enums::priority::low) {
         this->wf_low_priority_queue.push(p_world_feature_target);
         this->poll_low_priority_queue = true;
     }
 
     delete p_wf_id;
-}
-
-void world::on_event_refresh_high_priority(SDL_Event &sdl_event) {
-
+    delete p_high;
 }
 
 world_feature *world::find(int32_t wf_id) {

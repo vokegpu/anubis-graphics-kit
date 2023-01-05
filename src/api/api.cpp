@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <amogpu/amogpu.hpp>
 #include "api/util/file.hpp"
+#include "api/event/event.hpp"
 
 profile api::app {};
 float api::dt {};
@@ -53,6 +54,9 @@ void api::mainloop(feature *p_scene_initial) {
 
     api::app.p_current_player = new entity {};
     api::world::create(api::app.p_current_player);
+
+    /* Flush all object. */
+    api::app.garbage_collector.do_update();
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -106,6 +110,8 @@ void api::mainloop(feature *p_scene_initial) {
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+        api::app.world_client.on_render();
 
         if (api::app.p_current_scene != nullptr) {
             api::app.p_current_scene->on_render();
@@ -239,7 +245,8 @@ bool api::shading::find(std::string_view key, ::shading::program *&p_program) {
 }
 
 ::shading::program *api::shading::registry(std::string_view key, ::shading::program *p_program) {
-    return api::app.shader_registry_map[key.data()];
+    api::app.shader_registry_map[key.data()] = p_program;
+    return p_program;
 }
 
 camera *&api::world::currentcamera() {

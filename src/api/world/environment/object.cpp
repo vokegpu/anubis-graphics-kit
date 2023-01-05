@@ -2,6 +2,10 @@
 
 object::object(model *p_model_linked) {
     this->p_model = p_model_linked;
+    this->id = feature::token++;
+
+    this->set_priority(enums::priority::high);
+    this->set_visible(enums::state::enable);
 }
 
 object::~object() {

@@ -9,6 +9,12 @@ float camera::get_mouse_sensitivity() {
     return this->mouse_sensitivity;
 }
 
+void camera::on_create() {
+    this->front.z = -1;
+    this->world_up.y = 1;
+    this->update_rotation();
+}
+
 void camera::on_event(SDL_Event &sdl_event) {
     frustum::on_event(sdl_event);
     if (!this->mouse_locked) {
@@ -25,14 +31,6 @@ void camera::on_event(SDL_Event &sdl_event) {
             this->rotation.x += delta[0];
             this->rotation.y -= delta[1];
 
-            if (this->rotation.y > 89.0f) {
-                this->rotation.y = 89.0f;
-            }
-
-            if (this->rotation.y < 89.0f) {
-                this->rotation.y = -89.0f;
-            }
-
             this->update_rotation();
             break;
         }
@@ -42,11 +40,19 @@ void camera::on_event(SDL_Event &sdl_event) {
 void camera::update_rotation() {
     glm::vec3 f {};
 
-    float yaw {this->rotation.x};
-    float pitch {this->rotation.y};
+    float &yaw {this->rotation.x};
+    float &pitch {this->rotation.y};
+
+    if (pitch > 89.0f) {
+        pitch = 89.0f;
+    }
+
+    if (pitch < 89.0f) {
+        pitch = -89.0f;
+    }
 
     f.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-    f.y = glm::sin(glm::radians(yaw));
+    f.y = glm::sin(glm::radians(pitch));
     f.z = glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
 
     this->front = glm::normalize(f);
@@ -77,6 +83,9 @@ void camera::set_mouse_locked(bool state) {
                 this->mouse_shown = false;
             }
         }
+
+        default:
+            break;
     }
 
     this->mouse_locked = state;

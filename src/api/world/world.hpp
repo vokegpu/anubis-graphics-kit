@@ -28,8 +28,7 @@ public:
     world_feature *find(int32_t wf_id);
 
     void on_event_refresh_draw(SDL_Event &sdl_event);
-    void on_event_refresh_low_priority(SDL_Event &sdl_event);
-    void on_event_refresh_high_priority(SDL_Event &sdl_event);
+    void on_event_refresh_priority(SDL_Event &sdl_event);
 
 	void on_create() override;
 	void on_destroy() override;

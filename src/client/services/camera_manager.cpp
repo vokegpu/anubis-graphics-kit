@@ -16,7 +16,7 @@ void client::services::camera_manager::on_create() {
 
     this->p_camera_linked = api::world::currentcamera();
     this->p_entity_linked = api::world::currentplayer();
-    this->p_camera_linked->visible = enums::state::disable;
+    this->p_camera_linked->set_visible(enums::state::disable);
 }
 
 void client::services::camera_manager::on_destroy() {

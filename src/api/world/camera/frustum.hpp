@@ -14,7 +14,7 @@ protected:
     glm::mat4 perspective {};
 
     std::vector<uint32_t> framebuffer_list {};
-    float fov {};
+    float fov {60.0f};
 public:
     glm::vec3 &get_front();
     glm::vec3 &get_right();

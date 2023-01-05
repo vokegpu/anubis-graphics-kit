@@ -19,6 +19,7 @@ glm::vec3 &frustum::get_world_up() {
 }
 
 glm::mat4 &frustum::get_view() {
+    this->view = glm::lookAt(this->position, this->position + this->front, this->up);
     return this->view;
 }
 

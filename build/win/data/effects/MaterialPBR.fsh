@@ -90,5 +90,6 @@ void main() {
         color = GammaCorrection(Material.Color);
     }
 
+    color = Material.Color;
     FragColor = vec4(color, 1.0f);
 }

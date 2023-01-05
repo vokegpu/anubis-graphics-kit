@@ -17,12 +17,14 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
 
     auto &buffering = p_model->buffering;
     buffering.invoke();
+    buffering.stride[0] = 0;
 
     if (mesh_data.contains(mesh::type::vertex)) {
         f_list = mesh_data.get_float_list(mesh::type::vertex);
         buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
         buffering.attach(3);
+        buffering.stride[1] = f_list.size() / 3;
     }
 
     if (mesh_data.contains(mesh::type::textcoord)) {

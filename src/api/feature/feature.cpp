@@ -1,5 +1,7 @@
 #include "feature.hpp"
 
+int32_t feature::token {1};
+
 void feature::on_create() {
 
 }

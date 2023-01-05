@@ -12,11 +12,11 @@ namespace enums {
      * high: Update all framerate ticks.
      */
     enum class priority {
-        low, high
+        none, low, high
     };
 
 	enum class state {
-		enable, disable
+        none, enable, disable
 	};
 
     enum class type {
