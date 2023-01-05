@@ -10,7 +10,7 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     std::vector<float> f_list {};
     std::vector<uint32_t> i_list {};
 
-    p_model = new model {};
+    p_model = new model();
     p_model->id = static_cast<int32_t>(this->loaded_model_list.size()) + 1;
     this->loaded_model_list.push_back(p_model);
     this->model_register_map[tag.data()] = p_model->id;

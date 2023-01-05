@@ -7,7 +7,7 @@
 class object : public world_feature {
 public:
     model *p_model {};
-    explicit object(model *p_model_linked = nullptr);
+    explicit object(model *p_model_linked);
     ~object();
 };
 

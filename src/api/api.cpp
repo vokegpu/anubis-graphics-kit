@@ -50,7 +50,7 @@ void api::mainloop(feature *p_scene_initial) {
     api::scene::load(p_scene_initial);
 
     api::app.p_current_camera = new camera {};
-    api::gc::create(api::app.p_current_camera);
+    api::world::create(api::app.p_current_camera);
 
     api::app.p_current_player = new entity {};
     api::world::create(api::app.p_current_player);

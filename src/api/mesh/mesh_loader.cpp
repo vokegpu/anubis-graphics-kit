@@ -72,7 +72,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
             this->load_stl_object(data, ifs);
             ifs.close();
 
-            break;
+            return false;
         }
 
         default: {

@@ -16,10 +16,10 @@ void client::scenes::starter::on_create() {
     light *p_light_spot {new light()};
     p_light_spot->intensity = {50, 50, 50};
     p_light_spot->position = {0, 15, 0};
+    p_light_spot->update();
 
     api::world::create(p_object_dino);
     api::world::create(p_light_spot);
-    p_light_spot->update();
 
     this->p_camera_manager->set_editor_enabled(true);
     this->p_camera_manager->set_movement_enabled(true);
