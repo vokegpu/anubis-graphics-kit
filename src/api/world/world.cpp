@@ -4,6 +4,23 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include "api/util/env.hpp"
 
+world::world() {
+
+}
+
+world::~world() {
+
+}
+
+void world::on_create() {
+    feature::on_create();
+}
+
+void world::on_destroy() {
+    feature::on_destroy();
+}
+
+
 void world::registry_wf(world_feature *p_world_feature) {
 	if (p_world_feature == nullptr) {
 		return;
@@ -37,6 +54,7 @@ void world::on_event(SDL_Event &sdl_event) {
 }
 
 void world::on_update() {
+    /* World feature environment segment. */
     if (this->poll_low_priority_queue) {
         for (;!this->wf_low_priority_queue.empty();) {
             auto &p_world_feature {this->wf_low_priority_queue.front()};
@@ -51,6 +69,8 @@ void world::on_update() {
             p_world_feature->on_update();
         }
     }
+
+    /* World terrain segment. */
 }
 
 world_feature *world::unregister_wf(world_feature *p_world_feature) {
@@ -94,12 +114,4 @@ void world::on_event_refresh_priority(SDL_Event &sdl_event) {
 
     delete p_wf_id;
     delete p_high;
-}
-
-world::world() {
-
-}
-
-world::~world() {
-
 }

@@ -91,7 +91,7 @@ void renderer::process_environment() {
     glm::mat3 cubic_normal_matrix {};
 
     shading::program *p_program_material_pbr {};
-    api::shading::find("MaterialPBR", p_program_material_pbr);
+    api::shading::find("m.brdf.pbr", p_program_material_pbr);
 
     glUseProgram(p_program_material_pbr->id);
     p_program_material_pbr->set_uniform_vec3("CameraPosition", &camera->position[0]);
@@ -162,9 +162,9 @@ void renderer::on_create() {
     feature::on_create();
 
     shading::program *p_program_material_pbr {new ::shading::program {}};
-    api::shading::createprogram("MaterialPBR", p_program_material_pbr,  {
-            {"./data/effects/MaterialPBR.vsh", shading::stage::vertex},
-            {"./data/effects/MaterialPBR.fsh", shading::stage::fragment}
+    api::shading::createprogram("m.brdf.pbr", p_program_material_pbr,  {
+            {"./data/effects/material.brdf.pbr.vert", shading::stage::vertex},
+            {"./data/effects/material.brdf.pbr.frag", shading::stage::fragment}
     });
 }
 

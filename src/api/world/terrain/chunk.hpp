@@ -9,9 +9,9 @@ protected:
     bool processed {};
 public:
     buffering buffering {};
-    mesh::data data {};
+    mesh::data meshing_data {};
 
-    void gen_chunk(void *p_raster_terrain);
+    bool gen_chunk(void *p_raster_terrain, int32_t min, int32_t max);
     bool is_processed();
 };
 

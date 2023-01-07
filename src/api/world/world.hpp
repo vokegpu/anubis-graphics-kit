@@ -4,6 +4,7 @@
 #include "api/world/world.hpp"
 #include "world_feature.hpp"
 #include "api/world/enums/enums.hpp"
+#include "api/world/terrain/chunk.hpp"
 #include <vector>
 #include <queue>
 #include <map>
@@ -32,6 +33,13 @@ public:
     world_feature *find(int32_t wf_id);
     /* End of environment segment. */
 
+    /* Start of terrain segment. */
+    std::vector<chunk*> loaded_chunk_list {};
+    util::timing chunk_checker_timing {};
+    /* End of terrain segment. */
+
+    void on_create() override;
+    void on_destroy() override;
 	void on_update() override;
 	void on_event(SDL_Event &sdl_event) override;
 };

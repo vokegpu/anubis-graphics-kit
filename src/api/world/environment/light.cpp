@@ -18,7 +18,7 @@ light::~light() {
 
 void light::on_low_update() {
     shading::program *p_program_material_pbr {};
-    api::shading::find("MaterialPBR", p_program_material_pbr);
+    api::shading::find("m.brdf.pbr", p_program_material_pbr);
 
     std::string light_index_tag {"Light["};
     light_index_tag += std::to_string(this->index_light);
