@@ -4,10 +4,12 @@
 #include "api/feature/feature.hpp"
 #include "api/gpu/buffering.hpp"
 #include "client/services/camera_manager.hpp"
+#include "api/world/environment/light.hpp"
 
 namespace client::scenes {
     class starter : public feature {
     public:
+        light *p_light_spot {};
         client::services::camera_manager *p_camera_manager {};
 
         void on_create() override;

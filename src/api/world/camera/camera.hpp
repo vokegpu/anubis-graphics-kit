@@ -5,7 +5,7 @@
 
 class camera : public frustum {
 protected:
-    float mouse_sensitivity {};
+    float mouse_sensitivity {0.2f};
     bool mouse_locked {};
     bool mouse_shown {};
 

@@ -41,7 +41,7 @@ void client::services::camera_manager::on_update() {
     feature::on_update();
 
     if (this->p_entity_linked != nullptr && this->camera_movement) {
-        auto &motion {this->p_entity_linked->velocity};
+        glm::vec3 motion {};
         if (api::input::pressed(this->bind_m_forward.get_value())) {
             motion.z += 1;
         }
@@ -51,11 +51,11 @@ void client::services::camera_manager::on_update() {
         }
 
         if (api::input::pressed(this->bind_m_strafe_left.get_value())) {
-            motion.x -= 1;
+            motion.x += 1;
         }
 
         if (api::input::pressed(this->bind_m_strafe_right.get_value())) {
-            motion.x += 1;
+            motion.x -= 1;
         }
 
         if (api::input::pressed(this->bind_m_jump.get_value())) {

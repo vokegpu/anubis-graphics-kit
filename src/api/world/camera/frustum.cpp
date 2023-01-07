@@ -48,12 +48,7 @@ void frustum::on_event(SDL_Event &sdl_event) {
         case SDL_WINDOWEVENT: {
             switch (sdl_event.window.event) {
                 case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                    float size[2] {
-                        static_cast<float>(sdl_event.window.data1),
-                        static_cast<float>(sdl_event.window.data2)
-                    };
-
-                    this->perspective = glm::perspective(glm::radians(this->fov), size[0] / size[1], 0.1f, agk_perspective_clip_distance);
+                    this->process_perspective(sdl_event.window.data1, sdl_event.window.data2);
                     break;
                 }                
             }
@@ -61,4 +56,13 @@ void frustum::on_event(SDL_Event &sdl_event) {
             break;
         }        
     }
+}
+
+void frustum::process_perspective(int32_t w, int32_t h) {
+    float size[2] {
+            static_cast<float>(w),
+            static_cast<float>(h)
+    };
+
+    this->perspective = glm::perspective(glm::radians(this->fov), size[0] / size[1], 0.1f, agk_perspective_clip_distance);
 }

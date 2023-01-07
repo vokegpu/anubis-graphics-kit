@@ -61,7 +61,7 @@ void buffering::draw() {
         case buffering::type::instanced: {
             if (this->buffer_ebo != 0) {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->buffer_ebo);
-                glDrawElementsInstanced(this->primitive, stride[1], GL_UNSIGNED_INT, (void*) 0, stride[2]);
+                glDrawElementsInstanced(this->primitive, stride[1], GL_UNSIGNED_INT, nullptr, stride[2]);
             } else {
                 glDrawArraysInstanced(this->primitive, stride[0], stride[1], stride[2]);
             }

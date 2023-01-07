@@ -29,6 +29,7 @@ public:
     void add_framebuffer(uint32_t framebuffer);
     std::vector<uint32_t> &get_framebuffer_list();
 
+    void process_perspective(int32_t w, int32_t h);
     void on_event(SDL_Event &sdl_event) override;
 };
 

@@ -24,8 +24,8 @@ void camera::on_event(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_MOUSEMOTION: {
             float delta[2] {
-                static_cast<float>(sdl_event.motion.x) * this->mouse_sensitivity,
-                static_cast<float>(sdl_event.motion.y) * this->mouse_sensitivity
+                static_cast<float>(sdl_event.motion.xrel) * this->mouse_sensitivity,
+                static_cast<float>(sdl_event.motion.yrel) * this->mouse_sensitivity
             };
 
             this->rotation.x += delta[0];
@@ -47,7 +47,7 @@ void camera::update_rotation() {
         pitch = 89.0f;
     }
 
-    if (pitch < 89.0f) {
+    if (pitch < -89.0f) {
         pitch = -89.0f;
     }
 

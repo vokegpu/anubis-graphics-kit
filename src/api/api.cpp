@@ -56,6 +56,7 @@ void api::mainloop(feature *p_scene_initial) {
     api::world::create(api::app.p_current_player);
 
     /* Flush all object. */
+    api::app.p_current_camera->process_perspective(api::app.screen_width, api::app.screen_height);
     api::app.garbage_collector.do_update();
 
     glEnable(GL_DEPTH_TEST);

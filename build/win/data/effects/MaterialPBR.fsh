@@ -21,17 +21,13 @@ uniform struct {
     vec3 POD;
 } Light[100];
 
-vec3 GammaCorrection(vec3 color) {
-    return pow(color, vec3(1.0 / 2.0));
-}
-
 vec3 SchlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04);
     if (Material.Metal) {
         f0 = Material.Color;
     }
 
-    return f0 + (1 - f0) * pow(1.0 - lDotH, 5);
+    return f0 + (1 - f0) * pow(clamp(1.0 - lDotH, 0.0f, 1.0), 5.0);
 }
 
 float GeometrySmith(float dotProduct) {
@@ -56,7 +52,7 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
     vec3 l = vec3(0.0);
 
     if (Light[lightIndex].Directional) {
-        l = Light[lightIndex].POD;
+        l = normalize(Light[lightIndex].POD);
     } else {
         l = Light[lightIndex].POD - Pos;
         float distance = length(l);
@@ -75,21 +71,21 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
 }
 
 void main() {
-    vec3 color = vec3(1.0f);
+    vec3 color = vec3(0.0f);
     
-    if (Material.Rough == 0.0f) {
+    if (Material.Rough == -1) {
         color = Material.Color;
     } else {
         vec3 n = normalize(Normal);
-        vec3 v = normalize(-Pos);
+        vec3 v = normalize(CameraPosition - Pos);
 
-        for (int it = 0; it < LoadedLightLen; it++) {
+        if (!gl_FrontFacing) n = -n;
+        for (int it = 0; it <= LoadedLightLen; it++) {
             color += BRDFunction(n, v, it);
         }
 
-        color = GammaCorrection(Material.Color);
+        color = pow(color, vec3(1.0 / 2.0));
     }
 
-    color = Material.Color;
     FragColor = vec4(color, 1.0f);
 }

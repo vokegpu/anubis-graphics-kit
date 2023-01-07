@@ -5,6 +5,7 @@
 #include "api/world/environment/object.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include "api/event/event.hpp"
+#include <glm/gtc/matrix_inverse.hpp>
 #include "api/util/env.hpp"
 
 void world::registry_wf(world_feature *p_world_feature) {
@@ -87,13 +88,14 @@ void world::on_render() {
     shading::program *p_program_material_pbr {};
     api::shading::find("MaterialPBR", p_program_material_pbr);
 
+    glUseProgram(p_program_material_pbr->id);
+    p_program_material_pbr->set_uniform_vec3("CameraPosition", &camera->position[0]);
+
     entity *p_entity {};
     model *p_model {};
     object *p_object {};
 
     enums::material material_type {};
-
-    glUseProgram(p_program_material_pbr->id);
     int32_t current_light_loaded {};
     std::string light_index_tag {};
 
@@ -128,7 +130,7 @@ void world::on_render() {
         mat4x4_model = glm::translate(mat4x4_model, p_object->position);
         mat4x4_model = glm::scale(mat4x4_model, p_object->scale);
 
-        cubic_normal_matrix = glm::inverse(glm::transpose(glm::mat3(mat4x4_model)));
+        cubic_normal_matrix = glm::inverseTranspose(glm::mat3(mat4x4_model));
         p_program_material_pbr->set_uniform_mat3("MatrixNormal", &cubic_normal_matrix[0][0]);
         p_program_material_pbr->set_uniform_mat4("MatrixModel", &mat4x4_model[0][0]);
 
@@ -138,6 +140,7 @@ void world::on_render() {
         material_type = p_object->p_material->get_type();
         p_program_material_pbr->set_uniform_bool("Material.Metal", material_type == enums::material::metal);
         p_program_material_pbr->set_uniform_float("Material.Rough", p_object->p_material->get_rough());
+        p_program_material_pbr->set_uniform_vec3("Material.Color", &p_object->p_material->get_color()[0]);
 
         p_model->buffering.draw();
     }

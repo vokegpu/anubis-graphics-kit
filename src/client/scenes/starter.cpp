@@ -13,10 +13,10 @@ void client::scenes::starter::on_create() {
     p_material->set_color({1.0f, 1.0f, 0.0f});
     p_object_dino->p_material = p_material;
 
-    light *p_light_spot {new light()};
-    p_light_spot->intensity = {50, 50, 50};
-    p_light_spot->position = {0, 15, 0};
-    p_light_spot->update();
+    this->p_light_spot = new light(nullptr);
+    this->p_light_spot->intensity = {50, 50, 50};
+    this->p_light_spot->position = {0, 15, 0};
+    this->p_light_spot->update();
 
     api::world::create(p_object_dino);
     api::world::create(p_light_spot);
@@ -59,6 +59,32 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 }
 
 void client::scenes::starter::on_update() {
+    if (api::input::pressed("mouse-2")) {
+        this->p_light_spot->position = api::world::currentcamera()->position;
+        this->p_light_spot->update();
+    }
+
+    if (api::input::pressed("x")) {
+        this->p_light_spot->intensity++;
+        this->p_light_spot->intensity++;
+        this->p_light_spot->intensity++;
+        this->p_light_spot->intensity++;
+        this->p_light_spot->intensity++;
+        this->p_light_spot->intensity++;
+        this->p_light_spot->intensity++;
+        this->p_light_spot->update();
+    }
+
+    if (api::input::pressed("z")) {
+        this->p_light_spot->intensity--;
+        this->p_light_spot->intensity--;
+        this->p_light_spot->intensity--;
+        this->p_light_spot->intensity--;
+        this->p_light_spot->intensity--;
+        this->p_light_spot->intensity--;
+
+        this->p_light_spot->update();
+    }
 }
 
 void client::scenes::starter::on_render() {
