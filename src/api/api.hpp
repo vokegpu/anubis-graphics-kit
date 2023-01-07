@@ -34,8 +34,8 @@ namespace api {
         camera *&currentcamera();
         entity *&currentplayer();
 
-        ::world &get();
-        renderer &renderer();
+        ::world *&get();
+        renderer *&renderer();
 
         model *create(std::string_view tag, std::string_view path);
         void create(world_feature *p_world_feature);

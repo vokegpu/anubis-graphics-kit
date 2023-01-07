@@ -14,27 +14,26 @@ class world : public feature {
 protected:
 	int32_t wf_token_id {};
     bool poll_low_priority_queue {};
+
+    void on_event_refresh_priority(SDL_Event &sdl_event);
 public:
-    int32_t loaded_light_size {};
+    explicit world();
+    ~world();
+
+    /* Start of environment segment. */
 	std::map<int32_t, world_feature*> registered_wf_map {};
     std::queue<world_feature*> wf_low_priority_queue {};
 
     std::vector<world_feature*> wf_list {};
 	std::vector<world_feature*> wf_high_priority_list {};
-    std::vector<world_feature*> wf_draw_list {};
 
 	void registry_wf(world_feature *p_world_feature);
     world_feature *unregister_wf(world_feature *p_world_feature);
     world_feature *find(int32_t wf_id);
+    /* End of environment segment. */
 
-    void on_event_refresh_draw(SDL_Event &sdl_event);
-    void on_event_refresh_priority(SDL_Event &sdl_event);
-
-	void on_create() override;
-	void on_destroy() override;
 	void on_update() override;
 	void on_event(SDL_Event &sdl_event) override;
-	void on_render() override;
 };
 
 #endif

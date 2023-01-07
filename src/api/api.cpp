@@ -45,19 +45,31 @@ void api::mainloop(feature *p_scene_initial) {
     SDL_Event sdl_event {};
     glm::vec3 previous_camera_rotation {2, 2, 2};
 
-    api::app.mainloop = true;
-    api::gc::create(&api::app.world_client);
-    api::scene::load(p_scene_initial);
+    api::app.p_world_client = new ::world {};
+    api::gc::create(api::app.p_world_client);
+    util::log("Initialising world client...");
+
+    api::app.p_world_renderer = new renderer {};
+    api::gc::create(api::app.p_world_renderer);
+    util::log("Initialising world renderer...");
 
     api::app.p_current_camera = new camera {};
     api::world::create(api::app.p_current_camera);
+    util::log("Initialising world camera frustum...");
 
     api::app.p_current_player = new entity {};
     api::world::create(api::app.p_current_player);
+    util::log("Initialising world default player...");
+
+    api::scene::load(p_scene_initial);
+    util::log("Initialising main scene...");
 
     /* Flush all object. */
     api::app.p_current_camera->process_perspective(api::app.screen_width, api::app.screen_height);
     api::app.garbage_collector.do_update();
+
+    api::app.mainloop = true;
+    util::log("Anubis Graphics Kit initialised with successfully!");
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -79,7 +91,8 @@ void api::mainloop(feature *p_scene_initial) {
                 default: {
                     api::app.input_manager.on_event(sdl_event);
                     if (api::app.p_current_scene != nullptr) api::app.p_current_scene->on_event(sdl_event);
-                    api::app.world_client.on_event(sdl_event);
+                    api::app.p_world_client->on_event(sdl_event);
+                    api::app.p_world_renderer->on_event(sdl_event);
 
                     for (feature *&p_feature : api::app.loaded_service_list) {
                         p_feature->on_event(sdl_event);
@@ -102,7 +115,7 @@ void api::mainloop(feature *p_scene_initial) {
             p_feature->on_update();
         }
 
-        api::app.world_client.on_update();
+        api::app.p_world_client->on_update();
         api::app.input_manager.on_update();
         api::app.garbage_collector.do_update();
 
@@ -112,7 +125,7 @@ void api::mainloop(feature *p_scene_initial) {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        api::app.world_client.on_render();
+        api::app.p_world_renderer->on_render();
 
         if (api::app.p_current_scene != nullptr) {
             api::app.p_current_scene->on_render();
@@ -254,20 +267,20 @@ camera *&api::world::currentcamera() {
     return api::app.p_current_camera;
 }
 
-::world &api::world::get() {
-    return api::app.world_client;
+::world *&api::world::get() {
+    return api::app.p_world_client;
 }
 
-renderer &api::world::renderer() {
-    return api::app.world_renderer;
+renderer *&api::world::renderer() {
+    return api::app.p_world_renderer;
 }
 
 void api::world::create(world_feature *p_world_feature) {
-    api::app.world_client.registry_wf(p_world_feature);
+    api::app.p_world_client->registry_wf(p_world_feature);
 }
 
 void api::world::destroy(world_feature *p_world_feature) {
-    api::app.world_client.unregister_wf(p_world_feature);
+    api::app.p_world_client->unregister_wf(p_world_feature);
 }
 
 model *api::world::create(std::string_view tag, std::string_view path) {
@@ -277,7 +290,7 @@ model *api::world::create(std::string_view tag, std::string_view path) {
         return nullptr;
     }
 
-    return api::app.world_renderer.add(tag, mesh);
+    return api::app.p_world_renderer->add(tag, mesh);
 }
 
 entity *&api::world::currentplayer() {

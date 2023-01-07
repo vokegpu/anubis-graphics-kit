@@ -8,7 +8,7 @@
 #include "api/world/camera/camera.hpp"
 #include "api/mesh/mesh_loader.hpp"
 #include "api/input/input.hpp"
-#include "api/world/model/renderer.hpp"
+#include "api/world/renderer/renderer.hpp"
 #include "api/world/environment/entity.hpp"
 
 class profile {
@@ -25,11 +25,12 @@ public:
     camera *p_current_camera {nullptr};
     entity *p_current_player {nullptr};
 
+    world *p_world_client {nullptr};
+    renderer *p_world_renderer {nullptr};
+
     gc garbage_collector {};
-    world world_client {};
     mesh_loader mesh3d_loader {};
     input input_manager {};
-    renderer world_renderer {};
 
     std::map<std::string, shading::program*> shader_registry_map {};
     std::vector<feature*> loaded_service_list {};

@@ -60,10 +60,12 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
         intensity /= (distance * distance);
     }
 
+    float Wrap = 0.0;
+
     vec3 h = normalize(v + l);
     float nDotH = dot(n, h);
     float lDotH = dot(l, h);
-    float nDotL = max(dot(n, l), 0.0);
+    float nDotL = max(dot(l, n), 0.0);
     float nDotV = dot(n, v);
     vec3 spec = 0.25 * GGxDistribution(nDotH) * SchlickFresnel(lDotH) * GeometrySmith(nDotL) * GeometrySmith(nDotV);
 
