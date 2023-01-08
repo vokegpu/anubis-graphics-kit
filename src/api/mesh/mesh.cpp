@@ -28,6 +28,14 @@ void mesh::data::append(mesh::type type, const glm::vec4 &vec) {
             this->n_len = 4;
             break;
         }
+
+        case mesh::type::color: {
+            this->c_list.push_back(vec.x);
+            this->c_list.push_back(vec.y);
+            this->c_list.push_back(vec.z);
+            this->c_list.push_back(vec.w);
+            break;
+        }
     }
 }
 
@@ -56,6 +64,13 @@ void mesh::data::append(mesh::type type, const glm::vec3 &vec) {
             this->n_len = 3;
             break;
         }
+
+        case mesh::type::color: {
+            this->c_list.push_back(vec.x);
+            this->c_list.push_back(vec.y);
+            this->c_list.push_back(vec.z);
+            break;
+        }
     }
 }
 
@@ -81,6 +96,12 @@ void mesh::data::append(mesh::type type, const glm::vec2 &vec) {
             this->n_len = 2;
             break;
         }
+
+        case mesh::type::color: {
+            this->c_list.push_back(vec.x);
+            this->c_list.push_back(vec.y);
+            break;
+        }
     }
 }
 
@@ -103,6 +124,11 @@ void mesh::data::append(mesh::type type, float value) {
             this->n_len = 1;
             break;
         }
+
+        case mesh::type::color: {
+            this->c_list.push_back(value);
+            break;
+        }
     }
 }
 
@@ -122,6 +148,11 @@ void mesh::data::append(mesh::type type, uint32_t index) {
             this->in_list.push_back(index);
             break;
         }
+
+        case mesh::type::color: {
+            this->ic_list.push_back(index);
+            break;
+        }
     }
 }
 
@@ -133,6 +164,10 @@ std::vector<uint32_t> &mesh::data::get_uint_list(mesh::type type) {
 
         case mesh::type::textcoord: {
             return this->it_list;
+        }
+
+        case mesh::type::color: {
+            return this->ic_list;
         }
 
         default: {
@@ -153,6 +188,10 @@ std::vector<float> &mesh::data::get_float_list(mesh::type type) {
             return this->t_list;
         }
 
+        case mesh::type::color: {
+            return this->c_list;
+        }
+
         default: {
             break;
         }
@@ -169,6 +208,10 @@ bool mesh::data::contains(mesh::type type, bool indexing) {
 
         case mesh::type::textcoord: {
             indexing ? !this->it_list.empty() : !this->t_list.empty();
+        }
+
+        case mesh::type::color: {
+            return indexing ? !this->ic_list.empty() : !this->c_list.empty();
         }
 
         default: {

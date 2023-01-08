@@ -39,6 +39,7 @@ public:
     /* Start of terrain segment. */
     std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
+    std::vector<unsigned char> png_chunk_data {};
 
     util::timing chunk_checker_timing {};
     value<uint64_t> chunk_check_delay {};

@@ -48,8 +48,9 @@ void buffering::draw() {
     switch (this->type) {
         case buffering::type::direct: {
             if (this->buffer_ebo != 0) {
+                const void *p_stride_indices {(void*) (static_cast<uint64_t>(stride[1]))};
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->buffer_ebo);
-                glDrawElements(this->primitive, stride[1], GL_UNSIGNED_INT, (void*) 0);
+                glDrawElements(this->primitive, stride[0], GL_UNSIGNED_INT, p_stride_indices);
             } else {
                 glDrawArrays(this->primitive, stride[0], stride[1]);
             }

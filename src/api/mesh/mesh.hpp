@@ -11,7 +11,7 @@ namespace mesh {
     };
 
     enum class type {
-        vertex, textcoord, normal
+        vertex, textcoord, normal, color
     };
 
     struct data {
@@ -19,10 +19,12 @@ namespace mesh {
         std::vector<float> v_list {};
         std::vector<float> t_list {};
         std::vector<float> n_list {};
+        std::vector<float> c_list {};
 
         std::vector<uint32_t> iv_list {};
         std::vector<uint32_t> it_list {};
         std::vector<uint32_t> in_list {};
+        std::vector<uint32_t> ic_list {};
 
         uint8_t v_len {3};
         uint8_t t_len {2};

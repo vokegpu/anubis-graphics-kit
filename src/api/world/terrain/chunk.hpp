@@ -4,6 +4,7 @@
 #include "api/gpu/buffering.hpp"
 #include "api/mesh/mesh.hpp"
 #include "api/world/world_feature.hpp"
+#include "api/util/math.hpp"
 
 class chunk : public world_feature {
 protected:
@@ -13,7 +14,7 @@ public:
     buffering buffering {};
     mesh::data meshing_data {};
 
-    bool gen_chunk(void *p_raster_terrain, int32_t min, int32_t max);
+    bool gen_chunk(void *p_raster_terrain, int32_t width, int32_t height);
     void set_buffer_processed();
 
     bool is_buffer_processed();

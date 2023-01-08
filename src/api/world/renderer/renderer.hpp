@@ -20,7 +20,6 @@ protected:
 public:
     std::vector<world_feature*> wf_env_draw_list {};
     std::vector<chunk*> wf_chunk_draw_list {};
-    std::vector<unsigned char> png_chunk_data {};
 
     model *add(std::string_view tag, mesh::data &mesh_data);
     void add(chunk *p_chunk);

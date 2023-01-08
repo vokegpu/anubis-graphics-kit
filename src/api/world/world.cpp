@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include "api/util/env.hpp"
 #include "api/util/math.hpp"
+#include <lodepng/lodepng.h>
 
 world::world() {
 }
@@ -14,6 +15,8 @@ world::~world() {
 void world::on_create() {
     this->chunk_size.set_value(512);
     this->chunk_check_delay.set_value(1000);
+
+    lodepng::load_file(this->png_chunk_data, "./data/textures/terrain-heightmap.png");
 }
 
 void world::on_destroy() {

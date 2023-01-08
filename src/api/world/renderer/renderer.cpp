@@ -6,7 +6,6 @@
 #include "api/event/event.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
-#include <lodepng/lodepng.h>
 
 model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     model *p_model {nullptr};
@@ -188,8 +187,6 @@ void renderer::on_create() {
             {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
             {"./data/effects/terrain.pbr.frag", shading::stage::fragment}
     });
-
-    lodepng::load_file(this->png_chunk_data, "./data/textures/fodase.png");
 }
 
 void renderer::on_destroy() {
@@ -276,9 +273,9 @@ void renderer::add(chunk *p_chunk) {
         return;
     }
 
-    p_chunk->set_buffer_processed();
     auto &buffering {p_chunk->buffering};
     auto &v {p_chunk->meshing_data.get_float_list(mesh::type::vertex)};
+    auto &c {p_chunk->meshing_data.get_float_list(mesh::type::color)};
 
     buffering.invoke();
     buffering.primitive = GL_TRIANGLE_STRIP;
@@ -287,9 +284,11 @@ void renderer::add(chunk *p_chunk) {
     buffering.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
     buffering.attach(0, 3);
 
-    auto &n {p_chunk->meshing_data.get_float_list(mesh::type::normal)};
     buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-    buffering.send(sizeof(float) * n.size(), n.data(), GL_STATIC_DRAW);
+    buffering.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
     buffering.attach(3, 3);
     buffering.revoke();
+
+    p_chunk->set_buffer_processed();
+    this->wf_chunk_draw_list.push_back(p_chunk);
 }
