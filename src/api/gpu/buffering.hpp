@@ -26,7 +26,7 @@ public:
 
     void bind(const glm::ivec2 &buffer_type);
     void send(size_t size, void *p_data, uint32_t gl_driver_read_mode);
-    void attach(int32_t vec, const glm::ivec2 &array_stride = {0, 0});
+    void attach(int32_t location, int32_t vec, const glm::ivec2 &array_stride = {0, 0});
     
     void invoke();
     void revoke();

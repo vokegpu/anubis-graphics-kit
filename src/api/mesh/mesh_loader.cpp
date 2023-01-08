@@ -9,6 +9,10 @@ void mesh_loader::process_indexing(mesh::data &data) {
     nb_seen.resize(this->v_packed_list.size(), 0);
 
     auto &i_list {data.get_uint_list(mesh::type::vertex)};
+    data.get_float_list(mesh::type::normal).clear();
+    bool contains_n {data.contains(mesh::type::normal)};
+
+    this->n_packed_list.resize(i_list.size());
 
     for (int32_t it {}; it < i_list.size(); it += 3) {
         uint32_t ia {i_list[it]}, ib {i_list[it + 1]}, ic {i_list[it + 2]};
@@ -21,6 +25,10 @@ void mesh_loader::process_indexing(mesh::data &data) {
         v[0] = ia;
         v[1] = ib;
         v[2] = ic;
+
+        if (!contains_n) {
+            this->n_packed_list.push_back(n1);
+        }
 
         for (int32_t it_cur {}; it_cur < 3; it_cur++) {
             cur = v[it_cur];
@@ -38,8 +46,8 @@ void mesh_loader::process_indexing(mesh::data &data) {
         }
     }
 
-    for (glm::vec3 &normals : this->n_packed_list) {
-        data.append(mesh::type::normal, normals);
+    for (glm::vec3 &n : this->n_packed_list) {
+        data.append(mesh::type::normal, n);
     }
 }
 
@@ -47,7 +55,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     switch (data.format) {
         case mesh::format::obj: {
             std::ifstream ifs {};
-            ifs.open(path.data(), std::ifstream::in);
+            ifs.open(path.data());
 
             if (!ifs.is_open()) {
                 util::log("Failed to open/read object wavefront file: '" + std::string(path.data()) + "'");
@@ -152,7 +160,7 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
 
-            this->t_packed_list.push_back(vector3f);
+            this->n_packed_list.push_back(vector3f);
             data.append(mesh::type::normal, vector3f);
         } else if (find == "f ") {
             /* get the faces vertex indexes  */

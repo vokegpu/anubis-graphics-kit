@@ -283,9 +283,9 @@ void api::world::destroy(world_feature *p_world_feature) {
     api::app.p_world_client->unregister_wf(p_world_feature);
 }
 
-model *api::world::create(std::string_view tag, std::string_view path) {
+model *api::world::create(std::string_view tag, std::string_view path, ::mesh::format format) {
     ::mesh::data mesh {};
-    mesh.format = ::mesh::format::stl;
+    mesh.format = format;
     if (api::mesh::load(mesh, path.data())) {
         return nullptr;
     }

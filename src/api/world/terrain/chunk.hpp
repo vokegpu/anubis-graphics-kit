@@ -3,16 +3,21 @@
 
 #include "api/gpu/buffering.hpp"
 #include "api/mesh/mesh.hpp"
+#include "api/world/world_feature.hpp"
 
-class chunk {
+class chunk : public world_feature {
 protected:
-    bool processed {};
+    bool buffer_processed {};
+    bool mesh_processed {};
 public:
     buffering buffering {};
     mesh::data meshing_data {};
 
     bool gen_chunk(void *p_raster_terrain, int32_t min, int32_t max);
-    bool is_processed();
+    void set_buffer_processed();
+
+    bool is_buffer_processed();
+    bool is_mesh_processed();
 };
 
 #endif

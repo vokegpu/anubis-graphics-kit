@@ -6,6 +6,7 @@
 #include "api/event/event.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <lodepng/lodepng.h>
 
 model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     model *p_model {nullptr};
@@ -30,7 +31,7 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
         f_list = mesh_data.get_float_list(mesh::type::vertex);
         buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
-        buffering.attach(3);
+        buffering.attach(0, 3);
         buffering.stride[1] = f_list.size() / 3;
     }
 
@@ -38,21 +39,21 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
         f_list = mesh_data.get_float_list(mesh::type::textcoord);
         buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
-        buffering.attach(2);
+        buffering.attach(1, 2);
     }
 
     if (mesh_data.contains(mesh::type::normal)) {
         f_list = mesh_data.get_float_list(mesh::type::normal);
         buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
-        buffering.attach(3);
+        buffering.attach(2, 3);
     }
 
     if (mesh_data.contains(mesh::type::vertex, true)) {
         i_list = mesh_data.get_uint_list(mesh::type::vertex);
         buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         buffering.send(sizeof(uint32_t) * i_list.size(), i_list.data(), GL_STATIC_DRAW);
-        buffering.attach(1);
+        buffering.stride[1] = mesh_data.faces;
     }
 
     buffering.revoke();
@@ -75,26 +76,41 @@ bool renderer::contains(std::string_view tag) {
 }
 
 void renderer::process_terrain() {
+    shading::program *p_program_terrain_pbr {};
+    api::shading::find("terrain.pbr", p_program_terrain_pbr);
 
+    glm::mat4 mat4x4_model {};
+    glUseProgram(p_program_terrain_pbr->id);
 
+    for (chunk *&p_chunk : this->wf_chunk_draw_list) {
+        if (p_chunk == nullptr) {
+            continue;
+        }
+
+        mat4x4_model = glm::mat4(1);
+        mat4x4_model = glm::translate(mat4x4_model, p_chunk->position);
+        mat4x4_model = glm::scale(mat4x4_model, p_chunk->scale);
+
+        mat4x4_model = this->mat4x4_mvp * mat4x4_model;
+        p_program_terrain_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
+
+        p_chunk->buffering.draw();
+    }
+
+    glUseProgram(0);
 }
 
 void renderer::process_environment() {
-    /* Terrain rendering section. */
-    /* Here... */
-
-    /* Object & entity rendering section. */
-
     auto camera {api::world::currentcamera()};
-    glm::mat4 mvp {camera->get_perspective() * camera->get_view()};
+
     glm::mat4 mat4x4_model {};
     glm::mat3 cubic_normal_matrix {};
 
-    shading::program *p_program_material_pbr {};
-    api::shading::find("m.brdf.pbr", p_program_material_pbr);
+    shading::program *p_program_m_brdf_pbr {};
+    api::shading::find("m.brdf.pbr", p_program_m_brdf_pbr);
 
-    glUseProgram(p_program_material_pbr->id);
-    p_program_material_pbr->set_uniform_vec3("CameraPosition", &camera->position[0]);
+    glUseProgram(p_program_m_brdf_pbr->id);
+    p_program_m_brdf_pbr->set_uniform_vec3("CameraPosition", &camera->position[0]);
 
     entity *p_entity {};
     model *p_model {};
@@ -104,7 +120,7 @@ void renderer::process_environment() {
     int32_t current_light_loaded {};
     std::string light_index_tag {};
 
-    for (world_feature *&p_world_feature : this->wf_draw_list) {
+    for (world_feature *&p_world_feature : this->wf_env_draw_list) {
         if (p_world_feature == nullptr) {
             continue;
         }
@@ -136,23 +152,23 @@ void renderer::process_environment() {
         mat4x4_model = glm::scale(mat4x4_model, p_object->scale);
 
         cubic_normal_matrix = glm::inverseTranspose(glm::mat3(mat4x4_model));
-        p_program_material_pbr->set_uniform_mat3("MatrixNormal", &cubic_normal_matrix[0][0]);
-        p_program_material_pbr->set_uniform_mat4("MatrixModel", &mat4x4_model[0][0]);
+        p_program_m_brdf_pbr->set_uniform_mat3("MatrixNormal", &cubic_normal_matrix[0][0]);
+        p_program_m_brdf_pbr->set_uniform_mat4("MatrixModel", &mat4x4_model[0][0]);
 
-        mat4x4_model = mvp * mat4x4_model;
-        p_program_material_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
+        mat4x4_model = this->mat4x4_mvp * mat4x4_model;
+        p_program_m_brdf_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
 
         material_type = p_object->p_material->get_type();
-        p_program_material_pbr->set_uniform_bool("Material.Metal", material_type == enums::material::metal);
-        p_program_material_pbr->set_uniform_float("Material.Rough", p_object->p_material->get_rough());
-        p_program_material_pbr->set_uniform_vec3("Material.Color", &p_object->p_material->get_color()[0]);
+        p_program_m_brdf_pbr->set_uniform_bool("Material.Metal", material_type == enums::material::metal);
+        p_program_m_brdf_pbr->set_uniform_float("Material.Rough", p_object->p_material->get_rough());
+        p_program_m_brdf_pbr->set_uniform_vec3("Material.Color", &p_object->p_material->get_color()[0]);
 
         p_model->buffering.draw();
     }
 
     if (this->loaded_light_size != current_light_loaded) {
         this->loaded_light_size = current_light_loaded;
-        p_program_material_pbr->set_uniform_int("LoadedLightLen", current_light_loaded);
+        p_program_m_brdf_pbr->set_uniform_int("LoadedLightLen", current_light_loaded);
     };
 
     glUseProgram(0);
@@ -161,11 +177,19 @@ void renderer::process_environment() {
 void renderer::on_create() {
     feature::on_create();
 
-    shading::program *p_program_material_pbr {new ::shading::program {}};
-    api::shading::createprogram("m.brdf.pbr", p_program_material_pbr,  {
+    shading::program *p_program_m_brdf_pbr {new ::shading::program {}};
+    api::shading::createprogram("m.brdf.pbr", p_program_m_brdf_pbr, {
             {"./data/effects/material.brdf.pbr.vert", shading::stage::vertex},
             {"./data/effects/material.brdf.pbr.frag", shading::stage::fragment}
     });
+
+    shading::program *p_program_terrain_pbr {new ::shading::program {}};
+    api::shading::createprogram("terrain.pbr", p_program_terrain_pbr, {
+            {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
+            {"./data/effects/terrain.pbr.frag", shading::stage::fragment}
+    });
+
+    lodepng::load_file(this->png_chunk_data, "./data/textures/fodase.png");
 }
 
 void renderer::on_destroy() {
@@ -175,6 +199,10 @@ void renderer::on_destroy() {
 
 void renderer::on_render() {
     feature::on_render();
+
+    /* Prepare matrices to render the world. */
+    auto &p_camera {api::world::currentcamera()};
+    this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
 
     this->process_terrain();
     this->process_environment();
@@ -186,8 +214,14 @@ void renderer::on_event(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_USEREVENT: {
             switch (sdl_event.user.code) {
-                case event::WORLD_REFRESH_DRAW: {
-                    this->on_event_refresh_draw(sdl_event);
+                case event::WORLD_REFRESH_ENVIRONMENT: {
+                    this->on_event_refresh_environment(sdl_event);
+                    break;
+                }
+
+                case event::WORLD_REFRESH_CHUNK: {
+                    this->on_event_refresh_chunk(sdl_event);
+                    util::log("World refresh chunk event called/listened");
                     break;
                 }
             }
@@ -197,27 +231,65 @@ void renderer::on_event(SDL_Event &sdl_event) {
     }
 }
 
-void renderer::on_event_refresh_draw(SDL_Event &sdl_event) {
+void renderer::on_event_refresh_environment(SDL_Event &sdl_event) {
     auto &world {api::world::get()};
 
     auto *p_to_remove {static_cast<bool*>(sdl_event.user.data1)};
     auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
 
-    world_feature *p_world_feature {world->find(*p_wf_id)};
+    world_feature *p_world_feature {world->find_env_wf(*p_wf_id)};
     if (*p_to_remove) {
-        this->wf_draw_list.clear();
+        this->wf_env_draw_list.clear();
         if (p_world_feature != nullptr) p_world_feature->set_visible(enums::state::disable, false);
 
         for (world_feature *&p_world_features : world->wf_list) {
             if (p_world_features != nullptr && p_world_features->get_visible() == enums::state::enable) {
-                this->wf_draw_list.push_back(p_world_features);
+                this->wf_env_draw_list.push_back(p_world_features);
             }
         }
     } else if (p_world_feature != nullptr && p_world_feature->get_visible() != enums::state::enable) {
-        this->wf_draw_list.push_back(p_world_feature);
+        this->wf_env_draw_list.push_back(p_world_feature);
         p_world_feature->set_visible(enums::state::enable, false);
     }
 
     delete p_to_remove;
     delete p_wf_id;
+}
+
+void renderer::on_event_refresh_chunk(SDL_Event &sdl_event) {
+    auto p_string_chunk_tag {static_cast<std::string*>(sdl_event.user.data1)};
+    auto p_append_chunk {static_cast<bool*>(sdl_event.user.data2)};
+
+    auto &p_world {api::world::get()};
+    auto p_chunk {p_world->find_chunk_wf(*p_string_chunk_tag)};
+
+    if (p_world != nullptr && *p_append_chunk && p_chunk->is_mesh_processed() && !p_chunk->is_buffer_processed()) {
+        this->add(p_chunk);
+    }
+
+    delete p_string_chunk_tag;
+    delete p_append_chunk;
+}
+
+void renderer::add(chunk *p_chunk) {
+    if (p_chunk == nullptr || !p_chunk->is_mesh_processed() || p_chunk->is_buffer_processed()) {
+        return;
+    }
+
+    p_chunk->set_buffer_processed();
+    auto &buffering {p_chunk->buffering};
+    auto &v {p_chunk->meshing_data.get_float_list(mesh::type::vertex)};
+
+    buffering.invoke();
+    buffering.primitive = GL_TRIANGLE_STRIP;
+    buffering.stride[1] = p_chunk->meshing_data.faces;
+    buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    buffering.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
+    buffering.attach(0, 3);
+
+    auto &n {p_chunk->meshing_data.get_float_list(mesh::type::normal)};
+    buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    buffering.send(sizeof(float) * n.size(), n.data(), GL_STATIC_DRAW);
+    buffering.attach(3, 3);
+    buffering.revoke();
 }

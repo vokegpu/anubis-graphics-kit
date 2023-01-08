@@ -5,6 +5,8 @@
 #include "world_feature.hpp"
 #include "api/world/enums/enums.hpp"
 #include "api/world/terrain/chunk.hpp"
+#include "api/value/value.hpp"
+#include "api/util/env.hpp"
 #include <vector>
 #include <queue>
 #include <map>
@@ -13,10 +15,11 @@ static const float agk_perspective_clip_distance {1000.0f};
 
 class world : public feature {
 protected:
-	int32_t wf_token_id {};
+	int32_t wf_chunk_token_id {};
     bool poll_low_priority_queue {};
 
-    void on_event_refresh_priority(SDL_Event &sdl_event);
+    void on_event_changed_priority(SDL_Event &sdl_event);
+    void do_update_chunk();
 public:
     explicit world();
     ~world();
@@ -30,12 +33,19 @@ public:
 
 	void registry_wf(world_feature *p_world_feature);
     world_feature *unregister_wf(world_feature *p_world_feature);
-    world_feature *find(int32_t wf_id);
+    world_feature *find_env_wf(int32_t wf_id);
     /* End of environment segment. */
 
     /* Start of terrain segment. */
+    std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
+
     util::timing chunk_checker_timing {};
+    value<uint64_t> chunk_check_delay {};
+    value<int32_t> chunk_size {};
+
+    chunk *find_chunk_wf(int32_t wf_id);
+    chunk *find_chunk_wf(std::string_view grid_pos);
     /* End of terrain segment. */
 
     void on_create() override;

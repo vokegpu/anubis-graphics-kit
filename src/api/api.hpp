@@ -37,7 +37,7 @@ namespace api {
         ::world *&get();
         renderer *&renderer();
 
-        model *create(std::string_view tag, std::string_view path);
+        model *create(std::string_view tag, std::string_view path, ::mesh::format format);
         void create(world_feature *p_world_feature);
         void destroy(world_feature *p_world_feature);
     };

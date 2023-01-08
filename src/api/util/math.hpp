@@ -9,8 +9,8 @@ namespace util {
     float min(float val, float min);
     float max(float val, float max);
 
-    void mesh_list_vector3f(std::vector<float>&, glm::vec3);
-    void mesh_plane(mesh::data&, glm::vec3, glm::vec3);
+    void transform_to_grid_pos(glm::ivec2 &grid_pos, const glm::vec3 &world_pos, const glm::ivec2 &grid_size = {16, 16});
+    void transform_to_world_pos(glm::vec3 &world_pos, const glm::ivec2 &grid_pos, const glm::ivec2 &grid_size = {16, 16});
 }
 
 #endif

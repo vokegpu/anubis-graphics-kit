@@ -6,7 +6,7 @@
 #include "api/world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl")};
+    model *p_model_dino {api::world::create("Dinossaur", "./data/models/cat.obj", mesh::format::obj)};
     object *p_object_dino {new object(p_model_dino)};
     material *p_material {new material(enums::material::metal)};
 
@@ -18,7 +18,7 @@ void client::scenes::starter::on_create() {
     this->p_light_spot->position = {0, 15, 0};
     this->p_light_spot->update();
 
-    api::world::create(p_object_dino);
+    //api::world::create(p_object_dino);
     api::world::create(p_light_spot);
 
     this->p_camera_manager->set_editor_enabled(true);

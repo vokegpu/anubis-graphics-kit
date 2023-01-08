@@ -26,5 +26,5 @@ include_directories(src)
 include_directories(external)
 
 # Inject at the executable the src files and link the libraries used in the project.
-add_executable(agk ${SRC_FILES})
+add_executable(agk ${SRC_FILES} "external/lodepng/lodepng.cpp")
 target_link_libraries(agk ${LINKED_LIBRARIES})

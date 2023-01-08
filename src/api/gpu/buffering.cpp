@@ -6,7 +6,7 @@ uint32_t buffering::current_type_bind[2] {};
 void buffering::bind(const glm::ivec2 &buffer_type) {
     uint32_t buffer {};
     if (buffer_type.x == GL_ELEMENT_ARRAY_BUFFER) {
-        if (this->buffer_ebo != 0) glGenBuffers(1, &this->buffer_ebo);
+        if (this->buffer_ebo == 0) glGenBuffers(1, &this->buffer_ebo);
         buffer = this->buffer_ebo;
     }
 
@@ -24,12 +24,9 @@ void buffering::send(size_t size, void *p_data, uint32_t gl_driver_read_mode) {
     glBufferData(buffering::current_type_bind[0], size, p_data, gl_driver_read_mode);
 }
 
-void buffering::attach(int32_t vec, const glm::ivec2 &array_stride) {
-    glEnableVertexAttribArray(this->shader_location_index);
-    glVertexAttribPointer(this->shader_location_index, vec, buffering::current_type_bind[1], GL_FALSE, array_stride.x, (void*) static_cast<uint64_t>(array_stride.y));
-
-    /* Pass to next shader location. */
-    this->shader_location_index++;
+void buffering::attach(int32_t location, int32_t vec, const glm::ivec2 &array_stride) {
+    glEnableVertexAttribArray(location);
+    glVertexAttribPointer(location, vec, buffering::current_type_bind[1], GL_FALSE, array_stride.x, (void*) static_cast<uint64_t>(array_stride.y));
 }
 
 void buffering::invoke() {

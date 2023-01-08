@@ -48,6 +48,8 @@ void frustum::on_event(SDL_Event &sdl_event) {
         case SDL_WINDOWEVENT: {
             switch (sdl_event.window.event) {
                 case SDL_WINDOWEVENT_SIZE_CHANGED: {
+                    api::app.screen_width = sdl_event.window.data1;
+                    api::app.screen_height = sdl_event.window.data2;
                     this->process_perspective(sdl_event.window.data1, sdl_event.window.data2);
                     break;
                 }                

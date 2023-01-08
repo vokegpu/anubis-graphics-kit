@@ -14,7 +14,7 @@ void world_feature::set_visible(enums::state enum_state, bool dispatch_event) {
         sdl_event.user.data1 = p_boolean;
         sdl_event.user.data2 = p_wf_id;
 
-        event::dispatch(sdl_event, event::WORLD_REFRESH_DRAW);
+        event::dispatch(sdl_event, event::WORLD_REFRESH_ENVIRONMENT);
     } else {
         this->visible = enum_state;
     }
@@ -33,7 +33,7 @@ void world_feature::set_priority(enums::priority enum_priority, bool dispatch_ev
         sdl_event.user.data1 = p_boolean;
         sdl_event.user.data2 = p_wf_id;
 
-        event::dispatch(sdl_event, event::WORLD_REFRESH_PRIORITY);
+        event::dispatch(sdl_event, event::WORLD_CHANGED_PRIORITY);
     } else {
         this->priority = enum_priority;
     }
