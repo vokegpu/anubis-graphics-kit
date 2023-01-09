@@ -16,7 +16,7 @@ void world::on_create() {
     this->chunk_size.set_value(512);
     this->chunk_check_delay.set_value(1000);
 
-    this->chunk_heightmap_texture.path = "./data/textures/rolling_hills_heightmap.png";
+    this->chunk_heightmap_texture.path = "./data/textures/terrain2_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
 }
 

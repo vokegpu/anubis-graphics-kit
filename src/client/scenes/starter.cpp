@@ -6,22 +6,22 @@
 #include "api/world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    model *p_model_dino {api::world::create("Dinossaur", "./data/models/cat.obj", mesh::format::obj)};
-    object *p_object_dino {new object(p_model_dino)};
+    model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl", mesh::format::stl)};
+    this->p_object_dino = new object(p_model_dino);
     material *p_material {new material(enums::material::metal)};
 
     p_material->set_color({1.0f, 1.0f, 0.0f});
-    p_object_dino->p_material = p_material;
-    p_object_dino->position.y = 30;
-    p_object_dino->scale = {0.2f, 0.2f, 0.2f};
+    this->p_object_dino->p_material = p_material;
+    this->p_object_dino->position.y = 30;
+    this->p_object_dino->scale = {0.2f, 0.2f, 0.2f};
 
     this->p_light_spot = new light(nullptr);
     this->p_light_spot->intensity = {50, 50, 50};
     this->p_light_spot->position = {0, 15, 0};
     this->p_light_spot->update();
 
-    api::world::create(p_object_dino);
-    api::world::create(p_light_spot);
+    api::world::create(this->p_object_dino);
+    api::world::create(this->p_light_spot);
 
     this->p_camera_manager->set_editor_enabled(true);
     this->p_camera_manager->set_movement_enabled(true);
@@ -64,6 +64,10 @@ void client::scenes::starter::on_update() {
     if (api::input::pressed("mouse-2")) {
         this->p_light_spot->position = api::world::currentcamera()->position;
         this->p_light_spot->update();
+    }
+
+    if (api::input::pressed("h")) {
+        this->p_object_dino->position = api::world::currentcamera()->position;
     }
 
     if (api::input::pressed("x")) {
