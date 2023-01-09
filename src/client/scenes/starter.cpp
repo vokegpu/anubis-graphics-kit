@@ -6,7 +6,7 @@
 #include "api/world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl", mesh::format::stl)};
+    model *p_model_dino {api::world::create("Dinossaur", "./data/models/cat.obj", mesh::format::obj)};
     object *p_object_dino {new object(p_model_dino)};
     material *p_material {new material(enums::material::metal)};
 

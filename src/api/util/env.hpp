@@ -18,6 +18,15 @@ namespace util {
     bool resetifreach(util::timing&, uint64_t);
 
     void split(std::vector<std::string>&, std::string_view, const char);
+
+    struct texture {
+        std::string path {};
+        unsigned char *p_data {};
+        uint32_t w {}, h {};
+        bool loaded {};
+    };
+
+    bool loadtexture(texture *p_texture);
 }
 
 #endif

@@ -22,7 +22,7 @@ public:
 
     buffering::type type {};
     uint32_t primitive {GL_TRIANGLES};
-    int32_t stride[3] {};
+    uint64_t stride[3] {};
 
     void bind(const glm::ivec2 &buffer_type);
     void send(size_t size, void *p_data, uint32_t gl_driver_read_mode);

@@ -14,7 +14,7 @@ public:
     buffering buffering {};
     mesh::data meshing_data {};
 
-    bool gen_chunk(void *p_raster_terrain, int32_t width, int32_t height);
+    bool gen_chunk(void *p_raster_terrain, uint32_t width, uint32_t height);
     void set_buffer_processed();
 
     bool is_buffer_processed();

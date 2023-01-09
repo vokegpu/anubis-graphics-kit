@@ -43,22 +43,18 @@ void buffering::revoke() {
 }
 
 void buffering::draw() {
-    glBindVertexArray(this->buffer_vao);
-
     switch (this->type) {
         case buffering::type::direct: {
             if (this->buffer_ebo != 0) {
-                const void *p_stride_indices {(void*) (static_cast<uint64_t>(stride[1]))};
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->buffer_ebo);
-                glDrawElements(this->primitive, stride[0], GL_UNSIGNED_INT, p_stride_indices);
+                glDrawElements(this->primitive, stride[0], GL_UNSIGNED_INT, (void*) stride[1]);
             } else {
                 glDrawArrays(this->primitive, stride[0], stride[1]);
             }
+            break;
         }
 
         case buffering::type::instanced: {
             if (this->buffer_ebo != 0) {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->buffer_ebo);
                 glDrawElementsInstanced(this->primitive, stride[1], GL_UNSIGNED_INT, nullptr, stride[2]);
             } else {
                 glDrawArraysInstanced(this->primitive, stride[0], stride[1], stride[2]);
@@ -66,6 +62,4 @@ void buffering::draw() {
             break;
         }
     }
-
-    glBindVertexArray(0);
 }

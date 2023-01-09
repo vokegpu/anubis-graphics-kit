@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <sstream>
 #include <string>
+#include <lodepng/lodepng.h>
 
 void util::log(const std::string &log_message) {
     const std::string full_log_message {"[AGK] " + log_message};
@@ -43,4 +44,15 @@ void util::split(std::vector<std::string> &list, std::string_view str, const cha
     while (std::getline(ss, string_buffer, divisor)) {
         list.push_back(string_buffer);
     }
+}
+
+bool util::loadtexture(util::texture *p_texture) {
+    unsigned error = lodepng_decode32_file(&p_texture->p_data, &p_texture->w, &p_texture->h, p_texture->path.data());
+    if (error) {
+        const std::string msg {"Failed to read read texture '" + p_texture->path + "'"};
+        util::log(msg);
+        return true;
+    }
+
+    return false;
 }

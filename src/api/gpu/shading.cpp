@@ -1,5 +1,4 @@
 #include "shading.hpp"
-#include "api/util/env.hpp"
 #include "api/util/file.hpp"
 
 void shading::program::set_uniform_vec4(std::string_view name, const float* vec) {

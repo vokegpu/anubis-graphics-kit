@@ -52,7 +52,8 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
         i_list = mesh_data.get_uint_list(mesh::type::vertex);
         buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         buffering.send(sizeof(uint32_t) * i_list.size(), i_list.data(), GL_STATIC_DRAW);
-        buffering.stride[1] = mesh_data.faces;
+        buffering.stride[0] = mesh_data.faces;
+        buffering.stride[1] = 0;
     }
 
     buffering.revoke();
@@ -80,6 +81,7 @@ void renderer::process_terrain() {
 
     glm::mat4 mat4x4_model {};
     glUseProgram(p_program_terrain_pbr->id);
+    uint32_t strip {};
 
     for (chunk *&p_chunk : this->wf_chunk_draw_list) {
         if (p_chunk == nullptr) {
@@ -93,7 +95,9 @@ void renderer::process_terrain() {
         mat4x4_model = this->mat4x4_mvp * mat4x4_model;
         p_program_terrain_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
 
+        p_chunk->buffering.invoke();
         p_chunk->buffering.draw();
+        p_chunk->buffering.revoke();
     }
 
     glUseProgram(0);
@@ -162,7 +166,9 @@ void renderer::process_environment() {
         p_program_m_brdf_pbr->set_uniform_float("Material.Rough", p_object->p_material->get_rough());
         p_program_m_brdf_pbr->set_uniform_vec3("Material.Color", &p_object->p_material->get_color()[0]);
 
+        p_model->buffering.invoke();
         p_model->buffering.draw();
+        p_model->buffering.revoke();
     }
 
     if (this->loaded_light_size != current_light_loaded) {
@@ -276,10 +282,10 @@ void renderer::add(chunk *p_chunk) {
     auto &buffering {p_chunk->buffering};
     auto &v {p_chunk->meshing_data.get_float_list(mesh::type::vertex)};
     auto &c {p_chunk->meshing_data.get_float_list(mesh::type::color)};
+    auto &i {p_chunk->meshing_data.get_uint_list(mesh::type::vertex)};
 
     buffering.invoke();
-    buffering.primitive = GL_TRIANGLE_STRIP;
-    buffering.stride[1] = p_chunk->meshing_data.faces;
+    buffering.primitive = GL_TRIANGLES;
     buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
     buffering.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
     buffering.attach(0, 3);
@@ -287,6 +293,11 @@ void renderer::add(chunk *p_chunk) {
     buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
     buffering.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
     buffering.attach(3, 3);
+
+    buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
+    buffering.send(sizeof(uint32_t) * i.size(), i.data(), GL_STATIC_DRAW);
+    buffering.stride[0] = p_chunk->meshing_data.faces;
+    buffering.stride[1] = 0;
     buffering.revoke();
 
     p_chunk->set_buffer_processed();
