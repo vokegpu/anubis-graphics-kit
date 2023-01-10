@@ -5,6 +5,9 @@
 
 class feature {
 public:
+    feature();
+    ~feature();
+
     static int32_t token;
 
     bool is_enable {true};

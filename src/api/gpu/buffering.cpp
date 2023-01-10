@@ -63,3 +63,9 @@ void buffering::draw() {
         }
     }
 }
+
+void buffering::free_buffers() {
+    if (this->buffer_vao != 0) glDeleteVertexArrays(1, &this->buffer_vao);
+    if (this->buffer_ebo != 0) glDeleteBuffers(1, &this->buffer_ebo);
+    if (!this->buffer_list.empty()) glDeleteBuffers(this->buffer_list.size(), this->buffer_list.data());
+}

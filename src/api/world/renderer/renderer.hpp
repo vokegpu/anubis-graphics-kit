@@ -14,6 +14,7 @@ protected:
 
     int32_t loaded_light_size {};
     glm::mat4 mat4x4_mvp {};
+    bool update_disabled_chunks {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);
     void on_event_refresh_chunk(SDL_Event &sdl_event);

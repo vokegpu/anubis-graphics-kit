@@ -20,6 +20,7 @@ protected:
 
     void on_event_changed_priority(SDL_Event &sdl_event);
     void do_update_chunk();
+    void update_rendering_state(std::string_view chunk_tag, bool flag);
 public:
     explicit world();
     ~world();
@@ -39,11 +40,14 @@ public:
     /* Start of terrain segment. */
     std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
-    util::texture chunk_heightmap_texture {};
 
+    util::texture chunk_heightmap_texture {};
     util::timing chunk_checker_timing {};
-    value<uint64_t> chunk_check_delay {};
-    value<int32_t> chunk_size {};
+    mesh::data chunk_mesh_data {};
+
+    value<int32_t> config_chunk_gen_dist {};
+    value<int32_t> config_chunk_size {};
+    value<uint64_t> config_chunk_gen_interval {};
 
     chunk *find_chunk_wf(int32_t wf_id);
     chunk *find_chunk_wf(std::string_view grid_pos);

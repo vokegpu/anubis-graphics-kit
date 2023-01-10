@@ -6,6 +6,5 @@ void model::on_create() {
 
 void model::on_destroy() {
     feature::on_destroy();
-
-    this->buffering.on_destroy();
+    this->buffering.free_buffers();
 }

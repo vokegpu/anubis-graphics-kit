@@ -12,12 +12,11 @@ bool chunk::gen_chunk(void *p_raster_terrain, uint32_t width, uint32_t height) {
     glm::vec3 vertex {};
     width = png_data.w;
     height = png_data.h;
-    this->scale = {1, 1, 1};
+    this->scale = {0.5f, 0.5f, 0.5f};
 
     unsigned char r {}, g {}, b {};
     float f_r {}, f_g {}, f_b {};
     float greyscale {};
-    float yscale {64.0f / 256.0f}, yshift {16.0f};
 
     for (uint32_t h {}; h < height; h++) {
         for (uint32_t w {}; w < width; w++) {
@@ -57,7 +56,6 @@ bool chunk::gen_chunk(void *p_raster_terrain, uint32_t width, uint32_t height) {
         }
     }
 
-    util::log("Chunk generated " + std::to_string(this->meshing_data.faces) + " faces");
     this->mesh_processed = true;
     return true;
 }
@@ -72,4 +70,26 @@ bool chunk::is_buffer_processed() {
 
 void chunk::set_buffer_processed() {
     this->buffer_processed = true;
+}
+
+chunk::chunk() {
+
+}
+
+chunk::~chunk() {
+
+}
+
+void chunk::on_create() {
+    feature::on_create();
+    this->visible = enums::state::enable;
+}
+
+void chunk::on_destroy() {
+    feature::on_destroy();
+    this->buffering.free_buffers();
+}
+
+void chunk::set_mesh_processed() {
+    this->mesh_processed = true;
 }

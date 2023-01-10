@@ -4,10 +4,9 @@
 #include "GL/glew.h"
 #include <iostream>
 #include <vector>
-#include "api/feature/feature.hpp"
 #include <glm/glm.hpp>
 
-class buffering : public feature {
+class buffering {
 protected:
     static uint32_t current_type_bind[2];
 
@@ -31,6 +30,7 @@ public:
     void invoke();
     void revoke();
     void draw();
+    void free_buffers();
 };
 
 #endif

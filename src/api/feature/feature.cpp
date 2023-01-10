@@ -1,4 +1,5 @@
 #include "feature.hpp"
+#include "api/util/env.hpp"
 
 int32_t feature::token {1};
 
@@ -20,4 +21,11 @@ void feature::on_update() {
 
 void feature::on_render() {
 
+}
+
+feature::feature() {
+
+}
+
+feature::~feature() {
 }

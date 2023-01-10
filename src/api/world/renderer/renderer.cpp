@@ -83,21 +83,21 @@ void renderer::process_terrain() {
     glUseProgram(p_program_terrain_pbr->id);
     uint32_t strip {};
 
-    for (chunk *&p_chunk : this->wf_chunk_draw_list) {
-        if (p_chunk == nullptr) {
+    for (chunk *&p_chunks : this->wf_chunk_draw_list) {
+        if (p_chunks == nullptr) {
             continue;
         }
 
         mat4x4_model = glm::mat4(1);
-        mat4x4_model = glm::translate(mat4x4_model, p_chunk->position);
-        mat4x4_model = glm::scale(mat4x4_model, p_chunk->scale);
+        mat4x4_model = glm::translate(mat4x4_model, p_chunks->position);
+        mat4x4_model = glm::scale(mat4x4_model, p_chunks->scale);
 
         mat4x4_model = this->mat4x4_mvp * mat4x4_model;
         p_program_terrain_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
 
-        p_chunk->buffering.invoke();
-        p_chunk->buffering.draw();
-        p_chunk->buffering.revoke();
+        p_chunks->buffering.invoke();
+        p_chunks->buffering.draw();
+        p_chunks->buffering.revoke();
     }
 
     glUseProgram(0);
@@ -207,6 +207,17 @@ void renderer::on_render() {
     auto &p_camera {api::world::currentcamera()};
     this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
 
+    if (this->update_disabled_chunks) {
+        this->update_disabled_chunks = false;
+        this->wf_chunk_draw_list.clear();
+
+        for (chunk *&p_chunks : api::world::get()->loaded_chunk_list) {
+            if (p_chunks != nullptr) {
+                this->wf_chunk_draw_list.push_back(p_chunks);
+            }
+        }
+    }
+
     this->process_terrain();
     this->process_environment();
 }
@@ -224,7 +235,6 @@ void renderer::on_event(SDL_Event &sdl_event) {
 
                 case event::WORLD_REFRESH_CHUNK: {
                     this->on_event_refresh_chunk(sdl_event);
-                    util::log("World refresh chunk event called/listened");
                     break;
                 }
             }
@@ -266,8 +276,10 @@ void renderer::on_event_refresh_chunk(SDL_Event &sdl_event) {
     auto &p_world {api::world::get()};
     auto p_chunk {p_world->find_chunk_wf(*p_string_chunk_tag)};
 
-    if (p_world != nullptr && *p_append_chunk && p_chunk->is_mesh_processed() && !p_chunk->is_buffer_processed()) {
+    if (p_chunk != nullptr && *p_append_chunk && p_chunk->is_mesh_processed() && !p_chunk->is_buffer_processed()) {
         this->add(p_chunk);
+    } else if (!*p_append_chunk) {
+        this->update_disabled_chunks = true;
     }
 
     delete p_string_chunk_tag;

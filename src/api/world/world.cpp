@@ -13,11 +13,60 @@ world::~world() {
 }
 
 void world::on_create() {
-    this->chunk_size.set_value(512);
-    this->chunk_check_delay.set_value(1000);
+    this->config_chunk_size.set_value(376);
+    this->config_chunk_gen_dist.set_value(3);
+    this->config_chunk_gen_interval.set_value(1000);
 
     this->chunk_heightmap_texture.path = "./data/textures/terrain2_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
+
+    glm::vec3 vertex {};
+    uint32_t width = this->chunk_heightmap_texture.w;
+    uint32_t height = this->chunk_heightmap_texture.h;
+
+    unsigned char r {}, g {}, b {};
+    float f_r {}, f_g {}, f_b {};
+    float greyscale {};
+
+    for (uint32_t h {}; h < height; h++) {
+        for (uint32_t w {}; w < width; w++) {
+            r = this->chunk_heightmap_texture.p_data[(w + h * width) * 4];
+            g = this->chunk_heightmap_texture.p_data[(w + h * width) * 4 + 1];
+            b = this->chunk_heightmap_texture.p_data[(w + h * width) * 4 + 2];
+
+            f_r = static_cast<float>(r) / 255;
+            f_g = static_cast<float>(g) / 255;
+            f_b = static_cast<float>(b) / 255;
+
+            greyscale = (f_r + f_g + f_b) / 3;
+            vertex.x = (static_cast<float>(w));
+            vertex.y = r;
+            vertex.z = (static_cast<float>(h));
+
+            this->chunk_mesh_data.append(mesh::type::vertex, vertex);
+            this->chunk_mesh_data.append(mesh::type::color, {greyscale, greyscale, greyscale});
+        }
+    }
+
+    for (uint32_t h {}; h < height - 1; h++) {
+        for (uint32_t w {}; w < width - 1; w++) {
+            uint32_t i1 {h * width + w};
+            uint32_t i2 {h * width + w + 1};
+            uint32_t i3 {(h + 1) * width + w};
+            uint32_t i4 {(h + 1) * width + w + 1};
+
+            this->chunk_mesh_data.append(mesh::type::vertex, i1);
+            this->chunk_mesh_data.append(mesh::type::vertex, i3);
+            this->chunk_mesh_data.append(mesh::type::vertex, i2);
+
+            this->chunk_mesh_data.append(mesh::type::vertex, i2);
+            this->chunk_mesh_data.append(mesh::type::vertex, i3);
+            this->chunk_mesh_data.append(mesh::type::vertex, i4);
+            this->chunk_mesh_data.faces += 6;
+        }
+    }
+
+    util::log("Processed base heightmap with " + std::to_string(this->chunk_mesh_data.faces) + " faces");
 }
 
 void world::on_destroy() {
@@ -73,7 +122,7 @@ void world::on_update() {
     }
 
     /* World terrain segment. */
-    if (util::resetifreach(this->chunk_checker_timing, this->chunk_check_delay.get_value())) {
+    if (util::resetifreach(this->chunk_checker_timing, this->config_chunk_gen_interval.get_value())) {
         this->do_update_chunk();
     }
 }
@@ -122,26 +171,71 @@ void world::on_event_changed_priority(SDL_Event &sdl_event) {
 }
 
 void world::do_update_chunk() {
-    if (!this->loaded_chunk_list.empty()) {
-        return;
+    glm::vec3 sub {};
+    auto &p_player {api::world::currentplayer()};
+    std::vector<chunk*> current_loaded_chunk {};
+    this->chunk_map.clear();
+
+    int32_t chunk_size {this->config_chunk_size.get_value()};
+    int32_t chunk_gen_dist {this->config_chunk_gen_dist.get_value()};
+
+    std::string chunk_tag {};
+    glm::ivec2 grid_pos {};
+    glm::ivec2 vec_chunk_size {chunk_size, chunk_size};
+
+    for (chunk *&p_chunks : this->loaded_chunk_list) {
+        sub = p_player->position - p_chunks->position;
+        sub.y = 0;
+
+        if (static_cast<int32_t>(glm::length(sub)) > chunk_gen_dist * chunk_size) {
+            this->update_rendering_state("", false);
+            p_chunks->on_destroy();
+            delete p_chunks;
+            p_chunks = nullptr;
+            continue;
+        }
+
+        util::to_grid_pos(grid_pos, p_chunks->position, vec_chunk_size);
+        chunk_tag = std::to_string(grid_pos.x);
+        chunk_tag += 'x';
+        chunk_tag += std::to_string(grid_pos.y);
+
+        current_loaded_chunk.push_back(p_chunks);
+        this->chunk_map[chunk_tag] = p_chunks;
     }
 
-    chunk *p_chunk {new chunk {}};
-    p_chunk->position = {0, 0, 0};
-    p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
-    p_chunk->gen_chunk(nullptr, this->chunk_size.get_value(), this->chunk_size.get_value());
+    this->loaded_chunk_list = current_loaded_chunk;
 
-    glm::ivec2 grid_pos {};
-    util::transform_to_grid_pos(grid_pos, p_chunk->position, glm::ivec2(this->chunk_size.get_value()));
-    const std::string chunk_tag {std::to_string(grid_pos.x) + "x" + std::to_string(grid_pos.y)};
+    glm::ivec2 player_grid {};
+    player_grid.x = static_cast<int32_t>(p_player->position.x);
+    player_grid.y = static_cast<int32_t>(p_player->position.z);
+    util::to_grid_pos(player_grid, p_player->position, glm::ivec2(chunk_size));
 
-    this->chunk_map[chunk_tag] = p_chunk;
-    this->loaded_chunk_list.push_back(p_chunk);
+    for (int32_t z {-chunk_gen_dist / 2}; z < chunk_gen_dist / 2; z++) {
+        for (int32_t x {-chunk_gen_dist / 2}; x < chunk_gen_dist / 2; x++) {
+            grid_pos.x = player_grid.x + x;
+            grid_pos.y = player_grid.y + z;
 
-    SDL_Event sdl_event_chunk {};
-    sdl_event_chunk.user.data1 = new std::string(chunk_tag);
-    sdl_event_chunk.user.data2 = new bool(true); // add chunk flag
-    event::dispatch(sdl_event_chunk, event::WORLD_REFRESH_CHUNK);
+            chunk_tag = std::to_string(grid_pos.x);
+            chunk_tag += 'x';
+            chunk_tag += std::to_string(grid_pos.y);
+
+            if (this->chunk_map[chunk_tag] != nullptr) {
+                continue;
+            }
+
+            chunk *p_chunk {new chunk {}};
+            p_chunk->position = {grid_pos.x * chunk_size, 0, grid_pos.y * chunk_size};
+            p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
+            p_chunk->scale = {4.0f, 4.0f, 4.0f};
+            p_chunk->set_mesh_processed();
+            p_chunk->meshing_data = this->chunk_mesh_data;
+
+            this->chunk_map[chunk_tag] = p_chunk;
+            this->loaded_chunk_list.push_back(p_chunk);
+            this->update_rendering_state(chunk_tag, true);
+        }
+    }
 }
 
 chunk *world::find_chunk_wf(int32_t wf_id) {
@@ -155,5 +249,12 @@ chunk *world::find_chunk_wf(int32_t wf_id) {
 }
 
 chunk *world::find_chunk_wf(std::string_view grid_pos) {
-    return this->chunk_map[grid_pos.data()];
+    return grid_pos.data() == nullptr ? nullptr : this->chunk_map[grid_pos.data()];
+}
+
+void world::update_rendering_state(std::string_view chunk_tag, bool flag) {
+    SDL_Event sdl_event_chunk {};
+    sdl_event_chunk.user.data1 = new std::string(chunk_tag);
+    sdl_event_chunk.user.data2 = new bool(flag); // add chunk flag
+    event::dispatch(sdl_event_chunk, event::WORLD_REFRESH_CHUNK);
 }

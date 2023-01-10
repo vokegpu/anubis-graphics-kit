@@ -6,6 +6,7 @@
 #include "client/services/camera_manager.hpp"
 #include "api/world/environment/light.hpp"
 #include "api/world/environment/object.hpp"
+#include <amogpu/amogpu.hpp>
 
 namespace client::scenes {
     class starter : public feature {
@@ -14,6 +15,8 @@ namespace client::scenes {
         object *p_object_dino {};
 
         client::services::camera_manager *p_camera_manager {};
+        font_renderer f_render {};
+        dynamic_batching batching {};
 
         void on_create() override;
         void on_destroy() override;
