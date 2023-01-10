@@ -13,16 +13,16 @@ world::~world() {
 }
 
 void world::on_create() {
-    this->config_chunk_size.set_value(376);
-    this->config_chunk_gen_dist.set_value(3);
+    this->config_chunk_gen_dist.set_value(6);
     this->config_chunk_gen_interval.set_value(1000);
 
-    this->chunk_heightmap_texture.path = "./data/textures/terrain2_heightmap.png";
+    this->chunk_heightmap_texture.path = "./data/textures/iceland_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
 
     glm::vec3 vertex {};
     uint32_t width = this->chunk_heightmap_texture.w;
     uint32_t height = this->chunk_heightmap_texture.h;
+    this->config_chunk_size.set_value(width);
 
     unsigned char r {}, g {}, b {};
     float f_r {}, f_g {}, f_b {};
@@ -174,7 +174,6 @@ void world::do_update_chunk() {
     glm::vec3 sub {};
     auto &p_player {api::world::currentplayer()};
     std::vector<chunk*> current_loaded_chunk {};
-    this->chunk_map.clear();
 
     int32_t chunk_size {this->config_chunk_size.get_value()};
     int32_t chunk_gen_dist {this->config_chunk_gen_dist.get_value()};
@@ -184,21 +183,23 @@ void world::do_update_chunk() {
     glm::ivec2 vec_chunk_size {chunk_size, chunk_size};
 
     for (chunk *&p_chunks : this->loaded_chunk_list) {
-        sub = p_player->position - p_chunks->position;
+        sub = p_chunks->position + (float) chunk_size / 2;
+        sub = p_player->position - sub;
         sub.y = 0;
-
-        if (static_cast<int32_t>(glm::length(sub)) > chunk_gen_dist * chunk_size) {
-            this->update_rendering_state("", false);
-            p_chunks->on_destroy();
-            delete p_chunks;
-            p_chunks = nullptr;
-            continue;
-        }
 
         util::to_grid_pos(grid_pos, p_chunks->position, vec_chunk_size);
         chunk_tag = std::to_string(grid_pos.x);
         chunk_tag += 'x';
         chunk_tag += std::to_string(grid_pos.y);
+
+        if (static_cast<int32_t>(glm::length(sub)) / chunk_size > chunk_gen_dist * chunk_gen_dist) {
+            api::world::renderer()->refresh();
+            p_chunks->on_destroy();
+            delete p_chunks;
+            p_chunks = nullptr;
+            this->chunk_map[chunk_tag] = nullptr;
+            continue;
+        }
 
         current_loaded_chunk.push_back(p_chunks);
         this->chunk_map[chunk_tag] = p_chunks;
@@ -211,8 +212,8 @@ void world::do_update_chunk() {
     player_grid.y = static_cast<int32_t>(p_player->position.z);
     util::to_grid_pos(player_grid, p_player->position, glm::ivec2(chunk_size));
 
-    for (int32_t z {-chunk_gen_dist / 2}; z < chunk_gen_dist / 2; z++) {
-        for (int32_t x {-chunk_gen_dist / 2}; x < chunk_gen_dist / 2; x++) {
+    for (int32_t z {-chunk_gen_dist}; z < chunk_gen_dist; ++z) {
+        for (int32_t x {-chunk_gen_dist}; x < chunk_gen_dist; ++x) {
             grid_pos.x = player_grid.x + x;
             grid_pos.y = player_grid.y + z;
 
@@ -227,7 +228,7 @@ void world::do_update_chunk() {
             chunk *p_chunk {new chunk {}};
             p_chunk->position = {grid_pos.x * chunk_size, 0, grid_pos.y * chunk_size};
             p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
-            p_chunk->scale = {4.0f, 4.0f, 4.0f};
+            p_chunk->scale = {1.0f, 1.0f, 1.0f};
             p_chunk->set_mesh_processed();
             p_chunk->meshing_data = this->chunk_mesh_data;
 
@@ -249,12 +250,11 @@ chunk *world::find_chunk_wf(int32_t wf_id) {
 }
 
 chunk *world::find_chunk_wf(std::string_view grid_pos) {
-    return grid_pos.data() == nullptr ? nullptr : this->chunk_map[grid_pos.data()];
+    return grid_pos.empty() ? nullptr : this->chunk_map[grid_pos.data()];
 }
 
 void world::update_rendering_state(std::string_view chunk_tag, bool flag) {
     SDL_Event sdl_event_chunk {};
     sdl_event_chunk.user.data1 = new std::string(chunk_tag);
-    sdl_event_chunk.user.data2 = new bool(flag); // add chunk flag
     event::dispatch(sdl_event_chunk, event::WORLD_REFRESH_CHUNK);
 }

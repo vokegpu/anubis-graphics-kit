@@ -84,7 +84,7 @@ void renderer::process_terrain() {
     uint32_t strip {};
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
-        if (p_chunks == nullptr) {
+        if (p_chunks == nullptr || !p_chunks->is_mesh_processed() || !p_chunks->is_buffer_processed()) {
             continue;
         }
 
@@ -207,19 +207,19 @@ void renderer::on_render() {
     auto &p_camera {api::world::currentcamera()};
     this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
 
+    this->process_terrain();
+    this->process_environment();
+
     if (this->update_disabled_chunks) {
         this->update_disabled_chunks = false;
         this->wf_chunk_draw_list.clear();
 
         for (chunk *&p_chunks : api::world::get()->loaded_chunk_list) {
-            if (p_chunks != nullptr) {
+            if (p_chunks != nullptr && p_chunks->is_buffer_processed() && p_chunks->is_mesh_processed()) {
                 this->wf_chunk_draw_list.push_back(p_chunks);
             }
         }
     }
-
-    this->process_terrain();
-    this->process_environment();
 }
 
 void renderer::on_event(SDL_Event &sdl_event) {
@@ -271,19 +271,15 @@ void renderer::on_event_refresh_environment(SDL_Event &sdl_event) {
 
 void renderer::on_event_refresh_chunk(SDL_Event &sdl_event) {
     auto p_string_chunk_tag {static_cast<std::string*>(sdl_event.user.data1)};
-    auto p_append_chunk {static_cast<bool*>(sdl_event.user.data2)};
 
     auto &p_world {api::world::get()};
     auto p_chunk {p_world->find_chunk_wf(*p_string_chunk_tag)};
 
-    if (p_chunk != nullptr && *p_append_chunk && p_chunk->is_mesh_processed() && !p_chunk->is_buffer_processed()) {
+    if (p_chunk != nullptr && p_chunk->is_mesh_processed() && !p_chunk->is_buffer_processed()) {
         this->add(p_chunk);
-    } else if (!*p_append_chunk) {
-        this->update_disabled_chunks = true;
     }
 
     delete p_string_chunk_tag;
-    delete p_append_chunk;
 }
 
 void renderer::add(chunk *p_chunk) {
@@ -314,4 +310,8 @@ void renderer::add(chunk *p_chunk) {
 
     p_chunk->set_buffer_processed();
     this->wf_chunk_draw_list.push_back(p_chunk);
+}
+
+void renderer::refresh() {
+    this->update_disabled_chunks = true;
 }

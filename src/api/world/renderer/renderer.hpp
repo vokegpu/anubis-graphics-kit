@@ -27,6 +27,7 @@ public:
 
     bool find(std::string_view tag, model *& p_model);
     bool contains(std::string_view tag);
+    void refresh();
 
     void process_terrain();
     void process_environment();

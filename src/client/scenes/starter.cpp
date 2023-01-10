@@ -97,8 +97,11 @@ void client::scenes::starter::on_update() {
 }
 
 void client::scenes::starter::on_render() {
+    std::string text {"chunks count drawing "};
+    text += std::to_string(api::world::renderer()->wf_chunk_draw_list.size());
+
     this->batching.invoke();
-    this->f_render.render("chunks count drawing " + std::to_string(api::world::renderer()->wf_chunk_draw_list.size()), 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
+    this->f_render.render(text, 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
     this->batching.revoke();
     this->batching.draw();
 }
