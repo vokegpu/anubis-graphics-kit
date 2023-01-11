@@ -101,7 +101,31 @@ void client::scenes::starter::on_render() {
     text += std::to_string(api::world::renderer()->wf_chunk_draw_list.size());
 
     this->batching.invoke();
-    this->f_render.render(text, 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
+    float x {}, y {}, w {1.0f}, h {1.0f};
+
+    this->batching.instance(20, 20);
+    this->batching.modal(200, 200);
+    this->batching.fill({1.0f,1.0f, 1.0f, 1.0f});
+    this->batching.bind(api::world::get()->chunk_heightmap_gl_texture);
+
+    this->batching.vertex(x, y);
+    this->batching.vertex(x, y + h);
+    this->batching.vertex(x + w, y + h);
+    this->batching.vertex(x + w, y + h);
+    this->batching.vertex(x + w, y);
+    this->batching.vertex(x, y);
+
+    w = 1.0f;
+    h = 1.0f;
+
+    this->batching.coords(x, y);
+    this->batching.coords(x, y + h);
+    this->batching.coords(x + w, y + h);
+    this->batching.coords(x + w, y + h);
+    this->batching.coords(x + w, y);
+    this->batching.coords(x, y);
+    this->batching.next();
+
     this->batching.revoke();
     this->batching.draw();
 }

@@ -188,6 +188,7 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
     const char *p_shader_resource {};
     std::string shader_source {};
     std::vector<uint32_t> compiled_shader_list {};
+    util::log("Invalid shader resource code!");
 
     for (const ::shading::resource &resource : resource_list) {
         shader_source.clear();
@@ -199,6 +200,7 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
         }
 
         if (shader_source.empty()) {
+            util::log("Invalid shader resource code!");
             break;
         }
 

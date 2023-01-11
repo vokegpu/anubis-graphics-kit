@@ -13,13 +13,13 @@ world::~world() {
 }
 
 void world::on_create() {
-    this->config_chunk_gen_dist.set_value(6);
+    this->config_chunk_gen_dist.set_value(1);
     this->config_chunk_gen_interval.set_value(1000);
     this->config_chunk_size.set_value(128);
 
     this->chunk_heightmap_texture.path = "./data/textures/iceland_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
-    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h);
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
     this->chunk_heightmap_gl_texture = util::createtexture(&this->chunk_heightmap_texture);
 }
 

@@ -115,7 +115,7 @@ void mesh::data::append(mesh::type type, float value) {
 
         case mesh::type::textcoord: {
             this->t_list.push_back(value);
-            this->t_len = 1;
+            this->t_len = 2;
             break;
         }
 

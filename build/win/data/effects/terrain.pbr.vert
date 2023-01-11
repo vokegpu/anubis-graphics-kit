@@ -5,10 +5,9 @@ layout (location = 1) in vec2 TextureCoordinates;
 layout (location = 2) in vec3 VertexNormal;
 layout (location = 3) in vec3 VertexColor;
 
-out vec3 Color;
-uniform mat4 MVP;
+out vec2 TexCoord;
 
 void main() {
-    gl_Position = MVP * vec4(VertexPosition, 1.0);
-    Color = VertexColor;
+    gl_Position = vec4(VertexPosition, 1.0);
+    TexCoord = TextureCoordinates;
 }

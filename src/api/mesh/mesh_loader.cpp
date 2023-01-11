@@ -317,38 +317,40 @@ bool mesh_loader::load_heightmap(mesh::data &data, util::texture *p_texture) {
 
 bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint32_t height) {
     glm::vec3 vertex {};
+    data.faces = static_cast<int32_t>(width * height);
+
     for (uint32_t h {}; h < height - 1; h++) {
         for (uint32_t w {}; w < width - 1; w++) {
-            /* first vertex of triangle */
+            /* first vertex of quad */
             vertex.x = static_cast<float>(w);
-            vertex.y = static_cast<float>(0);
+            vertex.y = 0.0f;
             vertex.z = static_cast<float>(h);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
             data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
 
-            /* second vertex of triangle */
+            /* second vertex of quad */
             vertex.x = static_cast<float>(w + 1);
-            vertex.y = static_cast<float>(0);
+            vertex.y = 0.0f;
             vertex.z = static_cast<float>(h);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));
             data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
 
-            /* third vertex of triangle */
+            /* third vertex of quad */
             vertex.x = static_cast<float>(w);
-            vertex.y = static_cast<float>(0);
+            vertex.y = 0.0f;
             vertex.z = static_cast<float>(h + 1);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
             data.append(mesh::type::textcoord, static_cast<float>(h + 1) / static_cast<float>(height));
 
-            /* four vertex of triangle */
+            /* four vertex of quad */
             vertex.x = static_cast<float>(w + 1);
-            vertex.y = static_cast<float>(0);
+            vertex.y = 0.0f;
             vertex.z = static_cast<float>(h + 1);
 
             data.append(mesh::type::vertex, vertex);

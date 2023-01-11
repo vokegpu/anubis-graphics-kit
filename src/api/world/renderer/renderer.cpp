@@ -79,9 +79,13 @@ void renderer::process_terrain() {
     shading::program *p_program_terrain_pbr {};
     api::shading::find("terrain.pbr", p_program_terrain_pbr);
 
+    uint32_t texture {api::world::get()->chunk_heightmap_gl_texture};
     glm::mat4 mat4x4_model {};
     glUseProgram(p_program_terrain_pbr->id);
-    p_program_terrain_pbr->set_uniform_int("Heightmap", api::world::get()->chunk_heightmap_gl_texture);
+    p_program_terrain_pbr->set_uniform_int("Heightmap", 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
         if (p_chunks == nullptr || !p_chunks->is_mesh_processed() || !p_chunks->is_buffer_processed()) {
@@ -195,6 +199,11 @@ void renderer::on_create() {
             {"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
             {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
     });
+
+    shading::program *p {};
+    api::shading::find("terrain.pbr", p);
+
+    bool {};
 }
 
 void renderer::on_destroy() {
@@ -291,23 +300,22 @@ void renderer::add(chunk *p_chunk) {
 
     auto &buffering {p_chunk->buffering};
     auto &v {p_chunk->meshing_data.get_float_list(mesh::type::vertex)};
+    auto &t {p_chunk->meshing_data.get_float_list(mesh::type::textcoord)};
     auto &c {p_chunk->meshing_data.get_float_list(mesh::type::color)};
     auto &i {p_chunk->meshing_data.get_uint_list(mesh::type::vertex)};
 
     buffering.invoke();
-    buffering.tessellation(4);
     buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
     buffering.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
     buffering.attach(0, 3);
 
     buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-    buffering.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
-    buffering.attach(3, 3);
+    buffering.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
+    buffering.attach(1, 3);
 
-    buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
-    buffering.send(sizeof(uint32_t) * i.size(), i.data(), GL_STATIC_DRAW);
-    buffering.stride[0] = p_chunk->meshing_data.faces;
-    buffering.stride[1] = 0;
+    buffering.stride[0] = 0;
+    buffering.stride[1] = 4 * p_chunk->meshing_data.faces;
+    buffering.tessellation(4);
     buffering.revoke();
 
     p_chunk->set_buffer_processed();

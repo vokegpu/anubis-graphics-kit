@@ -6,7 +6,7 @@ set(BUILD_LOCATION "")
 set(CMAKE_BINARY_DIR "build-debug-build/")
 
 if(WIN32)
-	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/win/libamogpu.a" mingw32 opengl32 glew32 SDL2main SDL2 freetype)
+	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/win/libamogpu.a" mingw32 opengl32 glew32 SDL2main SDL2 SDL2_image freetype)
 	set(BUILD_LOCATION "../build/win/")
 else()
 	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/linux/libamogpu.a" SDL2main SDL2 GL GLEW freetype)
