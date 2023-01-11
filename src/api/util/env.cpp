@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <lodepng/lodepng.h>
+#include "GL/glew.h"
 
 void util::log(const std::string &log_message) {
     const std::string full_log_message {"[AGK] " + log_message};
@@ -55,4 +56,21 @@ bool util::loadtexture(util::texture *p_texture) {
     }
 
     return false;
+}
+
+uint32_t util::createtexture(util::texture *p_texture) {
+    uint32_t tex_id {};
+
+    /* Gen a GL object (texture). */
+    glGenTextures(GL_TEXTURE_2D, &tex_id);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+
+    /* Pass format of png, dimension of image, unsigned short type & data from texture. */
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int32_t) p_texture->w, (int32_t) p_texture->h, 0, GL_RGBA, GL_UNSIGNED_SHORT, p_texture->p_data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    /* Return the GL object. */
+    return tex_id;
 }

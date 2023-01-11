@@ -35,7 +35,6 @@ void buffering::invoke() {
     }
 
     glBindVertexArray(this->buffer_vao);
-    this->shader_location_index = 0;
 }
 
 void buffering::revoke() {
@@ -67,5 +66,10 @@ void buffering::draw() {
 void buffering::free_buffers() {
     if (this->buffer_vao != 0) glDeleteVertexArrays(1, &this->buffer_vao);
     if (this->buffer_ebo != 0) glDeleteBuffers(1, &this->buffer_ebo);
-    if (!this->buffer_list.empty()) glDeleteBuffers(this->buffer_list.size(), this->buffer_list.data());
+    if (!this->buffer_list.empty()) glDeleteBuffers((int32_t) this->buffer_list.size(), this->buffer_list.data());
+}
+
+void buffering::tessellation(int32_t patches) {
+    glPatchParameteri(GL_PATCH_VERTICES, patches);
+    this->primitive = GL_PATCHES;
 }

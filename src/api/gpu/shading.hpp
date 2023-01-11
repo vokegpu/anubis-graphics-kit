@@ -8,12 +8,12 @@
 
 namespace shading {
     enum stage {
-        vertex = GL_VERTEX_SHADER,
-        geometry = GL_GEOMETRY_SHADER,
-        tessellation = GL_DONT_CARE,
-        tessellation_evaluation = GL_DONT_CARE,
-        fragment = GL_FRAGMENT_SHADER,
-        computed = GL_DONT_CARE
+        vertex         = GL_VERTEX_SHADER,
+        geometry       = GL_GEOMETRY_SHADER,
+        tesscontrol    = GL_TESS_CONTROL_SHADER,
+        tessevaluation = GL_TESS_EVALUATION_SHADER,
+        fragment       = GL_FRAGMENT_SHADER,
+        compute        = GL_COMPUTE_SHADER
     };
 
     struct program {

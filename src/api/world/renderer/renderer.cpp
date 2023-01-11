@@ -81,7 +81,7 @@ void renderer::process_terrain() {
 
     glm::mat4 mat4x4_model {};
     glUseProgram(p_program_terrain_pbr->id);
-    uint32_t strip {};
+    p_program_terrain_pbr->set_uniform_int("Heightmap", api::world::get()->chunk_heightmap_gl_texture);
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
         if (p_chunks == nullptr || !p_chunks->is_mesh_processed() || !p_chunks->is_buffer_processed()) {
@@ -191,7 +191,9 @@ void renderer::on_create() {
     shading::program *p_program_terrain_pbr {new ::shading::program {}};
     api::shading::createprogram("terrain.pbr", p_program_terrain_pbr, {
             {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
-            {"./data/effects/terrain.pbr.frag", shading::stage::fragment}
+            {"./data/effects/terrain.pbr.frag", shading::stage::fragment},
+            {"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
+            {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
     });
 }
 
@@ -293,7 +295,7 @@ void renderer::add(chunk *p_chunk) {
     auto &i {p_chunk->meshing_data.get_uint_list(mesh::type::vertex)};
 
     buffering.invoke();
-    buffering.primitive = GL_TRIANGLES;
+    buffering.tessellation(4);
     buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
     buffering.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
     buffering.attach(0, 3);

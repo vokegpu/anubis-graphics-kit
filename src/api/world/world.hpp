@@ -41,6 +41,7 @@ public:
     std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
 
+    uint32_t chunk_heightmap_gl_texture {};
     util::texture chunk_heightmap_texture {};
     util::timing chunk_checker_timing {};
     mesh::data chunk_mesh_data {};

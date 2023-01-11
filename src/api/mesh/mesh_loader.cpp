@@ -259,3 +259,103 @@ void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
     
     util::log("Mesh loader collector: STL faces (" + std::to_string(data.faces) + ")");
 }
+
+bool mesh_loader::load_heightmap(mesh::data &data, util::texture *p_texture) {
+    if (p_texture->p_data == nullptr && util::loadtexture(p_texture)) {
+        return true;
+    }
+
+    unsigned char r {}, g {}, b {};
+    float f_r {}, f_g {}, f_b {};
+    float greyscale {};
+
+    uint32_t width {p_texture->w};
+    uint32_t height {p_texture->h};
+    glm::vec3 vertex {};
+
+    for (uint32_t h {}; h < height; h++) {
+        for (uint32_t w {}; w < width; w++) {
+            r = p_texture->p_data[(w + h * width) * 4];
+            g = p_texture->p_data[(w + h * width) * 4 + 1];
+            b = p_texture->p_data[(w + h * width) * 4 + 2];
+
+            f_r = static_cast<float>(r) / 255;
+            f_g = static_cast<float>(g) / 255;
+            f_b = static_cast<float>(b) / 255;
+
+            greyscale = (f_r + f_g + f_b) / 3;
+            vertex.x = (static_cast<float>(w));
+            vertex.y = r;
+            vertex.z = (static_cast<float>(h));
+
+            data.append(mesh::type::vertex, vertex);
+            data.append(mesh::type::color, {greyscale, greyscale, greyscale});
+        }
+    }
+
+    for (uint32_t h {}; h < height - 1; h++) {
+        for (uint32_t w {}; w < width - 1; w++) {
+            uint32_t i1 {h * width + w};
+            uint32_t i2 {h * width + w + 1};
+            uint32_t i3 {(h + 1) * width + w};
+            uint32_t i4 {(h + 1) * width + w + 1};
+
+            data.append(mesh::type::vertex, i1);
+            data.append(mesh::type::vertex, i3);
+            data.append(mesh::type::vertex, i2);
+
+            data.append(mesh::type::vertex, i2);
+            data.append(mesh::type::vertex, i3);
+            data.append(mesh::type::vertex, i4);
+            data.faces += 6;
+        }
+    }
+
+    util::log("Processed base heightmap with " + std::to_string(data.faces) + " faces");
+    return false;
+}
+
+bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint32_t height) {
+    glm::vec3 vertex {};
+    for (uint32_t h {}; h < height - 1; h++) {
+        for (uint32_t w {}; w < width - 1; w++) {
+            /* first vertex of triangle */
+            vertex.x = static_cast<float>(w);
+            vertex.y = static_cast<float>(0);
+            vertex.z = static_cast<float>(h);
+
+            data.append(mesh::type::vertex, vertex);
+            data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
+            data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
+
+            /* second vertex of triangle */
+            vertex.x = static_cast<float>(w + 1);
+            vertex.y = static_cast<float>(0);
+            vertex.z = static_cast<float>(h);
+
+            data.append(mesh::type::vertex, vertex);
+            data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));
+            data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
+
+            /* third vertex of triangle */
+            vertex.x = static_cast<float>(w);
+            vertex.y = static_cast<float>(0);
+            vertex.z = static_cast<float>(h + 1);
+
+            data.append(mesh::type::vertex, vertex);
+            data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
+            data.append(mesh::type::textcoord, static_cast<float>(h + 1) / static_cast<float>(height));
+
+            /* four vertex of triangle */
+            vertex.x = static_cast<float>(w + 1);
+            vertex.y = static_cast<float>(0);
+            vertex.z = static_cast<float>(h + 1);
+
+            data.append(mesh::type::vertex, vertex);
+            data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));
+            data.append(mesh::type::textcoord, static_cast<float>(h + 1) / static_cast<float>(height));
+        }
+    }
+
+    return false;
+}

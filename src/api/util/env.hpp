@@ -27,6 +27,8 @@ namespace util {
     };
 
     bool loadtexture(texture *p_texture);
+    uint32_t createtexture(texture *p_texture);
+
 }
 
 #endif

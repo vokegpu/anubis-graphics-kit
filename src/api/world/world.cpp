@@ -15,58 +15,12 @@ world::~world() {
 void world::on_create() {
     this->config_chunk_gen_dist.set_value(6);
     this->config_chunk_gen_interval.set_value(1000);
+    this->config_chunk_size.set_value(128);
 
     this->chunk_heightmap_texture.path = "./data/textures/iceland_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
-
-    glm::vec3 vertex {};
-    uint32_t width = this->chunk_heightmap_texture.w;
-    uint32_t height = this->chunk_heightmap_texture.h;
-    this->config_chunk_size.set_value(width);
-
-    unsigned char r {}, g {}, b {};
-    float f_r {}, f_g {}, f_b {};
-    float greyscale {};
-
-    for (uint32_t h {}; h < height; h++) {
-        for (uint32_t w {}; w < width; w++) {
-            r = this->chunk_heightmap_texture.p_data[(w + h * width) * 4];
-            g = this->chunk_heightmap_texture.p_data[(w + h * width) * 4 + 1];
-            b = this->chunk_heightmap_texture.p_data[(w + h * width) * 4 + 2];
-
-            f_r = static_cast<float>(r) / 255;
-            f_g = static_cast<float>(g) / 255;
-            f_b = static_cast<float>(b) / 255;
-
-            greyscale = (f_r + f_g + f_b) / 3;
-            vertex.x = (static_cast<float>(w));
-            vertex.y = r;
-            vertex.z = (static_cast<float>(h));
-
-            this->chunk_mesh_data.append(mesh::type::vertex, vertex);
-            this->chunk_mesh_data.append(mesh::type::color, {greyscale, greyscale, greyscale});
-        }
-    }
-
-    for (uint32_t h {}; h < height - 1; h++) {
-        for (uint32_t w {}; w < width - 1; w++) {
-            uint32_t i1 {h * width + w};
-            uint32_t i2 {h * width + w + 1};
-            uint32_t i3 {(h + 1) * width + w};
-            uint32_t i4 {(h + 1) * width + w + 1};
-
-            this->chunk_mesh_data.append(mesh::type::vertex, i1);
-            this->chunk_mesh_data.append(mesh::type::vertex, i3);
-            this->chunk_mesh_data.append(mesh::type::vertex, i2);
-
-            this->chunk_mesh_data.append(mesh::type::vertex, i2);
-            this->chunk_mesh_data.append(mesh::type::vertex, i3);
-            this->chunk_mesh_data.append(mesh::type::vertex, i4);
-            this->chunk_mesh_data.faces += 6;
-        }
-    }
-
-    util::log("Processed base heightmap with " + std::to_string(this->chunk_mesh_data.faces) + " faces");
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h);
+    this->chunk_heightmap_gl_texture = util::createtexture(&this->chunk_heightmap_texture);
 }
 
 void world::on_destroy() {

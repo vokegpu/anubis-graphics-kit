@@ -29,7 +29,7 @@ public:
     renderer *p_world_renderer {nullptr};
 
     gc garbage_collector {};
-    mesh_loader mesh3d_loader {};
+    mesh_loader mesher_loader {};
     input input_manager {};
 
     std::map<std::string, shading::program*> shader_registry_map {};

@@ -43,6 +43,7 @@ namespace api {
     };
 
     namespace mesh {
+        mesh_loader &loader();
         bool load(::mesh::data&, std::string_view);
     };
 

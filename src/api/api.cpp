@@ -298,7 +298,11 @@ entity *&api::world::currentplayer() {
 }
 
 bool api::mesh::load(::mesh::data &data, std::string_view path) {
-    return api::app.mesh3d_loader.load_object(data, path);
+    return api::app.mesher_loader.load_object(data, path);
+}
+
+mesh_loader &api::mesh::loader() {
+    return api::app.mesher_loader;
 }
 
 bool api::input::pressed(std::string_view input_tag) {
