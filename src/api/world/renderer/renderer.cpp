@@ -82,10 +82,9 @@ void renderer::process_terrain() {
     uint32_t texture {api::world::get()->chunk_heightmap_gl_texture};
     glm::mat4 mat4x4_model {};
     glUseProgram(p_program_terrain_pbr->id);
-    p_program_terrain_pbr->set_uniform_int("Heightmap", 0);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    p_program_terrain_pbr->set_uniform_vec2("Fog.Distance", &this->config_fog_distance.get_value()[0]);
+    p_program_terrain_pbr->set_uniform_vec3("Fog.Color", &this->config_fog_color.get_value()[0]);
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
         if (p_chunks == nullptr || !p_chunks->is_mesh_processed() || !p_chunks->is_buffer_processed()) {
@@ -117,7 +116,6 @@ void renderer::process_environment() {
     api::shading::find("m.brdf.pbr", p_program_m_brdf_pbr);
 
     glUseProgram(p_program_m_brdf_pbr->id);
-    p_program_m_brdf_pbr->set_uniform_vec3("CameraPosition", &camera->position[0]);
 
     entity *p_entity {};
     model *p_model {};
@@ -156,6 +154,9 @@ void renderer::process_environment() {
 
         mat4x4_model = glm::mat4(1.0f);
         mat4x4_model = glm::translate(mat4x4_model, p_object->position);
+        mat4x4_model = glm::rotate(mat4x4_model, p_object->rotation.x, {1, 0, 0});
+        mat4x4_model = glm::rotate(mat4x4_model, p_object->rotation.y, {0, 1, 0});
+        mat4x4_model = glm::rotate(mat4x4_model, p_object->rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_object->scale);
 
         cubic_normal_matrix = glm::inverseTranspose(glm::mat3(mat4x4_model));
@@ -195,31 +196,21 @@ void renderer::on_create() {
     shading::program *p_program_terrain_pbr {new ::shading::program {}};
     api::shading::createprogram("terrain.pbr", p_program_terrain_pbr, {
             {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
-            {"./data/effects/terrain.pbr.frag", shading::stage::fragment},
-            {"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
-            {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
+            {"./data/effects/terrain.pbr.frag", shading::stage::fragment}
+            //{"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
+            //{"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
     });
 
-    shading::program *p {};
-    api::shading::find("terrain.pbr", p);
-
-    bool {};
+    this->config_fog_distance.set_value({0.0f, 512.0f});
+    this->config_fog_color.set_value({1.0f, 1.0f, 1.0f});
 }
 
 void renderer::on_destroy() {
     feature::on_destroy();
 }
 
-
 void renderer::on_render() {
     feature::on_render();
-
-    /* Prepare matrices to render the world. */
-    auto &p_camera {api::world::currentcamera()};
-    this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
-
-    this->process_terrain();
-    this->process_environment();
 
     if (this->update_disabled_chunks) {
         this->update_disabled_chunks = false;
@@ -231,6 +222,13 @@ void renderer::on_render() {
             }
         }
     }
+
+    /* Prepare matrices to render the world. */
+    auto &p_camera {api::world::currentcamera()};
+    this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
+
+    this->process_terrain();
+    this->process_environment();
 }
 
 void renderer::on_event(SDL_Event &sdl_event) {
@@ -313,9 +311,24 @@ void renderer::add(chunk *p_chunk) {
     buffering.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
     buffering.attach(1, 3);
 
-    buffering.stride[0] = 0;
-    buffering.stride[1] = 4 * p_chunk->meshing_data.faces;
-    buffering.tessellation(4);
+    if (p_chunk->meshing_data.contains(mesh::type::color)) {
+        buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+        buffering.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
+        buffering.attach(3, 3);
+
+        buffering.stride[0] = p_chunk->meshing_data.faces;
+        buffering.primitive = GL_TRIANGLES;
+    } else {
+        buffering.stride[0] = 0;
+        buffering.stride[1] = 4 * p_chunk->meshing_data.faces;
+        buffering.tessellation(4);
+    }
+
+    if (p_chunk->meshing_data.contains(mesh::type::vertex, true)) {
+        buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
+        buffering.send(sizeof(uint32_t) * i.size(), i.data(), GL_STATIC_DRAW);
+    }
+
     buffering.revoke();
 
     p_chunk->set_buffer_processed();

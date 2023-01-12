@@ -13,14 +13,14 @@ world::~world() {
 }
 
 void world::on_create() {
-    this->config_chunk_gen_dist.set_value(1);
+    this->config_chunk_gen_dist.set_value(3);
     this->config_chunk_gen_interval.set_value(1000);
     this->config_chunk_size.set_value(128);
 
-    this->chunk_heightmap_texture.path = "./data/textures/iceland_heightmap.png";
+    this->chunk_heightmap_texture.path = "./data/textures/rolling_hills_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
-    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
-    this->chunk_heightmap_gl_texture = util::createtexture(&this->chunk_heightmap_texture);
+    api::mesh::loader().load_heightmap(this->chunk_mesh_data, &this->chunk_heightmap_texture);
+    //this->chunk_heightmap_gl_texture = util::createtexture(this->chunk_heightmap_texture);
 }
 
 void world::on_destroy() {
@@ -132,7 +132,6 @@ void world::do_update_chunk() {
     int32_t chunk_size {this->config_chunk_size.get_value()};
     int32_t chunk_gen_dist {this->config_chunk_gen_dist.get_value()};
 
-    std::string chunk_tag {};
     glm::ivec2 grid_pos {};
     glm::ivec2 vec_chunk_size {chunk_size, chunk_size};
 
@@ -142,7 +141,7 @@ void world::do_update_chunk() {
         sub.y = 0;
 
         util::to_grid_pos(grid_pos, p_chunks->position, vec_chunk_size);
-        chunk_tag = std::to_string(grid_pos.x);
+        std::string chunk_tag {std::to_string(grid_pos.x)};
         chunk_tag += 'x';
         chunk_tag += std::to_string(grid_pos.y);
 
@@ -171,7 +170,7 @@ void world::do_update_chunk() {
             grid_pos.x = player_grid.x + x;
             grid_pos.y = player_grid.y + z;
 
-            chunk_tag = std::to_string(grid_pos.x);
+            std::string chunk_tag {std::to_string(grid_pos.x)};
             chunk_tag += 'x';
             chunk_tag += std::to_string(grid_pos.y);
 
@@ -203,7 +202,7 @@ chunk *world::find_chunk_wf(int32_t wf_id) {
     return nullptr;
 }
 
-chunk *world::find_chunk_wf(std::string_view grid_pos) {
+chunk *world::find_chunk_wf(const std::string &grid_pos) {
     return grid_pos.empty() ? nullptr : this->chunk_map[grid_pos.data()];
 }
 

@@ -28,8 +28,8 @@ void camera::on_event(SDL_Event &sdl_event) {
                 static_cast<float>(sdl_event.motion.yrel) * this->mouse_sensitivity
             };
 
-            this->rotation.x += delta[0];
-            this->rotation.y -= delta[1];
+            this->rotation.y += delta[0];
+            this->rotation.x -= delta[1];
 
             this->update_rotation();
             break;
@@ -40,8 +40,8 @@ void camera::on_event(SDL_Event &sdl_event) {
 void camera::update_rotation() {
     glm::vec3 f {};
 
-    float &yaw {this->rotation.x};
-    float &pitch {this->rotation.y};
+    float &yaw {this->rotation.y};
+    float &pitch {this->rotation.x};
 
     if (pitch > 89.0f) {
         pitch = 89.0f;

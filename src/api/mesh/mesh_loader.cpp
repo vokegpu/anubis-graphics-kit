@@ -261,23 +261,19 @@ void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
 }
 
 bool mesh_loader::load_heightmap(mesh::data &data, util::texture *p_texture) {
-    if (p_texture->p_data == nullptr && util::loadtexture(p_texture)) {
-        return true;
-    }
-
     unsigned char r {}, g {}, b {};
     float f_r {}, f_g {}, f_b {};
     float greyscale {};
 
-    uint32_t width {p_texture->w};
-    uint32_t height {p_texture->h};
+    uint32_t width {static_cast<uint32_t>(p_texture->w)};
+    uint32_t height {static_cast<uint32_t>(p_texture->h)};
     glm::vec3 vertex {};
 
     for (uint32_t h {}; h < height; h++) {
         for (uint32_t w {}; w < width; w++) {
-            r = p_texture->p_data[(w + h * width) * 4];
-            g = p_texture->p_data[(w + h * width) * 4 + 1];
-            b = p_texture->p_data[(w + h * width) * 4 + 2];
+            r = p_texture->p_data[(w + h * width) * p_texture->format];
+            g = p_texture->p_data[(w + h * width) * p_texture->format + 1];
+            b = p_texture->p_data[(w + h * width) * p_texture->format + 2];
 
             f_r = static_cast<float>(r) / 255;
             f_g = static_cast<float>(g) / 255;

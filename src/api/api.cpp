@@ -4,6 +4,7 @@
 #include <amogpu/amogpu.hpp>
 #include "api/util/file.hpp"
 #include "api/event/event.hpp"
+#include <SDL2/SDL_image.h>
 
 profile api::app {};
 float api::dt {};
@@ -15,14 +16,14 @@ void api::path(const char *p_arg_path) {
 void api::mainloop(feature *p_scene_initial) {
     util::log("Initialising");
 
-    if (SDL_Init(SDL_INIT_VIDEO)) {
+    if (SDL_Init(SDL_INIT_EVERYTHING)) {
         util::log("Failed to init SDL");
         return;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     api::app.p_sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, api::app.screen_width, api::app.screen_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GLContext sdl_gl_context {SDL_GL_CreateContext(api::app.p_sdl_window)};
@@ -30,10 +31,12 @@ void api::mainloop(feature *p_scene_initial) {
 
     glewExperimental = true;
     glewInit();
+
     SDL_GL_SetSwapInterval(1);
+    IMG_Init(IMG_INIT_PNG);
     util::log("OpenGL 4 context created");
 
-    amogpu::gl_version = "#version 450";
+    amogpu::gl_version = "#version 450 core";
     amogpu::init();
 
     util::timing reduce_cpu_ticks_timing {};
@@ -123,7 +126,7 @@ void api::mainloop(feature *p_scene_initial) {
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         api::app.p_world_renderer->on_render();
 
@@ -188,7 +191,6 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
     const char *p_shader_resource {};
     std::string shader_source {};
     std::vector<uint32_t> compiled_shader_list {};
-    util::log("Invalid shader resource code!");
 
     for (const ::shading::resource &resource : resource_list) {
         shader_source.clear();
@@ -201,6 +203,7 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
 
         if (shader_source.empty()) {
             util::log("Invalid shader resource code!");
+            util::log(resource.path.data());
             break;
         }
 

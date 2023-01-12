@@ -22,12 +22,12 @@ namespace util {
     struct texture {
         std::string path {};
         unsigned char *p_data {};
-        uint32_t w {}, h {};
+        uint32_t w {}, h {}, format {};
         bool loaded {};
     };
 
     bool loadtexture(texture *p_texture);
-    uint32_t createtexture(texture *p_texture);
+    uint32_t createtexture(texture &p_texture);
 
 }
 

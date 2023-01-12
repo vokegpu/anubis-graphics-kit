@@ -10,6 +10,7 @@
 #include "api/input/input.hpp"
 #include "api/world/renderer/renderer.hpp"
 #include "api/world/environment/entity.hpp"
+#include "api/value/settings.hpp"
 
 class profile {
 public:
@@ -24,13 +25,13 @@ public:
     feature *p_current_scene {nullptr};
     camera *p_current_camera {nullptr};
     entity *p_current_player {nullptr};
-
     world *p_world_client {nullptr};
     renderer *p_world_renderer {nullptr};
 
     gc garbage_collector {};
     mesh_loader mesher_loader {};
     input input_manager {};
+    settings settings {};
 
     std::map<std::string, shading::program*> shader_registry_map {};
     std::vector<feature*> loaded_service_list {};

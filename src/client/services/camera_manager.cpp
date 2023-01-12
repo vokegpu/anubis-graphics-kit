@@ -66,7 +66,7 @@ void client::services::camera_manager::on_update() {
             motion.y -= 1;
         }
 
-        float yaw {p_camera_linked->rotation.x};
+        float yaw {p_camera_linked->rotation.y};
         float x {glm::cos(glm::radians(yaw))};
         float z {glm::sin(glm::radians(yaw))};
 

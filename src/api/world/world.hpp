@@ -51,7 +51,7 @@ public:
     value<uint64_t> config_chunk_gen_interval {};
 
     chunk *find_chunk_wf(int32_t wf_id);
-    chunk *find_chunk_wf(std::string_view grid_pos);
+    chunk *find_chunk_wf(const std::string &grid_pos);
     /* End of terrain segment. */
 
     void on_create() override;

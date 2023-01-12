@@ -4,6 +4,7 @@
 #include "api/world/model/model.hpp"
 #include "api/mesh/mesh.hpp"
 #include "api/world/terrain/chunk.hpp"
+#include "api/value/value.hpp"
 #include <vector>
 #include <map>
 
@@ -21,6 +22,9 @@ protected:
 public:
     std::vector<world_feature*> wf_env_draw_list {};
     std::vector<chunk*> wf_chunk_draw_list {};
+
+    value<glm::vec2> config_fog_distance {};
+    value<glm::vec3> config_fog_color {};
 
     model *add(std::string_view tag, mesh::data &mesh_data);
     void add(chunk *p_chunk);
