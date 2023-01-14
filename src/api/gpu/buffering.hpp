@@ -1,5 +1,5 @@
-#ifndef AGK_API_GPU_BUFFERING
-#define AGK_API_GPU_BUFFERING
+#ifndef AGK_API_GPU_BUFFERING_H
+#define AGK_API_GPU_BUFFERING_H
 
 #include "GL/glew.h"
 #include <iostream>

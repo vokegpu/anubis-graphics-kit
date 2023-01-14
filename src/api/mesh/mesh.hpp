@@ -33,6 +33,11 @@ namespace mesh {
         mesh::format format {mesh::format::unknown};
         int32_t faces {};
 
+        explicit inline data() = default;
+        explicit inline data(mesh::format _format) {
+            this->format = _format;
+        }
+
         void append(mesh::type type, const glm::vec4 &vec);
         void append(mesh::type type, const glm::vec3 &vec);
         void append(mesh::type type, const glm::vec2 &vec);

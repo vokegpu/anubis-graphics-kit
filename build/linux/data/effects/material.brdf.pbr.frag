@@ -8,7 +8,6 @@ in vec2 Texcoord;
 in vec3 Normal;
 
 uniform vec3 CameraPosition;
-uniform bool MaterialLightSpot;
 uniform struct {
     vec3 Color;
     bool Metal;
@@ -18,13 +17,9 @@ uniform struct {
 uniform int LoadedLightLen;
 uniform struct {
     vec3 Intensity;
-    bool Indirect;
+    bool Directional;
     vec3 POD;
 } Light[100];
-
-vec3 GammaCorrection(vec3 color) {
-    return pow(color, vec3(1.0 / 2.0));
-}
 
 vec3 SchlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04);
@@ -32,7 +27,7 @@ vec3 SchlickFresnel(float lDotH) {
         f0 = Material.Color;
     }
 
-    return f0 + (1 - f0) * pow(1.0 - lDotH, 5);
+    return f0 + (1 - f0) * pow(clamp(1.0 - lDotH, 0.0f, 1.0), 5.0);
 }
 
 float GeometrySmith(float dotProduct) {
@@ -56,8 +51,8 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
     vec3 intensity = Light[lightIndex].Intensity;
     vec3 l = vec3(0.0);
 
-    if (Light[lightIndex].Indirect) {
-        l = Light[lightIndex].POD;
+    if (Light[lightIndex].Directional) {
+        l = normalize(Light[lightIndex].POD);
     } else {
         l = Light[lightIndex].POD - Pos;
         float distance = length(l);
@@ -65,10 +60,12 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
         intensity /= (distance * distance);
     }
 
+    float Wrap = 0.0;
+
     vec3 h = normalize(v + l);
     float nDotH = dot(n, h);
     float lDotH = dot(l, h);
-    float nDotL = max(dot(n, l), 0.0);
+    float nDotL = max(dot(l, n), 0.0);
     float nDotV = dot(n, v);
     vec3 spec = 0.25 * GGxDistribution(nDotH) * SchlickFresnel(lDotH) * GeometrySmith(nDotL) * GeometrySmith(nDotV);
 
@@ -76,19 +73,20 @@ vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
 }
 
 void main() {
-    vec3 color = vec3(1.0f);
+    vec3 color = vec3(0.0f);
     
-    if (MaterialLightSpot) {
+    if (Material.Rough == -1) {
         color = Material.Color;
     } else {
         vec3 n = normalize(Normal);
-        vec3 v = normalize(-Pos);
+        vec3 v = normalize(CameraPosition - Pos);
 
-        for (int it = 0; it < LoadedLightLen; it++) {
+        if (!gl_FrontFacing) n = -n;
+        for (int it = 0; it <= LoadedLightLen; it++) {
             color += BRDFunction(n, v, it);
         }
 
-        color = GammaCorrection(Material.Color);
+        color = pow(color, vec3(1.0 / 2.0));
     }
 
     FragColor = vec4(color, 1.0f);

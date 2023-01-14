@@ -4,7 +4,6 @@
 #include <amogpu/amogpu.hpp>
 #include "api/util/file.hpp"
 #include "api/event/event.hpp"
-#include <SDL2/SDL_image.h>
 
 profile api::app {};
 float api::dt {};
@@ -33,7 +32,6 @@ void api::mainloop(feature *p_scene_initial) {
     glewInit();
 
     SDL_GL_SetSwapInterval(1);
-    IMG_Init(IMG_INIT_PNG);
     util::log("OpenGL 4 context created");
 
     amogpu::gl_version = "#version 450 core";
@@ -289,8 +287,7 @@ void api::world::destroy(world_feature *p_world_feature) {
 }
 
 model *api::world::create(std::string_view tag, std::string_view path, ::mesh::format format) {
-    ::mesh::data mesh {};
-    mesh.format = format;
+    ::mesh::data mesh {format};
     if (api::mesh::load(mesh, path.data())) {
         return nullptr;
     }

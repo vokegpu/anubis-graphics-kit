@@ -34,3 +34,11 @@ public:
 };
 
 #endif
+
+#ifndef AGK_API_VALUE_GLOBAL_H
+#define AGK_API_VALUE_GLOBAL_H
+
+class value_global {
+};
+
+#endif

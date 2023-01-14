@@ -11,7 +11,7 @@ protected:
     bool buffer_processed {};
     bool mesh_processed {};
 public:
-    buffering buffering {};
+    buffering buffer {};
     mesh::data meshing_data {};
 
     explicit chunk();

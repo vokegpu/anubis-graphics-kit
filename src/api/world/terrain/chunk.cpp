@@ -87,7 +87,7 @@ void chunk::on_create() {
 
 void chunk::on_destroy() {
     feature::on_destroy();
-    this->buffering.free_buffers();
+    this->buffer.free_buffers();
 }
 
 void chunk::set_mesh_processed() {

@@ -15,7 +15,7 @@ uniform mat3 MatrixNormal;
 void main() {
     Pos = (MatrixModel * vec4(VertexPosition, 1.0f)).xyz;
     Texcoord = TextureCoordinate;
-    Normal = MatrixNormal * FaceNormal;
+    Normal = normalize(MatrixNormal * FaceNormal);
 
     gl_Position = MVP * vec4(VertexPosition, 1.0f);
 }

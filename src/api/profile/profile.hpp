@@ -10,7 +10,6 @@
 #include "api/input/input.hpp"
 #include "api/world/renderer/renderer.hpp"
 #include "api/world/environment/entity.hpp"
-#include "api/value/settings.hpp"
 
 class profile {
 public:
@@ -31,7 +30,7 @@ public:
     gc garbage_collector {};
     mesh_loader mesher_loader {};
     input input_manager {};
-    settings settings {};
+    value_global values {};
 
     std::map<std::string, shading::program*> shader_registry_map {};
     std::vector<feature*> loaded_service_list {};

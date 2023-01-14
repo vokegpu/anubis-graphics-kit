@@ -22,41 +22,41 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     this->loaded_model_list.push_back(p_model);
     this->model_register_map[tag.data()] = p_model->id;
 
-    auto &buffering = p_model->buffering;
-    buffering.invoke();
-    buffering.stride[0] = 0;
+    auto &buffer = p_model->buffer;
+    buffer.invoke();
+    buffer.stride[0] = 0;
 
     if (mesh_data.contains(mesh::type::vertex)) {
         f_list = mesh_data.get_float_list(mesh::type::vertex);
-        buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-        buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
-        buffering.attach(0, 3);
-        buffering.stride[1] = f_list.size() / 3;
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
+        buffer.attach(0, 3);
+        buffer.stride[1] = f_list.size() / 3;
     }
 
     if (mesh_data.contains(mesh::type::textcoord)) {
         f_list = mesh_data.get_float_list(mesh::type::textcoord);
-        buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-        buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
-        buffering.attach(1, 2);
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
+        buffer.attach(1, 2);
     }
 
     if (mesh_data.contains(mesh::type::normal)) {
         f_list = mesh_data.get_float_list(mesh::type::normal);
-        buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-        buffering.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
-        buffering.attach(2, 3);
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.send(sizeof(float) * f_list.size(), f_list.data(), GL_STATIC_DRAW);
+        buffer.attach(2, 3);
     }
 
     if (mesh_data.contains(mesh::type::vertex, true)) {
         i_list = mesh_data.get_uint_list(mesh::type::vertex);
-        buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
-        buffering.send(sizeof(uint32_t) * i_list.size(), i_list.data(), GL_STATIC_DRAW);
-        buffering.stride[0] = mesh_data.faces;
-        buffering.stride[1] = 0;
+        buffer.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
+        buffer.send(sizeof(uint32_t) * i_list.size(), i_list.data(), GL_STATIC_DRAW);
+        buffer.stride[0] = mesh_data.faces;
+        buffer.stride[1] = 0;
     }
 
-    buffering.revoke();
+    buffer.revoke();
     return p_model;
 }
 
@@ -98,9 +98,9 @@ void renderer::process_terrain() {
         mat4x4_model = this->mat4x4_mvp * mat4x4_model;
         p_program_terrain_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
 
-        p_chunks->buffering.invoke();
-        p_chunks->buffering.draw();
-        p_chunks->buffering.revoke();
+        p_chunks->buffer.invoke();
+        p_chunks->buffer.draw();
+        p_chunks->buffer.revoke();
     }
 
     glUseProgram(0);
@@ -171,9 +171,9 @@ void renderer::process_environment() {
         p_program_m_brdf_pbr->set_uniform_float("Material.Rough", p_object->p_material->get_rough());
         p_program_m_brdf_pbr->set_uniform_vec3("Material.Color", &p_object->p_material->get_color()[0]);
 
-        p_model->buffering.invoke();
-        p_model->buffering.draw();
-        p_model->buffering.revoke();
+        p_model->buffer.invoke();
+        p_model->buffer.draw();
+        p_model->buffer.revoke();
     }
 
     if (this->loaded_light_size != current_light_loaded) {
@@ -296,40 +296,40 @@ void renderer::add(chunk *p_chunk) {
         return;
     }
 
-    auto &buffering {p_chunk->buffering};
+    auto &buffer {p_chunk->buffer};
     auto &v {p_chunk->meshing_data.get_float_list(mesh::type::vertex)};
     auto &t {p_chunk->meshing_data.get_float_list(mesh::type::textcoord)};
     auto &c {p_chunk->meshing_data.get_float_list(mesh::type::color)};
     auto &i {p_chunk->meshing_data.get_uint_list(mesh::type::vertex)};
 
-    buffering.invoke();
-    buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-    buffering.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
-    buffering.attach(0, 3);
+    buffer.invoke();
+    buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    buffer.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
+    buffer.attach(0, 3);
 
-    buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-    buffering.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
-    buffering.attach(1, 3);
+    buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    buffer.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
+    buffer.attach(1, 3);
 
     if (p_chunk->meshing_data.contains(mesh::type::color)) {
-        buffering.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-        buffering.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
-        buffering.attach(3, 3);
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
+        buffer.attach(3, 3);
 
-        buffering.stride[0] = p_chunk->meshing_data.faces;
-        buffering.primitive = GL_TRIANGLES;
+        buffer.stride[0] = p_chunk->meshing_data.faces;
+        buffer.primitive = GL_TRIANGLES;
     } else {
-        buffering.stride[0] = 0;
-        buffering.stride[1] = 4 * p_chunk->meshing_data.faces;
-        buffering.tessellation(4);
+        buffer.stride[0] = 0;
+        buffer.stride[1] = 4 * p_chunk->meshing_data.faces;
+        buffer.tessellation(4);
     }
 
     if (p_chunk->meshing_data.contains(mesh::type::vertex, true)) {
-        buffering.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
-        buffering.send(sizeof(uint32_t) * i.size(), i.data(), GL_STATIC_DRAW);
+        buffer.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
+        buffer.send(sizeof(uint32_t) * i.size(), i.data(), GL_STATIC_DRAW);
     }
 
-    buffering.revoke();
+    buffer.revoke();
 
     p_chunk->set_buffer_processed();
     this->wf_chunk_draw_list.push_back(p_chunk);
