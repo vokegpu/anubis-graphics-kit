@@ -48,7 +48,7 @@ public:
     uint32_t primitive {};
     shading::program *p_program_parallel {};
 
-    void send(const glm::ivec2 &in_dimension, void *p_data, const glm::ivec2 &in_format, const glm::ivec2 &in_filter = {GL_LINEAR, GL_LINEAR}) {
+    void send(const glm::ivec2 &in_dimension, t *p_data, const glm::ivec2 &in_format, const glm::ivec2 &in_filter = {GL_LINEAR, GL_LINEAR}) {
         this->dimension[0] = in_dimension.x;
         this->dimension[1] = in_dimension.y;
         this->format[0] = in_format.x;
@@ -68,10 +68,6 @@ public:
     }
 
     void invoke() {
-        if (this->p_program_parallel == nullptr) {
-            return;
-        }
-
         if (this->texture == 0) {
             glGenTextures(1, &this->texture);
         }
@@ -99,8 +95,9 @@ public:
         this->texture = 0;
     }
 
-    std::vector<t> &get_data() {
+    std::vector<t> &get() {
         /* Get the new texture data from GPU. */
+        this->data.clear();
         this->data.resize(this->dimension[0] * this->dimension[1]);
         glGetTexImage(GL_TEXTURE_2D, 0, this->format[1], this->primitive, this->data.data());
         return this->data;

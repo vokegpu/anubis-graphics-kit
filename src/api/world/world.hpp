@@ -40,6 +40,7 @@ public:
     /* Start of terrain segment. */
     std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
+    paralleling<float> parallel_heightmap {};
 
     uint32_t chunk_heightmap_gl_texture {};
     util::texture chunk_heightmap_texture {};

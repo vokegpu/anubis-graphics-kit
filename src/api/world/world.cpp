@@ -22,6 +22,25 @@ void world::on_create() {
     api::mesh::loader().load_heightmap(this->chunk_mesh_data, &this->chunk_heightmap_texture);
     //this->chunk_heightmap_gl_texture = util::createtexture(this->chunk_heightmap_texture);
 
+    float data[10] {
+        1, 2, 3, 4, 5, 7, 8, 9
+    };
+
+    shading::program *p_program_hmap_randomizer {new shading::program {}};
+    api::shading::createprogram("hmap.randomizer.script", p_program_hmap_randomizer, {
+        {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
+    });
+
+    this->parallel_heightmap.primitive = GL_FLOAT;
+    this->parallel_heightmap.p_program_parallel = p_program_hmap_randomizer;
+
+    this->parallel_heightmap.invoke();
+    this->parallel_heightmap.send({10, 1}, data, {GL_R32F, GL_RED});
+    this->parallel_heightmap.attach();
+    this->parallel_heightmap.dispatch();
+
+    for (float &f : this->parallel_heightmap.get()) util::log(std::to_string(f));
+    this->parallel_heightmap.revoke();
 }
 
 void world::on_destroy() {
