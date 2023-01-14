@@ -21,6 +21,7 @@ void world::on_create() {
     util::loadtexture(&this->chunk_heightmap_texture);
     api::mesh::loader().load_heightmap(this->chunk_mesh_data, &this->chunk_heightmap_texture);
     //this->chunk_heightmap_gl_texture = util::createtexture(this->chunk_heightmap_texture);
+
 }
 
 void world::on_destroy() {

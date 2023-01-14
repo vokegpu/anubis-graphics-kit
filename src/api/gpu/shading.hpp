@@ -17,9 +17,10 @@ namespace shading {
     };
 
     struct program {
+    public:
         GLuint id {};
 
-        program();
+        explicit program();
         ~program();
 
         void set_uniform_vec4(std::string_view, const float*);
