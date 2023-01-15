@@ -1,0 +1,51 @@
+#version 450 core
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (r8ui, binding = 0) uniform uimage2D OutTexture;
+
+uniform int Size;
+uniform int VecSize;
+
+float Rand(vec2 co) {
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+/*
+def inverse_interpolate(index):
+	prod = (index - 1) // 4;
+	return prod;
+
+def main(current_index, size):
+    interpolated = inverse_interpolate(current_index);
+	bound = current_index // 4;
+	initial_rgba = interpolated < bound;
+	diff = current_index - (bound * 4);
+
+	if initial_rgba:
+		diff = 0;
+
+	try:
+		print(color[diff], "oi jao vc e legal, oi alex vc e legal" if initial_rgba else "");
+	except:
+		pass
+*/
+
+uint InverseInterpolate(uint currentIndex) {
+    uint prod = currentIndex - 1 / VecSize;
+    return prod;
+}
+
+void main() {
+    uint currentIndex = gl_GlobalInvocationID.x;
+    uint inverseI = InverseInterpolate(currentIndex);
+    uint delimit = currentIndex / VecSize;
+
+    ivec2 pix = ivec2(gl_GlobalInvocationID.xy);
+    uint value = imageLoad(OutTexture, pix).x;
+
+    if (inverseI < delimit) {
+
+    }
+
+    imageStore(OutTexture, pix, ivec4(value, 0, 0, 0));
+}

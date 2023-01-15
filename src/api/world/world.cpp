@@ -17,30 +17,32 @@ void world::on_create() {
     this->config_chunk_gen_interval.set_value(1000);
     this->config_chunk_size.set_value(128);
 
-    this->chunk_heightmap_texture.path = "./data/textures/rolling_hills_heightmap.png";
-    util::loadtexture(&this->chunk_heightmap_texture);
-    api::mesh::loader().load_heightmap(this->chunk_mesh_data, &this->chunk_heightmap_texture);
-    //this->chunk_heightmap_gl_texture = util::createtexture(this->chunk_heightmap_texture);
-
-    float data[10] {
-        1, 2, 3, 4, 5, 7, 8, 9
-    };
-
     shading::program *p_program_hmap_randomizer {new shading::program {}};
     api::shading::createprogram("hmap.randomizer.script", p_program_hmap_randomizer, {
         {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
     });
 
-    this->parallel_heightmap.primitive = GL_FLOAT;
-    this->parallel_heightmap.p_program_parallel = p_program_hmap_randomizer;
+    this->chunk_heightmap_texture.path = "./data/textures/rolling_hills_heightmap.png";
+    util::loadtexture(&this->chunk_heightmap_texture);
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 10, 10);
 
-    this->parallel_heightmap.invoke();
-    this->parallel_heightmap.send({10, 1}, data, {GL_R32F, GL_RED});
-    this->parallel_heightmap.attach();
-    this->parallel_heightmap.dispatch();
+    /* Start of high-parallel testing. */
+    util::log(std::to_string(this->chunk_heightmap_texture.p_data[67])); // 255
+    paralleling<uint8_t> parallel {};
 
-    for (float &f : this->parallel_heightmap.get()) util::log(std::to_string(f));
-    this->parallel_heightmap.revoke();
+    parallel.primitive = GL_UNSIGNED_BYTE;
+    parallel.p_program_parallel = p_program_hmap_randomizer;
+
+    parallel.invoke();
+    parallel.send(
+            {this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h}, this->chunk_heightmap_texture.p_data,
+            {GL_R8UI, GL_RED_INTEGER});
+    parallel.attach();
+    parallel.dispatch();
+
+    util::log(std::to_string(parallel.get()[67])); // 66
+    parallel.revoke();
+    /* End of high-parallel testing. */
 }
 
 void world::on_destroy() {
@@ -181,6 +183,8 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
+    glm::vec3 chunk_scale {15.0f, 1.0f, 15.0f};
+
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);
     util::to_grid_pos(player_grid, p_player->position, glm::ivec2(chunk_size));
@@ -198,16 +202,7 @@ void world::do_update_chunk() {
                 continue;
             }
 
-            chunk *p_chunk {new chunk {}};
-            p_chunk->position = {grid_pos.x * chunk_size, 0, grid_pos.y * chunk_size};
-            p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
-            p_chunk->scale = {1.0f, 1.0f, 1.0f};
-            p_chunk->set_mesh_processed();
-            p_chunk->meshing_data = this->chunk_mesh_data;
-
-            this->chunk_map[chunk_tag] = p_chunk;
-            this->loaded_chunk_list.push_back(p_chunk);
-            this->update_rendering_state(chunk_tag, true);
+            this->do_create_chunk(chunk_tag, {grid_pos.x * chunk_size, 0, grid_pos.y * chunk_size}, chunk_scale);
         }
     }
 }
@@ -226,7 +221,35 @@ chunk *world::find_chunk_wf(const std::string &grid_pos) {
     return grid_pos.empty() ? nullptr : this->chunk_map[grid_pos.data()];
 }
 
-void world::update_rendering_state(std::string_view chunk_tag, bool flag) {
+void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const glm::vec3 &scale) {
+    chunk *p_chunk {new chunk {}};
+    p_chunk->on_create();
+    p_chunk->position = pos;
+    p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
+    p_chunk->scale = scale;
+
+    /* Invoke parallel computation to randomize map. */
+    paralleling<uint8_t> parallel {};
+    api::shading::find("hmap.randomizer.script", parallel.p_program_parallel);
+
+    parallel.invoke();
+    parallel.send({this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h}, this->chunk_heightmap_texture.p_data, {GL_R8UI, GL_RED_INTEGER});
+    parallel.attach();
+    parallel.dispatch();
+
+    glGenVertexArrays(1, &p_chunk->heightmap);
+    glBindTexture(GL_TEXTURE_2D, p_chunk->heightmap);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h, 0, GL_RGB, GL_UNSIGNED_BYTE, parallel.get().data());
+
+    parallel.revoke();
+    parallel.free_buffers();
+
+    this->chunk_map[chunk_tag] = p_chunk;
+    this->loaded_chunk_list.push_back(p_chunk);
+
     SDL_Event sdl_event_chunk {};
     sdl_event_chunk.user.data1 = new std::string(chunk_tag);
     event::dispatch(sdl_event_chunk, event::WORLD_REFRESH_CHUNK);

@@ -7,20 +7,23 @@
 
 void client::scenes::starter::on_create() {
     model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl", mesh::format::stl)};
-    this->p_object_dino = new object(p_model_dino);
-    material *p_material {new material(enums::material::metal)};
+    material *p_material {new material(enums::material::dialetric)};
 
-    p_material->set_color({1.0f, 1.0f, 0.0f});
-    this->p_object_dino->p_material = p_material;
-    this->p_object_dino->position.y = 30;
-    this->p_object_dino->scale = {0.2f, 0.2f, 0.2f};
+    for (int i {}; i < 20; i++) {
+        this->p_object_dino = new object(p_model_dino);
+        p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
+        this->p_object_dino->p_material = p_material;
+        this->p_object_dino->position.x = rand() % 100;
+        this->p_object_dino->position.z = rand() % 100;
+        this->p_object_dino->scale = {0.2f, 0.2f, 0.2f};
+
+        api::world::create(this->p_object_dino);
+    }
 
     this->p_light_spot = new light(nullptr);
     this->p_light_spot->intensity = {50, 50, 50};
     this->p_light_spot->position = {0, 15, 0};
     this->p_light_spot->update();
-
-    api::world::create(this->p_object_dino);
     api::world::create(this->p_light_spot);
     api::world::currentplayer()->speed_base = 0.9540f;
 
@@ -102,7 +105,7 @@ void client::scenes::starter::on_render() {
     text += std::to_string(api::world::renderer()->wf_chunk_draw_list.size());
 
     this->batching.invoke();
-    this->f_render.render(text, 10, 10, {1.0f, 1.0f, 1.0f, 1.0f});
+    this->f_render.render(text, 10, 10, {0.0f, 0.0f, 0.0f, 1.0f});
     this->batching.revoke();
     this->batching.draw();
 }

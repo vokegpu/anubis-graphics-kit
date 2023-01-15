@@ -79,17 +79,21 @@ void renderer::process_terrain() {
     shading::program *p_program_terrain_pbr {};
     api::shading::find("terrain.pbr", p_program_terrain_pbr);
 
-    uint32_t texture {api::world::get()->chunk_heightmap_gl_texture};
     glm::mat4 mat4x4_model {};
     glUseProgram(p_program_terrain_pbr->id);
 
     p_program_terrain_pbr->set_uniform_vec2("Fog.Distance", &this->config_fog_distance.get_value()[0]);
     p_program_terrain_pbr->set_uniform_vec3("Fog.Color", &this->config_fog_color.get_value()[0]);
+    p_program_terrain_pbr->set_uniform_int("ActiveTexture", 0);
+
+    glActiveTexture(GL_TEXTURE0);
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
-        if (p_chunks == nullptr || !p_chunks->is_mesh_processed() || !p_chunks->is_buffer_processed()) {
+        if (p_chunks == nullptr || !p_chunks->is_processed()) {
             continue;
         }
+
+        glBindTexture(GL_TEXTURE_2D, p_chunks->heightmap);
 
         mat4x4_model = glm::mat4(1);
         mat4x4_model = glm::translate(mat4x4_model, p_chunks->position);
@@ -196,9 +200,9 @@ void renderer::on_create() {
     shading::program *p_program_terrain_pbr {new ::shading::program {}};
     api::shading::createprogram("terrain.pbr", p_program_terrain_pbr, {
             {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
-            {"./data/effects/terrain.pbr.frag", shading::stage::fragment}
-            //{"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
-            //{"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
+            {"./data/effects/terrain.pbr.frag", shading::stage::fragment},
+            {"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
+            {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
     });
 
     this->config_fog_distance.set_value({0.0f, 512.0f});
@@ -217,7 +221,7 @@ void renderer::on_render() {
         this->wf_chunk_draw_list.clear();
 
         for (chunk *&p_chunks : api::world::get()->loaded_chunk_list) {
-            if (p_chunks != nullptr && p_chunks->is_buffer_processed() && p_chunks->is_mesh_processed()) {
+            if (p_chunks != nullptr && p_chunks->is_processed()) {
                 this->wf_chunk_draw_list.push_back(p_chunks);
             }
         }
@@ -279,12 +283,11 @@ void renderer::on_event_refresh_environment(SDL_Event &sdl_event) {
 }
 
 void renderer::on_event_refresh_chunk(SDL_Event &sdl_event) {
-    auto p_string_chunk_tag {static_cast<std::string*>(sdl_event.user.data1)};
+    auto *p_string_chunk_tag {static_cast<std::string*>(sdl_event.user.data1)};
+    auto *&p_world {api::world::get()};
+    auto *p_chunk {p_world->find_chunk_wf(*p_string_chunk_tag)};
 
-    auto &p_world {api::world::get()};
-    auto p_chunk {p_world->find_chunk_wf(*p_string_chunk_tag)};
-
-    if (p_chunk != nullptr && p_chunk->is_mesh_processed() && !p_chunk->is_buffer_processed()) {
+    if (p_chunk != nullptr && p_chunk->is_processed()) {
         this->add(p_chunk);
     }
 
@@ -292,15 +295,17 @@ void renderer::on_event_refresh_chunk(SDL_Event &sdl_event) {
 }
 
 void renderer::add(chunk *p_chunk) {
-    if (p_chunk == nullptr || !p_chunk->is_mesh_processed() || p_chunk->is_buffer_processed()) {
+    if (p_chunk == nullptr || !p_chunk->is_processed()) {
         return;
     }
 
+    auto &mesh_chunk {api::world::get()->chunk_mesh_data};
+
     auto &buffer {p_chunk->buffer};
-    auto &v {p_chunk->meshing_data.get_float_list(mesh::type::vertex)};
-    auto &t {p_chunk->meshing_data.get_float_list(mesh::type::textcoord)};
-    auto &c {p_chunk->meshing_data.get_float_list(mesh::type::color)};
-    auto &i {p_chunk->meshing_data.get_uint_list(mesh::type::vertex)};
+    auto &v {mesh_chunk.get_float_list(mesh::type::vertex)};
+    auto &t {mesh_chunk.get_float_list(mesh::type::textcoord)};
+    auto &c {mesh_chunk.get_float_list(mesh::type::color)};
+    auto &i {mesh_chunk.get_uint_list(mesh::type::vertex)};
 
     buffer.invoke();
     buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
@@ -311,27 +316,11 @@ void renderer::add(chunk *p_chunk) {
     buffer.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
     buffer.attach(1, 3);
 
-    if (p_chunk->meshing_data.contains(mesh::type::color)) {
-        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-        buffer.send(sizeof(float) * c.size(), c.data(), GL_STATIC_DRAW);
-        buffer.attach(3, 3);
-
-        buffer.stride[0] = p_chunk->meshing_data.faces;
-        buffer.primitive = GL_TRIANGLES;
-    } else {
-        buffer.stride[0] = 0;
-        buffer.stride[1] = 4 * p_chunk->meshing_data.faces;
-        buffer.tessellation(4);
-    }
-
-    if (p_chunk->meshing_data.contains(mesh::type::vertex, true)) {
-        buffer.bind({GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
-        buffer.send(sizeof(uint32_t) * i.size(), i.data(), GL_STATIC_DRAW);
-    }
+    buffer.stride[0] = 0;
+    buffer.stride[1] = 4 * mesh_chunk.faces;
+    buffer.tessellation(4);
 
     buffer.revoke();
-
-    p_chunk->set_buffer_processed();
     this->wf_chunk_draw_list.push_back(p_chunk);
 }
 

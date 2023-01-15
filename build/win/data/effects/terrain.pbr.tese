@@ -2,11 +2,12 @@
 
 layout (quads, fractional_odd_spacing, ccw) in;
 
-uniform sampler2D Heightmap;
+uniform sampler2D ActiveTexture;
 uniform mat4 MVP;
 
 in vec2 TextureCoord[];
 out float Height;
+out vec3 Pos;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -21,7 +22,7 @@ void main() {
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
 
-    Height = texture(Heightmap, texCoord).y * 64.0 - 16.0;
+    Height = texture(ActiveTexture, texCoord).y * 64.0 - 16;
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;
@@ -38,4 +39,6 @@ void main() {
 
     p += normal * Height;
     gl_Position = MVP * p;
+
+    Pos = gl_Position.xyz;
 }

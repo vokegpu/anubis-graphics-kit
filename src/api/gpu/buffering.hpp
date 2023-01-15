@@ -38,7 +38,7 @@ public:
 
 template<typename t>
 class paralleling {
-public:
+protected:
     std::vector<t> data {};
 
     uint32_t texture {};
@@ -48,7 +48,7 @@ public:
     uint32_t primitive {};
     shading::program *p_program_parallel {};
 
-    void send(const glm::ivec2 &in_dimension, t *p_data, const glm::ivec2 &in_format, const glm::ivec2 &in_filter = {GL_LINEAR, GL_LINEAR}) {
+    void send(const glm::ivec2 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec2 &in_filter = {GL_LINEAR, GL_LINEAR}) {
         this->dimension[0] = in_dimension.x;
         this->dimension[1] = in_dimension.y;
         this->format[0] = in_format.x;
@@ -101,6 +101,10 @@ public:
         this->data.resize(this->dimension[0] * this->dimension[1]);
         glGetTexImage(GL_TEXTURE_2D, 0, this->format[1], this->primitive, this->data.data());
         return this->data;
+    }
+
+    uint32_t &get_texture() {
+        return this->texture;
     }
 };
 
