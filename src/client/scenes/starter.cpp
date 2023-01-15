@@ -24,6 +24,7 @@ void client::scenes::starter::on_create() {
     this->p_light_spot->intensity = {50, 50, 50};
     this->p_light_spot->position = {0, 15, 0};
     this->p_light_spot->update();
+
     api::world::create(this->p_light_spot);
     api::world::current_player()->speed_base = 0.9540f;
 
@@ -101,11 +102,24 @@ void client::scenes::starter::on_update() {
 }
 
 void client::scenes::starter::on_render() {
-    std::string text {"chunks count drawing "};
-    text += std::to_string(api::world::renderer()->wf_chunk_draw_list.size());
+    std::string chunk_info_text {"chunks count drawing "};
+    chunk_info_text += std::to_string(api::world::renderer()->wf_chunk_draw_list.size());
+
+    std::string info_hud[] {
+            chunk_info_text,
+            "Press WASD to move camera!",
+            "Press H to change mascot position/rotation!",
+            "Press mouse-2 (middle click) to change sun light position!",
+            "Press T to enable post processing effect!"
+    };
 
     this->batching.invoke();
-    this->f_render.render(text, 10, 10, {0.0f, 0.0f, 0.0f, 1.0f});
+    float scaled_height {10};
+
+    for (size_t it {}; it < (sizeof(info_hud) / sizeof(std::string)); it++) {
+        scaled_height += this->f_render.get_text_height() + 1;
+    }
+
     this->batching.revoke();
     this->batching.draw();
 }

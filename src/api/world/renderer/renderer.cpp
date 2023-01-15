@@ -189,7 +189,23 @@ void renderer::process_environment() {
 }
 
 void renderer::process_post_processing() {
+    auto &framebuffer_global {this->framebuffer_map["global"]};
 
+    /* Invoke framebuffer and start collect screen buffers. */
+    framebuffer_global.invoke();
+    framebuffer_global.send(api::app.screen_width, api::app.screen_height);
+
+    this->process_terrain();
+    this->process_environment();
+
+    /* Revoke all buffers from frame. */
+    framebuffer_global.revoke();
+
+    /* Draw the current frame buffer. */
+    this->immshape_post_processing.invoke();
+    this->immshape_post_processing.bind_texture(framebuffer_global.get_texture());
+    this->immshape_post_processing.draw({0, 0, api::app.screen_width, api::app.screen_height}, {1.0f, 1.0f, 1.0f, 1.0f});
+    this->immshape_post_processing.revoke();
 }
 
 void renderer::on_create() {
@@ -207,10 +223,10 @@ void renderer::on_create() {
             {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
     });
 
-    ::shading::program *p_program_motion_blur {new ::shading::program {}};
-    api::shading::create_program("motion.blur", p_program_motion_blur, {
-            {"./data/effects/motion.blur.vert", shading::stage::vertex},
-            {"./data/effects/motion.blur.frag", shading::stage::fragment},
+    ::shading::program *p_program_post_processing {new ::shading::program {}};
+    api::shading::create_program("processing.post", p_program_post_processing, {
+            {"./data/effects/processing.post.vert", shading::stage::vertex},
+            {"./data/effects/processing.post.frag", shading::stage::fragment},
     });
 
     this->config_fog_distance.set_value({0.0f, 512.0f});
@@ -242,7 +258,7 @@ void renderer::on_create() {
     this->buffer_post_processing.revoke();
 
     /* Link to immediate shape. */
-    this->immshape_post_processing.link(&this->buffer_post_processing, p_program_motion_blur);
+    this->immshape_post_processing.link(&this->buffer_post_processing, p_program_post_processing);
 }
 
 void renderer::on_destroy() {
@@ -267,9 +283,20 @@ void renderer::on_render() {
     auto &p_camera {api::world::current_camera()};
     this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
 
-    this->process_terrain();
-    this->process_environment();
-    this->process_post_processing();
+    /* Yes? */
+    switch (this->enable_post_processing) {
+        case true: {
+            this->process_post_processing();
+            break;
+        }
+
+        case false: {
+            this->process_terrain();
+            this->process_environment();
+            this->process_post_processing();
+            break;
+        }
+    }
 }
 
 void renderer::on_event(SDL_Event &sdl_event) {
@@ -363,4 +390,12 @@ void renderer::add(chunk *p_chunk) {
 
 void renderer::refresh() {
     this->update_disabled_chunks = true;
+}
+
+void renderer::set_post_processing_enabled(bool state) {
+    this->enable_post_processing = state;
+}
+
+bool renderer::is_post_processing_enabled() {
+    return this->enable_post_processing;
 }
