@@ -1,4 +1,0 @@
-"C:\Program Files\JetBrains\CLion 2022.2.3\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2022.2.3/bin/ninja/win/ninja.exe" --profiling-format=google-trace --profiling-output=CMakeFiles\clion-event-trace.json -G Ninja -S C:\Users\Diyng\Documents\GitHub\anubis-graphics-kit -B C:\Users\Diyng\Documents\GitHub\anubis-graphics-kit\cmake-build-debug-event-trace
--- Configuring done
--- Generating done
--- Build files have been written to: C:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/cmake-build-debug-event-trace
