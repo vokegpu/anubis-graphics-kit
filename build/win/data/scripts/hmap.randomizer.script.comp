@@ -10,26 +10,6 @@ float Rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-/*
-def inverse_interpolate(index):
-	prod = (index - 1) // 4;
-	return prod;
-
-def main(current_index, size):
-    interpolated = inverse_interpolate(current_index);
-	bound = current_index // 4;
-	initial_rgba = interpolated < bound;
-	diff = current_index - (bound * 4);
-
-	if initial_rgba:
-		diff = 0;
-
-	try:
-		print(color[diff], "oi jao vc e legal, oi alex vc e legal" if initial_rgba else "");
-	except:
-		pass
-*/
-
 uint InverseInterpolate(uint currentIndex) {
     uint prod = currentIndex - 1 / VecSize;
     return prod;
@@ -40,12 +20,25 @@ void main() {
     uint inverseI = InverseInterpolate(currentIndex);
     uint delimit = currentIndex / VecSize;
 
-    ivec2 pix = ivec2(gl_GlobalInvocationID.xy);
-    uint value = imageLoad(OutTexture, pix).x;
-
     if (inverseI < delimit) {
+        ivec2 r_pix = ivec2(currentIndex + 0, gl_GlobalInvocationID.y);
+        ivec2 g_pix = ivec2(currentIndex + 1, gl_GlobalInvocationID.y);
+        ivec2 b_pix = ivec2(currentIndex + 2, gl_GlobalInvocationID.y);
+        ivec2 a_pix = ivec2(currentIndex + 3, gl_GlobalInvocationID.y);
 
+        uint r = imageLoad(OutTexture, r_pix).x;
+        uint g = imageLoad(OutTexture, g_pix).x;
+        uint b = imageLoad(OutTexture, b_pix).x;
+        uint a = imageLoad(OutTexture, a_pix).x;
+
+        float rr = 255 * Rand(vec2(Rand(vec2(r, g)), g));
+        float gg = 255 * Rand(vec2(b, Rand(vec2(r, b))));
+        float bb = 255 * Rand(vec2(a, b));
+        float aa = 255 * Rand(vec2(r, g));
+
+        float greyscale = rr + gg + bb / 3;
+        uint greyscalei = uint(greyscale);
     }
 
-    imageStore(OutTexture, pix, ivec4(value, 0, 0, 0));
+    imageStore(OutTexture, ivec2(gl_GlobalInvocationID).xy, ivec4(currentIndex, 0, 0, 0));
 }

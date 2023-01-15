@@ -24,10 +24,9 @@ void world::on_create() {
 
     this->chunk_heightmap_texture.path = "./data/textures/rolling_hills_heightmap.png";
     util::loadtexture(&this->chunk_heightmap_texture);
-    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 10, 10);
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
 
     /* Start of high-parallel testing. */
-    util::log(std::to_string(this->chunk_heightmap_texture.p_data[67])); // 255
     paralleling<uint8_t> parallel {};
 
     parallel.primitive = GL_UNSIGNED_BYTE;
@@ -39,8 +38,6 @@ void world::on_create() {
             {GL_R8UI, GL_RED_INTEGER});
     parallel.attach();
     parallel.dispatch();
-
-    util::log(std::to_string(parallel.get()[67])); // 66
     parallel.revoke();
     /* End of high-parallel testing. */
 }
@@ -183,7 +180,7 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {15.0f, 1.0f, 15.0f};
+    glm::vec3 chunk_scale {7.5f, 1.0f, 7.5f};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);
@@ -229,7 +226,7 @@ void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const 
     p_chunk->scale = scale;
 
     /* Invoke parallel computation to randomize map. */
-    paralleling<uint8_t> parallel {};
+    paralleling<unsigned char> parallel {};
     api::shading::find("hmap.randomizer.script", parallel.p_program_parallel);
 
     parallel.invoke();
@@ -237,12 +234,12 @@ void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const 
     parallel.attach();
     parallel.dispatch();
 
-    glGenVertexArrays(1, &p_chunk->heightmap);
+    glGenTextures(1, &p_chunk->heightmap);
     glBindTexture(GL_TEXTURE_2D, p_chunk->heightmap);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h, 0, GL_RGB, GL_UNSIGNED_BYTE, parallel.get().data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, parallel.get().data());
 
     parallel.revoke();
     parallel.free_buffers();
