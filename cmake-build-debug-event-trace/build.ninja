@@ -119,6 +119,13 @@ build CMakeFiles/agk.dir/src/api/profile/profile.cpp.obj: CXX_COMPILER__agk_Debu
   OBJECT_DIR = CMakeFiles\agk.dir
   OBJECT_FILE_DIR = CMakeFiles\agk.dir\src\api\profile
 
+build CMakeFiles/agk.dir/src/api/ui/immshape.cpp.obj: CXX_COMPILER__agk_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/ui/immshape.cpp || cmake_object_order_depends_target_agk
+  DEP_FILE = CMakeFiles\agk.dir\src\api\ui\immshape.cpp.obj.d
+  FLAGS = -g -O3 -std=gnu++17
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/external
+  OBJECT_DIR = CMakeFiles\agk.dir
+  OBJECT_FILE_DIR = CMakeFiles\agk.dir\src\api\ui
+
 build CMakeFiles/agk.dir/src/api/util/env.cpp.obj: CXX_COMPILER__agk_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/util/env.cpp || cmake_object_order_depends_target_agk
   DEP_FILE = CMakeFiles\agk.dir\src\api\util\env.cpp.obj.d
   FLAGS = -g -O3 -std=gnu++17
@@ -128,6 +135,13 @@ build CMakeFiles/agk.dir/src/api/util/env.cpp.obj: CXX_COMPILER__agk_Debug C$:/U
 
 build CMakeFiles/agk.dir/src/api/util/file.cpp.obj: CXX_COMPILER__agk_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/util/file.cpp || cmake_object_order_depends_target_agk
   DEP_FILE = CMakeFiles\agk.dir\src\api\util\file.cpp.obj.d
+  FLAGS = -g -O3 -std=gnu++17
+  INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/external
+  OBJECT_DIR = CMakeFiles\agk.dir
+  OBJECT_FILE_DIR = CMakeFiles\agk.dir\src\api\util
+
+build CMakeFiles/agk.dir/src/api/util/gpu.cpp.obj: CXX_COMPILER__agk_Debug C$:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src/api/util/gpu.cpp || cmake_object_order_depends_target_agk
+  DEP_FILE = CMakeFiles\agk.dir\src\api\util\gpu.cpp.obj.d
   FLAGS = -g -O3 -std=gnu++17
   INCLUDES = -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/src -IC:/Users/Diyng/Documents/GitHub/anubis-graphics-kit/external
   OBJECT_DIR = CMakeFiles\agk.dir
@@ -260,7 +274,7 @@ build CMakeFiles/agk.dir/external/lodepng/lodepng.cpp.obj: CXX_COMPILER__agk_Deb
 #############################################
 # Link the executable ..\build\win\agk.exe
 
-build ../build/win/agk.exe: CXX_EXECUTABLE_LINKER__agk_Debug CMakeFiles/agk.dir/src/api/api.cpp.obj CMakeFiles/agk.dir/src/api/event/event.cpp.obj CMakeFiles/agk.dir/src/api/feature/feature.cpp.obj CMakeFiles/agk.dir/src/api/gc/gc.cpp.obj CMakeFiles/agk.dir/src/api/gpu/buffering.cpp.obj CMakeFiles/agk.dir/src/api/gpu/shading.cpp.obj CMakeFiles/agk.dir/src/api/input/input.cpp.obj CMakeFiles/agk.dir/src/api/mesh/mesh.cpp.obj CMakeFiles/agk.dir/src/api/mesh/mesh_loader.cpp.obj CMakeFiles/agk.dir/src/api/profile/profile.cpp.obj CMakeFiles/agk.dir/src/api/util/env.cpp.obj CMakeFiles/agk.dir/src/api/util/file.cpp.obj CMakeFiles/agk.dir/src/api/util/math.cpp.obj CMakeFiles/agk.dir/src/api/world/camera/camera.cpp.obj CMakeFiles/agk.dir/src/api/world/camera/frustum.cpp.obj CMakeFiles/agk.dir/src/api/world/enums/enums.cpp.obj CMakeFiles/agk.dir/src/api/world/environment/entity.cpp.obj CMakeFiles/agk.dir/src/api/world/environment/light.cpp.obj CMakeFiles/agk.dir/src/api/world/environment/object.cpp.obj CMakeFiles/agk.dir/src/api/world/model/model.cpp.obj CMakeFiles/agk.dir/src/api/world/pbr/material.cpp.obj CMakeFiles/agk.dir/src/api/world/renderer/renderer.cpp.obj CMakeFiles/agk.dir/src/api/world/terrain/chunk.cpp.obj CMakeFiles/agk.dir/src/api/world/world.cpp.obj CMakeFiles/agk.dir/src/api/world/world_feature.cpp.obj CMakeFiles/agk.dir/src/client/client.cpp.obj CMakeFiles/agk.dir/src/client/scenes/starter.cpp.obj CMakeFiles/agk.dir/src/client/services/camera_manager.cpp.obj CMakeFiles/agk.dir/external/lodepng/lodepng.cpp.obj | ../external/lib/win/libamogpu.a
+build ../build/win/agk.exe: CXX_EXECUTABLE_LINKER__agk_Debug CMakeFiles/agk.dir/src/api/api.cpp.obj CMakeFiles/agk.dir/src/api/event/event.cpp.obj CMakeFiles/agk.dir/src/api/feature/feature.cpp.obj CMakeFiles/agk.dir/src/api/gc/gc.cpp.obj CMakeFiles/agk.dir/src/api/gpu/buffering.cpp.obj CMakeFiles/agk.dir/src/api/gpu/shading.cpp.obj CMakeFiles/agk.dir/src/api/input/input.cpp.obj CMakeFiles/agk.dir/src/api/mesh/mesh.cpp.obj CMakeFiles/agk.dir/src/api/mesh/mesh_loader.cpp.obj CMakeFiles/agk.dir/src/api/profile/profile.cpp.obj CMakeFiles/agk.dir/src/api/ui/immshape.cpp.obj CMakeFiles/agk.dir/src/api/util/env.cpp.obj CMakeFiles/agk.dir/src/api/util/file.cpp.obj CMakeFiles/agk.dir/src/api/util/gpu.cpp.obj CMakeFiles/agk.dir/src/api/util/math.cpp.obj CMakeFiles/agk.dir/src/api/world/camera/camera.cpp.obj CMakeFiles/agk.dir/src/api/world/camera/frustum.cpp.obj CMakeFiles/agk.dir/src/api/world/enums/enums.cpp.obj CMakeFiles/agk.dir/src/api/world/environment/entity.cpp.obj CMakeFiles/agk.dir/src/api/world/environment/light.cpp.obj CMakeFiles/agk.dir/src/api/world/environment/object.cpp.obj CMakeFiles/agk.dir/src/api/world/model/model.cpp.obj CMakeFiles/agk.dir/src/api/world/pbr/material.cpp.obj CMakeFiles/agk.dir/src/api/world/renderer/renderer.cpp.obj CMakeFiles/agk.dir/src/api/world/terrain/chunk.cpp.obj CMakeFiles/agk.dir/src/api/world/world.cpp.obj CMakeFiles/agk.dir/src/api/world/world_feature.cpp.obj CMakeFiles/agk.dir/src/client/client.cpp.obj CMakeFiles/agk.dir/src/client/scenes/starter.cpp.obj CMakeFiles/agk.dir/src/client/services/camera_manager.cpp.obj CMakeFiles/agk.dir/external/lodepng/lodepng.cpp.obj | ../external/lib/win/libamogpu.a
   FLAGS = -g
   LINK_LIBRARIES = ../external/lib/win/libamogpu.a  -lmingw32  -lopengl32  -lglew32  -lSDL2main  -lSDL2  -lfreetype  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\agk.dir

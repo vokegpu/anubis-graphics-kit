@@ -16,7 +16,7 @@ void chunk::on_create() {
 void chunk::on_destroy() {
     feature::on_destroy();
 
-    if (this->heightmap != 0) glDeleteTextures(1, &this->heightmap);
+    if (this->texture_hmap != 0) glDeleteTextures(1, &this->texture_hmap);
     this->buffer.free_buffers();
 }
 

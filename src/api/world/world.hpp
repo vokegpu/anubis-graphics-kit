@@ -7,6 +7,7 @@
 #include "api/world/terrain/chunk.hpp"
 #include "api/value/value.hpp"
 #include "api/util/env.hpp"
+#include "api/util/file.hpp"
 #include <vector>
 #include <queue>
 #include <map>
@@ -22,8 +23,8 @@ protected:
     void do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const glm::vec3 &scale);
     void do_update_chunk();
 public:
-    explicit world();
-    ~world();
+    explicit world() = default;
+    ~world() {}
 
     /* Start of environment segment. */
 	std::map<int32_t, world_feature*> registered_wf_map {};
@@ -41,8 +42,7 @@ public:
     std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
 
-    uint32_t chunk_heightmap_gl_texture {};
-    util::texture chunk_heightmap_texture {};
+    util::image chunk_heightmap_texture {};
     util::timing chunk_checker_timing {};
     mesh::data chunk_mesh_data {};
 

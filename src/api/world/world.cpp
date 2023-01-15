@@ -4,13 +4,8 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include "api/util/env.hpp"
 #include "api/util/math.hpp"
-#include <lodepng/lodepng.h>
-
-world::world() {
-}
-
-world::~world() {
-}
+#include "api/util/file.hpp"
+#include "api/util/gpu.hpp"
 
 void world::on_create() {
     this->config_chunk_gen_dist.set_value(3);
@@ -18,12 +13,11 @@ void world::on_create() {
     this->config_chunk_size.set_value(128);
 
     shading::program *p_program_hmap_randomizer {new shading::program {}};
-    api::shading::createprogram("hmap.randomizer.script", p_program_hmap_randomizer, {
-        {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
+    api::shading::create_program("hmap.randomizer.script", p_program_hmap_randomizer, {
+            {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
     });
 
-    this->chunk_heightmap_texture.path = "./data/textures/rolling_hills_heightmap.png";
-    util::loadtexture(&this->chunk_heightmap_texture);
+    util::read_image("./data/textures/rolling_hills_heightmap.png", this->chunk_heightmap_texture);
     api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
 
     /* Start of high-parallel testing. */
@@ -95,7 +89,7 @@ void world::on_update() {
     }
 
     /* World terrain segment. */
-    if (util::resetifreach(this->chunk_checker_timing, this->config_chunk_gen_interval.get_value())) {
+    if (util::reset_when(this->chunk_checker_timing, this->config_chunk_gen_interval.get_value())) {
         this->do_update_chunk();
     }
 }
@@ -145,7 +139,7 @@ void world::on_event_changed_priority(SDL_Event &sdl_event) {
 
 void world::do_update_chunk() {
     glm::vec3 sub {};
-    auto &p_player {api::world::currentplayer()};
+    auto &p_player {api::world::current_player()};
     std::vector<chunk*> current_loaded_chunk {};
 
     int32_t chunk_size {this->config_chunk_size.get_value()};
@@ -234,15 +228,9 @@ void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const 
     parallel.attach();
     parallel.dispatch();
 
-    glGenTextures(1, &p_chunk->heightmap);
-    glBindTexture(GL_TEXTURE_2D, p_chunk->heightmap);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, parallel.get().data());
-
+    /* @get() require be inside parallel invoke section to work. */
+    p_chunk->texture_hmap = util::gen_gl_texture({this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h}, parallel.get().data(), {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, {GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR});
     parallel.revoke();
-    parallel.free_buffers();
 
     this->chunk_map[chunk_tag] = p_chunk;
     this->loaded_chunk_list.push_back(p_chunk);

@@ -4,6 +4,7 @@
 #include <string>
 #include "mesh.hpp"
 #include "api/util/env.hpp"
+#include "api/util/file.hpp"
 #include <map>
 #include <glm/glm.hpp>
 
@@ -17,7 +18,7 @@ protected:
 public:
     void process_indexing(mesh::data &data);
     bool load_object(mesh::data &data, std::string_view path);
-    bool load_heightmap(mesh::data &data, util::texture *p_texture);
+    bool load_heightmap(mesh::data &data, util::image &resource);
     bool load_identity_heightmap(mesh::data &data, uint32_t width, uint32_t height);
 };
 

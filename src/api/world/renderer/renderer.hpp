@@ -5,6 +5,7 @@
 #include "api/mesh/mesh.hpp"
 #include "api/world/terrain/chunk.hpp"
 #include "api/value/value.hpp"
+#include "api/ui/immshape.hpp"
 #include <vector>
 #include <map>
 
@@ -16,6 +17,10 @@ protected:
     int32_t loaded_light_size {};
     glm::mat4 mat4x4_mvp {};
     bool update_disabled_chunks {};
+
+    buffering buffer_post_processing {};
+    immshape immshape_post_processing {};
+    std::map<std::string, framebuffering> framebuffer_map {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);
     void on_event_refresh_chunk(SDL_Event &sdl_event);
@@ -35,6 +40,7 @@ public:
 
     void process_terrain();
     void process_environment();
+    void process_post_processing();
 
     void on_create() override;
     void on_destroy() override;

@@ -14,8 +14,8 @@ void client::services::camera_manager::on_create() {
     this->bind_m_jump.set_value("space");
     this->m_speed.set_value(0.2867f);
 
-    this->p_camera_linked = api::world::currentcamera();
-    this->p_entity_linked = api::world::currentplayer();
+    this->p_camera_linked = api::world::current_camera();
+    this->p_entity_linked = api::world::current_player();
     this->p_camera_linked->set_visible(enums::state::disable);
 }
 

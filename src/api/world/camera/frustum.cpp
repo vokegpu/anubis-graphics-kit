@@ -1,5 +1,6 @@
 #include "frustum.hpp"
 #include "api/api.hpp"
+#include "api/ui/immshape.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 glm::vec3 &frustum::get_front() {
@@ -35,14 +36,6 @@ float frustum::get_fov() {
     return this->fov;
 }
 
-void frustum::add_framebuffer(uint32_t framebuffer) {
-    this->framebuffer_list.push_back(framebuffer);
-}
-
-std::vector<uint32_t> &frustum::get_framebuffer_list() {
-    return this->framebuffer_list;
-}
-
 void frustum::on_event(SDL_Event &sdl_event) {
         switch (sdl_event.type) {
         case SDL_WINDOWEVENT: {
@@ -67,4 +60,5 @@ void frustum::process_perspective(int32_t w, int32_t h) {
     };
 
     this->perspective = glm::perspective(glm::radians(this->fov), size[0] / size[1], 0.1f, agk_perspective_clip_distance);
+    immshape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
 }

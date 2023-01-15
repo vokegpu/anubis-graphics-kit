@@ -93,7 +93,7 @@ void renderer::process_terrain() {
             continue;
         }
 
-        glBindTexture(GL_TEXTURE_2D, p_chunks->heightmap);
+        glBindTexture(GL_TEXTURE_2D, p_chunks->texture_hmap);
 
         mat4x4_model = glm::mat4(1);
         mat4x4_model = glm::translate(mat4x4_model, p_chunks->position);
@@ -111,7 +111,7 @@ void renderer::process_terrain() {
 }
 
 void renderer::process_environment() {
-    auto camera {api::world::currentcamera()};
+    auto camera {api::world::current_camera()};
 
     glm::mat4 mat4x4_model {};
     glm::mat3 cubic_normal_matrix {};
@@ -188,25 +188,61 @@ void renderer::process_environment() {
     glUseProgram(0);
 }
 
+void renderer::process_post_processing() {
+
+}
+
 void renderer::on_create() {
     feature::on_create();
 
-    shading::program *p_program_m_brdf_pbr {new ::shading::program {}};
-    api::shading::createprogram("m.brdf.pbr", p_program_m_brdf_pbr, {
+    api::shading::create_program("m.brdf.pbr", new ::shading::program {}, {
             {"./data/effects/material.brdf.pbr.vert", shading::stage::vertex},
             {"./data/effects/material.brdf.pbr.frag", shading::stage::fragment}
     });
 
-    shading::program *p_program_terrain_pbr {new ::shading::program {}};
-    api::shading::createprogram("terrain.pbr", p_program_terrain_pbr, {
+    api::shading::create_program("terrain.pbr", new ::shading::program {}, {
             {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
             {"./data/effects/terrain.pbr.frag", shading::stage::fragment},
             {"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
             {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
     });
 
+    ::shading::program *p_program_motion_blur {new ::shading::program {}};
+    api::shading::create_program("motion.blur", p_program_motion_blur, {
+            {"./data/effects/motion.blur.vert", shading::stage::vertex},
+            {"./data/effects/motion.blur.frag", shading::stage::fragment},
+    });
+
     this->config_fog_distance.set_value({0.0f, 512.0f});
     this->config_fog_color.set_value({1.0f, 1.0f, 1.0f});
+
+    auto *&p_camera {api::world::current_camera()};
+
+    float mesh[12] {
+        0.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f
+    };
+
+    this->buffer_post_processing.invoke();
+    this->buffer_post_processing.stride[1] = 6;
+
+    /* Vertices. */
+    this->buffer_post_processing.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_post_processing.send(sizeof(float) * 12, mesh, GL_STATIC_DRAW);
+    this->buffer_post_processing.attach(0, 2);
+
+    /* Texture coordinates. */
+    this->buffer_post_processing.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_post_processing.send(sizeof(float) * 12, mesh, GL_STATIC_DRAW);
+    this->buffer_post_processing.attach(1, 2);
+    this->buffer_post_processing.revoke();
+
+    /* Link to immediate shape. */
+    this->immshape_post_processing.link(&this->buffer_post_processing, p_program_motion_blur);
 }
 
 void renderer::on_destroy() {
@@ -228,11 +264,12 @@ void renderer::on_render() {
     }
 
     /* Prepare matrices to render the world. */
-    auto &p_camera {api::world::currentcamera()};
+    auto &p_camera {api::world::current_camera()};
     this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
 
     this->process_terrain();
     this->process_environment();
+    this->process_post_processing();
 }
 
 void renderer::on_event(SDL_Event &sdl_event) {

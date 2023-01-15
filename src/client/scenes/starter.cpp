@@ -25,7 +25,7 @@ void client::scenes::starter::on_create() {
     this->p_light_spot->position = {0, 15, 0};
     this->p_light_spot->update();
     api::world::create(this->p_light_spot);
-    api::world::currentplayer()->speed_base = 0.9540f;
+    api::world::current_player()->speed_base = 0.9540f;
 
     this->p_camera_manager->set_editor_enabled(true);
     this->p_camera_manager->set_movement_enabled(true);
@@ -39,7 +39,7 @@ void client::scenes::starter::on_destroy() {
 }
 
 void client::scenes::starter::on_event(SDL_Event &sdl_event) {
-    auto camera {api::world::currentcamera()};
+    auto camera {api::world::current_camera()};
 
     switch (sdl_event.type) {
         case SDL_MOUSEBUTTONDOWN: {
@@ -68,13 +68,13 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 
 void client::scenes::starter::on_update() {
     if (api::input::pressed("mouse-2")) {
-        this->p_light_spot->position = api::world::currentcamera()->position;
+        this->p_light_spot->position = api::world::current_camera()->position;
         this->p_light_spot->update();
     }
 
     if (api::input::pressed("h")) {
-        this->p_object_dino->position = api::world::currentcamera()->position;
-        this->p_object_dino->rotation = glm::radians(api::world::currentcamera()->rotation);
+        this->p_object_dino->position = api::world::current_camera()->position;
+        this->p_object_dino->rotation = glm::radians(api::world::current_camera()->rotation);
     }
 
     if (api::input::pressed("x")) {

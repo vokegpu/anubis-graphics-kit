@@ -103,7 +103,7 @@ void api::mainloop(feature *p_scene_initial) {
             }
         }
 
-        if (util::resetifreach(reduce_cpu_ticks_timing, fps_interval)) {
+        if (util::reset_when(reduce_cpu_ticks_timing, fps_interval)) {
             api::app.display_fps = ticked_frames;
             ticked_frames = 0;
         }
@@ -123,7 +123,7 @@ void api::mainloop(feature *p_scene_initial) {
         amogpu::matrix();
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         api::app.p_world_renderer->on_render();
@@ -183,7 +183,7 @@ void api::gc::create(feature *p_target) {
     api::app.garbage_collector.create(p_target);
 }
 
-bool api::shading::createprogram(std::string_view name, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list) {
+bool api::shading::create_program(std::string_view tag, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list) {
     bool flag {!resource_list.empty()};
     uint32_t shader {};
     const char *p_shader_resource {};
@@ -196,7 +196,7 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
         if (resource.is_source_code) {
             shader_source = resource.path.data();
         } else {
-            flag = util::readfile(resource.path.data(), shader_source);
+            flag = util::read_file(resource.path.data(), shader_source);
         }
 
         if (shader_source.empty()) {
@@ -223,7 +223,7 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
         }
 
         if (!flag) {
-            util::log(name.data());
+            util::log(tag.data());
             break;
         }
 
@@ -242,8 +242,8 @@ bool api::shading::createprogram(std::string_view name, ::shading::program *p_pr
             util::log("Failed to link this shading program!");
             util::log(log);
         } else {
-            util::log(std::string(name.data()) + " shading program successfully linked");
-            api::shading::registry(name, p_program);
+            util::log(std::string(tag.data()) + " shading program successfully linked");
+            api::shading::registry(tag, p_program);
         }
 
         return status;
@@ -266,7 +266,7 @@ bool api::shading::find(std::string_view key, ::shading::program *&p_program) {
     return p_program;
 }
 
-camera *&api::world::currentcamera() {
+camera *&api::world::current_camera() {
     return api::app.p_current_camera;
 }
 
@@ -295,7 +295,7 @@ model *api::world::create(std::string_view tag, std::string_view path, ::mesh::f
     return api::app.p_world_renderer->add(tag, mesh);
 }
 
-entity *&api::world::currentplayer() {
+entity *&api::world::current_player() {
     return api::app.p_current_player;
 }
 

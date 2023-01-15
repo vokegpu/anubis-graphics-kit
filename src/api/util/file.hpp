@@ -4,7 +4,16 @@
 #include <iostream>
 
 namespace util {
-    bool readfile(std::string_view, std::string&);
+    struct image {
+        std::string path {};
+        int32_t w {};
+        int32_t h {};
+        int32_t format {};
+        uint8_t *p_data {};
+    };
+
+    bool read_file(std::string_view path, std::string &string_builder);
+    bool read_image(std::string_view path, util::image &resource);
 }
 
 #endif

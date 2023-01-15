@@ -260,20 +260,20 @@ void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
     util::log("Mesh loader collector: STL faces (" + std::to_string(data.faces) + ")");
 }
 
-bool mesh_loader::load_heightmap(mesh::data &data, util::texture *p_texture) {
+bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
     unsigned char r {}, g {}, b {};
     float f_r {}, f_g {}, f_b {};
     float greyscale {};
 
-    uint32_t width {static_cast<uint32_t>(p_texture->w)};
-    uint32_t height {static_cast<uint32_t>(p_texture->h)};
+    uint32_t width {static_cast<uint32_t>(resource.w)};
+    uint32_t height {static_cast<uint32_t>(resource.h)};
     glm::vec3 vertex {};
 
     for (uint32_t h {}; h < height; h++) {
         for (uint32_t w {}; w < width; w++) {
-            r = p_texture->p_data[(w + h * width) * p_texture->format];
-            g = p_texture->p_data[(w + h * width) * p_texture->format + 1];
-            b = p_texture->p_data[(w + h * width) * p_texture->format + 2];
+            r = resource.p_data[(w + h * width) * resource.format];
+            g = resource.p_data[(w + h * width) * resource.format + 1];
+            b = resource.p_data[(w + h * width) * resource.format + 2];
 
             f_r = static_cast<float>(r) / 255;
             f_g = static_cast<float>(g) / 255;

@@ -20,6 +20,9 @@ public:
     uint32_t primitive {GL_TRIANGLES};
     uint64_t stride[3] {};
 
+    explicit buffering() = default;
+    ~buffering();
+
     void tessellation(int32_t patches);
     void bind(const glm::ivec2 &buffer_type);
     void send(size_t size, void *p_data, uint32_t gl_driver_read_mode);
@@ -41,12 +44,17 @@ class paralleling {
 protected:
     std::vector<t> data {};
 
-    uint32_t texture {};
+    uint32_t buffer_texture {};
     uint32_t dimension[2] {};
     uint32_t format[2] {};
 public:
     uint32_t primitive {};
     shading::program *p_program_parallel {};
+
+    explicit paralleling() = default;
+    ~paralleling() {
+        this->free_buffers();
+    }
 
     void send(const glm::ivec2 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec2 &in_filter = {GL_LINEAR, GL_LINEAR}) {
         this->dimension[0] = in_dimension.x;
@@ -64,17 +72,17 @@ public:
 
     void attach() {
         /* Bind image to the compute shader. */
-        glBindImageTexture(0, this->texture, 0, GL_FALSE, 0, GL_READ_WRITE, this->format[0]);
+        glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, GL_READ_WRITE, this->format[0]);
     }
 
     void invoke() {
-        if (this->texture == 0) {
-            glGenTextures(1, &this->texture);
+        if (this->buffer_texture == 0) {
+            glGenTextures(1, &this->buffer_texture);
         }
 
         glUseProgram(this->p_program_parallel->id);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, this->texture);
+        glBindTexture(GL_TEXTURE_2D, this->buffer_texture);
     }
 
     void dispatch() {
@@ -85,14 +93,18 @@ public:
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
     }
 
+    void overwrite() {
+        glTexImage2D(GL_TEXTURE_2D, 0, this->format[0], this->dimension[0], this->dimension[1], 0, this->format[1], this->primitive, this->get().data());
+    }
+
     void revoke() {
         glBindTexture(GL_TEXTURE_2D, 0);
         glUseProgram(0);
     }
 
     void free_buffers() {
-        if (this->texture != 0) glDeleteTextures(1, &this->texture);
-        this->texture = 0;
+        if (this->buffer_texture != 0) glDeleteTextures(1, &this->buffer_texture);
+        this->buffer_texture = 0;
     }
 
     std::vector<t> &get() {
@@ -104,8 +116,35 @@ public:
     }
 
     uint32_t &get_texture() {
-        return this->texture;
+        return this->buffer_texture;
     }
+};
+
+#endif
+
+#ifndef AGK_API_GPU_BUFFERING_FRAMEBUFFERING_H
+#define AGK_API_GPU_BUFFERING_FRAMEBUFFERING_H
+
+class framebuffering {
+protected:
+    int32_t w {};
+    int32_t h {};
+
+    uint32_t buffer_texture {};
+    uint32_t buffer_fbo {};
+    uint32_t buffer_renderbuffer {};
+public:
+    uint32_t get_texture();
+    uint32_t get_fbo();
+    uint32_t get_depth_buffer();
+
+    explicit framebuffering() = default;
+    ~framebuffering();
+
+    void send(int32_t width, int32_t height);
+    void invoke();
+    void revoke();
+    void free_buffers();
 };
 
 #endif

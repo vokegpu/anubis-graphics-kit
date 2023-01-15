@@ -11,7 +11,7 @@ protected:
     bool processed {};
 public:
     buffering buffer {};
-    uint32_t heightmap {};
+    uint32_t texture_hmap {};
 
     explicit chunk();
     ~chunk();

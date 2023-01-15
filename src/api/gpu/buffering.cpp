@@ -73,3 +73,80 @@ void buffering::tessellation(int32_t patches) {
     glPatchParameteri(GL_PATCH_VERTICES, patches);
     this->primitive = GL_PATCHES;
 }
+
+buffering::~buffering() {
+    this->free_buffers();
+}
+
+uint32_t framebuffering::get_texture() {
+    return this->buffer_texture;
+}
+
+uint32_t framebuffering::get_fbo() {
+    return this->buffer_fbo;
+}
+
+uint32_t framebuffering::get_depth_buffer() {
+    return this->buffer_renderbuffer;
+}
+
+void framebuffering::send(int32_t width, int32_t height) {
+    if (this->w == width && this->h == height) {
+        return;
+    }
+
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, this->buffer_texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->w, this->h, 0, GL_RGBA, GL_UNSIGNED_INT, nullptr);
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->buffer_renderbuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->buffer_texture, 0);
+
+    GLenum framebuffer_check {glCheckFramebufferStatus(GL_FRAMEBUFFER)};
+    GLenum buffers {GL_COLOR_ATTACHMENT0};
+
+    glDrawBuffers(1, &buffers);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (framebuffer_check != GL_FRAMEBUFFER_COMPLETE) {
+        util::log("Failed to generate framebuffer!");
+    } else {
+        util::log("Framebuffer compiled & attached to GPU!");
+    }
+}
+
+void framebuffering::invoke() {
+    if (this->buffer_fbo == 0) {
+        glGenFramebuffers(1, &this->buffer_fbo);
+    }
+
+    if (this->buffer_renderbuffer == 0) {
+        glGenRenderbuffers(1, &this->buffer_renderbuffer);
+    }
+
+    if (this->buffer_texture == 0) {
+        glGenTextures(1, &this->buffer_texture);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, this->buffer_fbo);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void framebuffering::revoke() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void framebuffering::free_buffers() {
+    if (this->buffer_texture != 0) glDeleteTextures(1, &this->buffer_texture);
+    if (this->buffer_renderbuffer != 0) glDeleteFramebuffers(1, &this->buffer_renderbuffer);
+    if (this->buffer_renderbuffer != 0) glDeleteRenderbuffers(1, &this->buffer_renderbuffer);
+}
+
+framebuffering::~framebuffering() {
+    this->free_buffers();
+}
