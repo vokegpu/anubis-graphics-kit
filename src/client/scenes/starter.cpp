@@ -31,8 +31,61 @@ void client::scenes::starter::on_create() {
     this->p_camera_manager->set_editor_enabled(true);
     this->p_camera_manager->set_movement_enabled(true);
     this->p_camera_manager->set_rotation_enabled(true);
+    this->p_camera_manager->bind_editor_rotate.set_value("mouse-2");
 
     this->f_render.load("./data/fonts/impact.ttf", 18);
+
+    ekg::gl_version = "#version 450 core";
+    ekg::init(api::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
+
+    auto frame = ekg::frame("Hello", {20, 20}, {200, 200});
+    frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
+    frame->set_drag(ekg::dock::top);
+
+    ekg::label("Welcome to AGK!", ekg::dock::top | ekg::dock::left);
+    ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_light_intensity = ekg::slider("LightIntensity", 50.0f, 0.0f, 255.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_light_intensity->set_precision(2);
+
+    ekg::label("Base Speed:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_base_speed = ekg::slider("BaseSpeed", 0.9f, 0.1f, 10.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_base_speed->set_precision(4);
+
+    ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_range = ekg::slider("ChunkRange", 3, 1, 8, ekg::dock::top | ekg::dock::left);
+    this->p_slider_range->set_precision(1);
+
+    ekg::label("Noise X:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_noise_control_x = ekg::slider("NoiseX", 2.0f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_noise_control_x->set_precision(2);
+
+    ekg::label("Noise Y:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_noise_control_y = ekg::slider("NoiseY", 2.0f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_noise_control_y->set_precision(2);
+
+    ekg::label("Noise Offset:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_noise_control_offset = ekg::slider("NoiseOffset", 0.5f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_noise_control_offset->set_precision(2);
+
+    ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_slider_fog_dist = ekg::slider("FogDist", 512.0f, 0.0f, 1024.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_fog_dist->set_precision(2);
+
+    this->p_checkbox_post_processing = ekg::checkbox("Post processing effects", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+
+    ekg::button("Reset light-spot", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback", this, [](void *p_data) {
+        auto starter {static_cast<client::scenes::starter*>(p_data)};
+        starter->p_light_spot->position = api::world::current_player()->position;
+        starter->p_light_spot->update();
+    }});
+
+    ekg::button("Reset dinossaurinho", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
+        auto starter {static_cast<client::scenes::starter*>(p_data)};
+        auto &p {api::world::current_player()};
+
+        starter->p_object_dino->position = p->position;
+        starter->p_object_dino->rotation = p->rotation;
+    }});
 }
 
 void client::scenes::starter::on_destroy() {
@@ -41,6 +94,7 @@ void client::scenes::starter::on_destroy() {
 
 void client::scenes::starter::on_event(SDL_Event &sdl_event) {
     auto camera {api::world::current_camera()};
+    ekg::event(sdl_event);
 
     switch (sdl_event.type) {
         case SDL_MOUSEBUTTONDOWN: {
@@ -68,37 +122,24 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 }
 
 void client::scenes::starter::on_update() {
-    if (api::input::pressed("mouse-2")) {
-        this->p_light_spot->position = api::world::current_camera()->position;
+    glm::vec3 intensity {glm::vec3(this->p_slider_light_intensity->get_value())};
+
+    if (this->p_light_spot->intensity != intensity) {
+        this->p_light_spot->intensity = intensity;
         this->p_light_spot->update();
     }
 
-    if (api::input::pressed("h")) {
-        this->p_object_dino->position = api::world::current_camera()->position;
-        this->p_object_dino->rotation = glm::radians(api::world::current_camera()->rotation);
-    }
+    auto &w {api::world::get()};
+    w->config_chunk_gen_dist.set_value((int32_t) this->p_slider_range->get_value());
+    w->config_chunk_noise.set_value({this->p_slider_noise_control_x->get_value(), this->p_slider_noise_control_y->get_value()});
+    w->config_chunk_noise_offset.set_value(this->p_slider_noise_control_offset->get_value());
 
-    if (api::input::pressed("x")) {
-        this->p_light_spot->intensity++;
-        this->p_light_spot->intensity++;
-        this->p_light_spot->intensity++;
-        this->p_light_spot->intensity++;
-        this->p_light_spot->intensity++;
-        this->p_light_spot->intensity++;
-        this->p_light_spot->intensity++;
-        this->p_light_spot->update();
-    }
+    auto &r {api::world::renderer()};
+    r->config_fog_distance.set_value({0, this->p_slider_fog_dist->get_value()});
+    r->config_post_processing.set_value(this->p_checkbox_post_processing->get_value());
 
-    if (api::input::pressed("z")) {
-        this->p_light_spot->intensity--;
-        this->p_light_spot->intensity--;
-        this->p_light_spot->intensity--;
-        this->p_light_spot->intensity--;
-        this->p_light_spot->intensity--;
-        this->p_light_spot->intensity--;
-
-        this->p_light_spot->update();
-    }
+    ekg::display::dt = api::dt;
+    ekg::update();
 }
 
 void client::scenes::starter::on_render() {
@@ -113,13 +154,5 @@ void client::scenes::starter::on_render() {
             "Press T to enable post processing effect!"
     };
 
-    this->batching.invoke();
-    float scaled_height {10};
-
-    for (size_t it {}; it < (sizeof(info_hud) / sizeof(std::string)); it++) {
-        scaled_height += this->f_render.get_text_height() + 1;
-    }
-
-    this->batching.revoke();
-    this->batching.draw();
+    ekg::render();
 }

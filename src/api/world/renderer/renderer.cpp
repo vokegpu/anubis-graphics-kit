@@ -93,7 +93,7 @@ void renderer::process_terrain() {
             continue;
         }
 
-        glBindTexture(GL_TEXTURE_2D, p_chunks->texture_hmap);
+        glBindTexture(GL_TEXTURE_2D, p_chunks->texture);
 
         mat4x4_model = glm::mat4(1);
         mat4x4_model = glm::translate(mat4x4_model, p_chunks->position);
@@ -101,6 +101,7 @@ void renderer::process_terrain() {
 
         mat4x4_model = this->mat4x4_mvp * mat4x4_model;
         p_program_terrain_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
+        p_program_terrain_pbr->set_uniform_mat4("MatrixViewModel", &mat4x4_model[0][0]);
 
         p_chunks->buffer.invoke();
         p_chunks->buffer.draw();
@@ -284,7 +285,7 @@ void renderer::on_render() {
     this->mat4x4_mvp = p_camera->get_perspective() * p_camera->get_view();
 
     /* Yes? */
-    switch (this->enable_post_processing) {
+    switch (this->config_post_processing.get_value()) {
         case true: {
             this->process_post_processing();
             break;
@@ -293,7 +294,6 @@ void renderer::on_render() {
         case false: {
             this->process_terrain();
             this->process_environment();
-            this->process_post_processing();
             break;
         }
     }
@@ -378,24 +378,17 @@ void renderer::add(chunk *p_chunk) {
 
     buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
     buffer.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
-    buffer.attach(1, 3);
+    buffer.attach(1, 2);
 
     buffer.stride[0] = 0;
-    buffer.stride[1] = 4 * mesh_chunk.faces;
-    buffer.tessellation(4);
+    buffer.stride[1] = mesh_chunk.faces;
 
+    buffer.tessellation(4);
     buffer.revoke();
+
     this->wf_chunk_draw_list.push_back(p_chunk);
 }
 
 void renderer::refresh() {
     this->update_disabled_chunks = true;
-}
-
-void renderer::set_post_processing_enabled(bool state) {
-    this->enable_post_processing = state;
-}
-
-bool renderer::is_post_processing_enabled() {
-    return this->enable_post_processing;
 }

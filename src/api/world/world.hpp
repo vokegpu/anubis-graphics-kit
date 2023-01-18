@@ -49,6 +49,9 @@ public:
     value<int32_t> config_chunk_gen_dist {};
     value<int32_t> config_chunk_size {};
     value<uint64_t> config_chunk_gen_interval {};
+    value<glm::vec2> config_chunk_noise {};
+    value<float> config_chunk_noise_offset {};
+    value<float> config_delta {};
 
     chunk *find_chunk_wf(int32_t wf_id);
     chunk *find_chunk_wf(const std::string &grid_pos);

@@ -32,7 +32,7 @@ bool util::read_image(std::string_view path, util::image &resource) {
     if (!resource.p_data) {
         std::string message {"Failed to read image file '"};
         message += path;
-        message = "'";
+        message += "'";
         util::log(message);
         return true;
     }

@@ -45,34 +45,49 @@ protected:
     std::vector<t> data {};
 
     uint32_t buffer_texture {};
-    uint32_t dimension[2] {};
-    uint32_t format[2] {};
+    uint32_t dimension[3] {};
+    uint32_t format[3] {};
 public:
     uint32_t primitive {};
+    uint32_t memory_barrier {GL_ALL_ATTRIB_BITS};
+    uint32_t operation {GL_READ_WRITE};
+    uint32_t texture_type {GL_TEXTURE_2D};
+    uint32_t dispatch_groups[3] {1, 1, 1};
+
     shading::program *p_program_parallel {};
 
     explicit paralleling() = default;
     ~paralleling() {
-        this->free_buffers();
+
     }
 
-    void send(const glm::ivec2 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec2 &in_filter = {GL_LINEAR, GL_LINEAR}) {
+    void send(const glm::ivec3 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec3 &in_filter = {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE}) {
         this->dimension[0] = in_dimension.x;
         this->dimension[1] = in_dimension.y;
+        this->dimension[2] = in_dimension.z;
         this->format[0] = in_format.x;
         this->format[1] = in_format.y;
+        this->format[2] = in_format.y;
 
         /* Pass image filtering. */
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, in_filter.x);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, in_filter.y);
+        glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, in_filter.x);
+        glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, in_filter.y);
+
+        glTexParameteri(texture_type, GL_TEXTURE_WRAP_S, in_filter.z);
+        glTexParameteri(texture_type, GL_TEXTURE_WRAP_T, in_filter.z);
 
         /* Send texture buffer to GPU. */
-        glTexImage2D(GL_TEXTURE_2D, 0, this->format[0], this->dimension[0], this->dimension[1], 0, this->format[1], this->primitive, p_data);
+        if (texture_type == GL_TEXTURE_3D) {
+            glTexParameteri(texture_type, GL_TEXTURE_WRAP_R, in_filter.z);
+            glTexImage3D(texture_type, 0, this->format[0], this->dimension[0], this->dimension[1], this->dimension[2], 0, this->format[1], this->primitive, p_data);
+        } else {
+            glTexImage2D(texture_type, 0, this->format[0], this->dimension[0], this->dimension[1], 0, this->format[1], this->primitive, p_data);
+        }
     }
 
     void attach() {
         /* Bind image to the compute shader. */
-        glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, GL_READ_WRITE, this->format[0]);
+        glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, operation, this->format[0]);
     }
 
     void invoke() {
@@ -87,10 +102,10 @@ public:
 
     void dispatch() {
         /* Pipeline "draw call", but for target texture. */
-        glDispatchCompute(this->dimension[0], this->dimension[1], 1);
-        
+        glDispatchCompute(this->dimension[0] / this->dispatch_groups[0], this->dimension[1] / this->dispatch_groups[1], 1 / this->dispatch_groups[2]);
+
         /* Do pipeline wait for process. */
-        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glMemoryBarrier(memory_barrier);
     }
 
     void overwrite() {

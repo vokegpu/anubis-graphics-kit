@@ -10,30 +10,15 @@
 void world::on_create() {
     this->config_chunk_gen_dist.set_value(3);
     this->config_chunk_gen_interval.set_value(1000);
-    this->config_chunk_size.set_value(128);
+    this->config_chunk_size.set_value(512);
 
     shading::program *p_program_hmap_randomizer {new shading::program {}};
     api::shading::create_program("hmap.randomizer.script", p_program_hmap_randomizer, {
             {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
     });
 
-    util::read_image("./data/textures/rolling_hills_heightmap.png", this->chunk_heightmap_texture);
-    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
-
-    /* Start of high-parallel testing. */
-    paralleling<uint8_t> parallel {};
-
-    parallel.primitive = GL_UNSIGNED_BYTE;
-    parallel.p_program_parallel = p_program_hmap_randomizer;
-
-    parallel.invoke();
-    parallel.send(
-            {this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h}, this->chunk_heightmap_texture.p_data,
-            {GL_R8UI, GL_RED_INTEGER});
-    parallel.attach();
-    parallel.dispatch();
-    parallel.revoke();
-    /* End of high-parallel testing. */
+    util::read_image("./data/textures/hmap.jpg", this->chunk_heightmap_texture);
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 80);
 }
 
 void world::on_destroy() {
@@ -174,7 +159,7 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {7.5f, 1.0f, 7.5f};
+    glm::vec3 chunk_scale {30.0f, 1.0f, 30.0f};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);
@@ -220,20 +205,34 @@ void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const 
     p_chunk->scale = scale;
 
     /* Invoke parallel computation to randomize map. */
-    paralleling<unsigned char> parallel {};
+    paralleling<float> parallel {};
     api::shading::find("hmap.randomizer.script", parallel.p_program_parallel);
 
+    parallel.primitive = GL_FLOAT;
+    parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+    parallel.texture_type = GL_TEXTURE_2D;
+    parallel.memory_barrier = GL_WRITE_ONLY;
+    parallel.dispatch_groups[0] = 32;
+    parallel.dispatch_groups[1] = 32;
+
+    glm::vec2 res {this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h};
+
     parallel.invoke();
-    parallel.send({this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h}, this->chunk_heightmap_texture.p_data, {GL_R8UI, GL_RED_INTEGER});
+    parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
+    parallel.p_program_parallel->set_uniform_vec2("Resolution", &res[0]);
+    parallel.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
+    parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
+    parallel.send(
+            {this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h, 0}, nullptr,
+            {GL_RGBA32F, GL_RGBA}, {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE});
     parallel.attach();
     parallel.dispatch();
-
-    /* @get() require be inside parallel invoke section to work. */
-    p_chunk->texture_hmap = util::gen_gl_texture({this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h}, parallel.get().data(), {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE}, {GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR});
     parallel.revoke();
 
+    p_chunk->texture = parallel.get_texture();
     this->chunk_map[chunk_tag] = p_chunk;
     this->loaded_chunk_list.push_back(p_chunk);
+    this->config_delta.set_value(this->config_delta.get_value() + 1.0f) ;
 
     SDL_Event sdl_event_chunk {};
     sdl_event_chunk.user.data1 = new std::string(chunk_tag);

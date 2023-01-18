@@ -95,6 +95,9 @@ void framebuffering::send(int32_t width, int32_t height) {
         return;
     }
 
+    this->w = width;
+    this->h = height;
+
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->buffer_texture);
