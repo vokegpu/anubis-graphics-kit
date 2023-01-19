@@ -46,7 +46,7 @@ protected:
 
     uint32_t buffer_texture {};
     uint32_t dimension[3] {};
-    uint32_t format[3] {};
+    uint32_t format[2] {};
 public:
     uint32_t primitive {};
     uint32_t memory_barrier {GL_ALL_ATTRIB_BITS};
@@ -67,7 +67,6 @@ public:
         this->dimension[2] = in_dimension.z;
         this->format[0] = in_format.x;
         this->format[1] = in_format.y;
-        this->format[2] = in_format.y;
 
         /* Pass image filtering. */
         glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, in_filter.x);
@@ -85,6 +84,10 @@ public:
         }
     }
 
+    void bind_texture() {
+        glBindTexture(this->texture_type, this->buffer_texture);
+    }
+
     void attach() {
         /* Bind image to the compute shader. */
         glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, operation, this->format[0]);
@@ -97,7 +100,7 @@ public:
 
         glUseProgram(this->p_program_parallel->id);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, this->buffer_texture);
+        glBindTexture(this->texture_type, this->buffer_texture);
     }
 
     void dispatch() {
@@ -109,7 +112,12 @@ public:
     }
 
     void overwrite() {
-        glTexImage2D(GL_TEXTURE_2D, 0, this->format[0], this->dimension[0], this->dimension[1], 0, this->format[1], this->primitive, this->get().data());
+        if (texture_type == GL_TEXTURE_3D) {
+            glTexParameteri(texture_type, GL_TEXTURE_WRAP_R, this->filter[3]);
+            glTexImage3D(texture_type, 0, this->format[0], this->dimension[0], this->dimension[1], this->dimension[2], 0, this->format[1], this->primitive, this->data.data());
+        } else {
+            glTexImage2D(texture_type, 0, this->format[0], this->dimension[0], this->dimension[1], 0, this->format[1], this->primitive, this->data.data());
+        }
     }
 
     void revoke() {
@@ -123,10 +131,29 @@ public:
     }
 
     std::vector<t> &get() {
+        int32_t channel {1};
+        switch (this->format[1]) {
+            case GL_RG: {
+                channel = 2;
+                break;
+            }
+
+            case GL_RGB: {
+                channel = 3;
+                break;
+            }
+
+
+            case GL_RGBA: {
+                channel = 4;
+                break;
+            }
+        }
+
         /* Get the new texture data from GPU. */
         this->data.clear();
-        this->data.resize(this->dimension[0] * this->dimension[1]);
-        glGetTexImage(GL_TEXTURE_2D, 0, this->format[1], this->primitive, this->data.data());
+        this->data.resize(this->dimension[0] * this->dimension[1] * channel);
+        glGetTexImage(this->texture_type, 0, this->format[1], this->primitive, this->data.data());
         return this->data;
     }
 

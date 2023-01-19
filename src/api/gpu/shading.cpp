@@ -44,3 +44,11 @@ shading::program::program() {
 shading::program::~program() {
     glDeleteProgram(this->id);
 }
+
+void shading::program::invoke() const {
+    glUseProgram(this->id);
+}
+
+void shading::program::revoke() const {
+    glUseProgram(0);
+}

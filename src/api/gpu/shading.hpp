@@ -23,6 +23,9 @@ namespace shading {
         explicit program();
         ~program();
 
+        void invoke() const;
+        void revoke() const;
+
         void set_uniform_vec4(std::string_view, const float*);
         void set_uniform_vec3(std::string_view, const float*);
         void set_uniform_vec2(std::string_view, const float*);

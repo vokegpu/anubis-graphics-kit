@@ -38,7 +38,7 @@ void client::scenes::starter::on_create() {
     ekg::gl_version = "#version 450 core";
     ekg::init(api::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
 
-    auto frame = ekg::frame("Hello", {20, 20}, {200, 200});
+    auto frame = ekg::frame("Hello", {20, 20}, {330, 400});
     frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
     frame->set_drag(ekg::dock::top);
 
@@ -46,30 +46,37 @@ void client::scenes::starter::on_create() {
     ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_light_intensity = ekg::slider("LightIntensity", 50.0f, 0.0f, 255.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_light_intensity->set_precision(2);
+    this->p_slider_light_intensity->set_value(50.0f);
 
     ekg::label("Base Speed:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_base_speed = ekg::slider("BaseSpeed", 0.9f, 0.1f, 10.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_base_speed->set_precision(4);
+    this->p_slider_base_speed->set_value(0.9540f);
 
     ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_range = ekg::slider("ChunkRange", 3, 1, 8, ekg::dock::top | ekg::dock::left);
     this->p_slider_range->set_precision(1);
+    this->p_slider_range->set_value(3);
 
     ekg::label("Noise X:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_noise_control_x = ekg::slider("NoiseX", 2.0f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_noise_control_x->set_precision(2);
+    this->p_slider_noise_control_x->set_value(2.0f);
 
     ekg::label("Noise Y:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_noise_control_y = ekg::slider("NoiseY", 2.0f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_noise_control_y->set_precision(2);
+    this->p_slider_noise_control_y->set_value(2.0f);
 
     ekg::label("Noise Offset:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_noise_control_offset = ekg::slider("NoiseOffset", 0.5f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_noise_control_offset->set_precision(2);
+    this->p_slider_noise_control_offset->set_value(0.5f);
 
     ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_fog_dist = ekg::slider("FogDist", 512.0f, 0.0f, 1024.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_fog_dist->set_precision(2);
+    this->p_slider_fog_dist->set_value(512.0f);
 
     this->p_checkbox_post_processing = ekg::checkbox("Post processing effects", ekg::dock::top | ekg::dock::left | ekg::dock::next);
 

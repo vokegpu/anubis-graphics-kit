@@ -1,12 +1,21 @@
 #version 450 core
 
-layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout (rgba32f, binding = 0) uniform image2D OutTexture;
 
 uniform float Delta;
-uniform vec2 Scale;
 uniform float Offset;
+
+uniform vec2 Scale;
 uniform vec2 Resolution;
+
+#define LEFT 1
+#define RIGHT 5
+#define TOP 5
+#define BOTTOM 5
+
+uniform sampler2D ChunkActiveTexture[4];
+uniform bool ChunkContains[4];
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -107,13 +116,62 @@ float snoise(vec2 v)  {
     return n;
 }
 
+void CheckNearest(vec2 uv, out float left, out float right, out float top, out float bottom) {
+    for (int it = 0; it < 4; it++) {
+        if (!ChunkContains[it]) {
+            continue;
+        }
+
+        if (it == LEFT) {
+            vec2 projectUv = vec2(1.0, uv.y);
+            left = texture(ChunkActiveTexture[it], projectUv).y;
+        } else if (it == RIGHT) {
+            vec2 projectUv = vec2(0.0, uv.y);
+            right = texture(ChunkActiveTexture[it], projectUv).y;
+        } else if (it == TOP) {
+            vec2 projectUv = vec2(uv.x, 1.0);
+            top = texture(ChunkActiveTexture[it], projectUv).y;
+        } else if (it == BOTTOM) {
+            vec2 projectUv = vec2(uv.x, 0.0);
+            bottom = texture(ChunkActiveTexture[it], projectUv).y;
+        }
+    }
+}
+
+float Lerp(float a, float b, float delta) {
+    return a + (b - a) * delta;
+}
+
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 uv = texelCoord / Resolution;
-    uv = uv * (Scale * 0.1) + Offset;
 
-    float noise = Noise4D(uv);
+    float noise = Noise4D(uv * (Scale * 0.1) + Offset);
     float greyscale = noise;
+
+    float leftY = 0.0f;
+    float rightY = 0.0f;
+    float topY = 0.0;
+    float bottomY = 0.0f;
+    float delta = 0.5;
+
+    CheckNearest(uv, leftY, rightY, topY, bottomY);
+
+    for (int it = 0; it < 4; it++) {
+        if (!ChunkContains[it]) {
+            continue;
+        }
+
+        if (it == LEFT) {
+            greyscale = Lerp(greyscale, leftY, delta);
+        } else if (it == RIGHT) {
+            greyscale = Lerp(greyscale, rightY, delta);
+        } else if (it == TOP) {
+            greyscale = Lerp(greyscale, topY, delta);
+        } else if (it == BOTTOM) {
+            greyscale = Lerp(greyscale, bottomY, delta);
+        }
+    }
 
     imageStore(OutTexture, texelCoord, vec4(greyscale, greyscale, greyscale, 1.0));
 }

@@ -20,7 +20,7 @@ protected:
     bool poll_low_priority_queue {};
 
     void on_event_changed_priority(SDL_Event &sdl_event);
-    void do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const glm::vec3 &scale);
+    void gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm::vec3 &scale);
     void do_update_chunk();
 public:
     explicit world() = default;

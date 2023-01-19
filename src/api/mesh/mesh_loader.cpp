@@ -315,8 +315,8 @@ bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint
     glm::vec3 vertex {};
     data.faces = static_cast<int32_t>(width * height);
 
-    for (uint32_t h {}; h < height - 1; h++) {
-        for (uint32_t w {}; w < width - 1; w++) {
+    for (uint32_t h {}; h < height; h++) {
+        for (uint32_t w {}; w < width; w++) {
             /* first vertex of quad */
             vertex.x = static_cast<float>(w);
             vertex.y = 0.0f;

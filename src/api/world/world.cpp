@@ -10,15 +10,53 @@
 void world::on_create() {
     this->config_chunk_gen_dist.set_value(3);
     this->config_chunk_gen_interval.set_value(1000);
-    this->config_chunk_size.set_value(512);
+    this->config_chunk_size.set_value(128);
 
     shading::program *p_program_hmap_randomizer {new shading::program {}};
     api::shading::create_program("hmap.randomizer.script", p_program_hmap_randomizer, {
             {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
     });
 
-    util::read_image("./data/textures/hmap.jpg", this->chunk_heightmap_texture);
-    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 80);
+    p_program_hmap_randomizer->invoke();
+    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[0]", 1); // left
+    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[1]", 2); // right
+    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[2]", 3); // top
+    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[3]", 4); // bottom
+    p_program_hmap_randomizer->revoke();
+
+    //util::read_image("./data/textures/hmap.jpg", this->chunk_heightmap_texture);
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 10, 40);
+
+    paralleling<float> parallel {};
+    parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+    parallel.dispatch_groups[0] = 1;
+    parallel.dispatch_groups[1] = 1;
+    parallel.primitive = GL_FLOAT;
+    parallel.texture_type = GL_TEXTURE_2D;
+
+    parallel.p_program_parallel = p_program_hmap_randomizer;
+    parallel.invoke();
+
+    parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
+    parallel.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
+    parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
+
+    int32_t chunk_size {20};
+    float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
+    parallel.p_program_parallel->set_uniform_vec2("Resolution", chunk_resolution);
+
+    parallel.p_program_parallel->set_uniform_int("ChunkContains[0]", false);
+    parallel.p_program_parallel->set_uniform_int("ChunkContains[1]", false);
+    parallel.p_program_parallel->set_uniform_int("ChunkContains[2]", false);
+    parallel.p_program_parallel->set_uniform_int("ChunkContains[3]", false);
+
+    parallel.send({20, 20, 0}, nullptr, {GL_RGBA32F, GL_RGBA}, {GL_NEAREST, GL_NEAREST, GL_REPEAT});
+    parallel.attach();
+    parallel.dispatch();
+    //parallel.overwrite();
+
+    //for (float &f : parallel.get()) std::cout << std::to_string(f) << '\n';
+    parallel.revoke();
 }
 
 void world::on_destroy() {
@@ -159,7 +197,7 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {30.0f, 1.0f, 30.0f};
+    glm::vec3 chunk_scale {14.0f, 1.0f, 14.0f};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);
@@ -178,7 +216,7 @@ void world::do_update_chunk() {
                 continue;
             }
 
-            this->do_create_chunk(chunk_tag, {grid_pos.x * chunk_size, 0, grid_pos.y * chunk_size}, chunk_scale);
+            this->gen_chunk(chunk_tag, {grid_pos.x, 0, grid_pos.y}, chunk_scale);
         }
     }
 }
@@ -197,10 +235,10 @@ chunk *world::find_chunk_wf(const std::string &grid_pos) {
     return grid_pos.empty() ? nullptr : this->chunk_map[grid_pos.data()];
 }
 
-void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const glm::vec3 &scale) {
+void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm::vec3 &scale) {
     chunk *p_chunk {new chunk {}};
     p_chunk->on_create();
-    p_chunk->position = pos;
+    p_chunk->position = ipos * this->config_chunk_size.get_value();
     p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
     p_chunk->scale = scale;
 
@@ -211,19 +249,50 @@ void world::do_create_chunk(std::string &chunk_tag, const glm::vec3 &pos, const 
     parallel.primitive = GL_FLOAT;
     parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
     parallel.texture_type = GL_TEXTURE_2D;
-    parallel.memory_barrier = GL_WRITE_ONLY;
-    parallel.dispatch_groups[0] = 32;
-    parallel.dispatch_groups[1] = 32;
-
-    glm::vec2 res {this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h};
+    parallel.dispatch_groups[0] = 1;
+    parallel.dispatch_groups[1] = 1;
 
     parallel.invoke();
     parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-    parallel.p_program_parallel->set_uniform_vec2("Resolution", &res[0]);
     parallel.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
     parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
+
+    int32_t chunk_size {this->config_chunk_size.get_value()};
+    float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
+    parallel.p_program_parallel->set_uniform_vec2("Resolution", chunk_resolution);
+
+    std::string chunk_around {};
+    int32_t slot {};
+    int32_t index {};
+    bool contains {};
+
+    for (uint8_t it {0}; it < 4; it++) {
+        chunk_around.clear();
+        chunk_around += std::to_string(ipos.x + util::SURROUND[index++]);
+        chunk_around += 'x';
+        chunk_around += std::to_string(ipos.z + util::SURROUND[index++]);
+
+        chunk *&p_chunk_around {this->chunk_map[chunk_around]};
+        contains = false;
+
+        chunk_around.clear();
+        chunk_around += "ChunkContains[";
+        chunk_around += std::to_string(slot);
+        chunk_around += ']';
+
+        if (p_chunk_around != nullptr) {
+            glActiveTexture(GL_TEXTURE1 + slot);
+            glBindTexture(GL_TEXTURE_2D, p_chunk_around->texture);
+            contains = true;
+        }
+
+        parallel.p_program_parallel->set_uniform_int(chunk_around, contains);
+        slot++;
+    }
+
+    parallel.bind_texture();
     parallel.send(
-            {this->chunk_heightmap_texture.w, this->chunk_heightmap_texture.h, 0}, nullptr,
+            {chunk_size, chunk_size, 0}, nullptr,
             {GL_RGBA32F, GL_RGBA}, {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE});
     parallel.attach();
     parallel.dispatch();
