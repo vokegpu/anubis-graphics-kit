@@ -98,13 +98,26 @@ void framebuffering::send(int32_t width, int32_t height) {
     this->w = width;
     this->h = height;
 
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+    if (this->buffer_fbo == 0) {
+        glGenFramebuffers(1, &this->buffer_fbo);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, this->buffer_fbo);
+
+    if (this->buffer_renderbuffer == 0) {
+        glGenRenderbuffers(1, &this->buffer_renderbuffer);
+    }
+
+    glBindRenderbuffer(GL_RENDERBUFFER, this->buffer_renderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, this->w, this->h);
+
+    if (this->buffer_texture == 0) {
+        glGenTextures(1, &this->buffer_texture);
+    }
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->buffer_texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->w, this->h, 0, GL_RGBA, GL_UNSIGNED_INT, nullptr);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB32F, this->w, this->h);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->buffer_renderbuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->buffer_texture, 0);
@@ -123,18 +136,6 @@ void framebuffering::send(int32_t width, int32_t height) {
 }
 
 void framebuffering::invoke() {
-    if (this->buffer_fbo == 0) {
-        glGenFramebuffers(1, &this->buffer_fbo);
-    }
-
-    if (this->buffer_renderbuffer == 0) {
-        glGenRenderbuffers(1, &this->buffer_renderbuffer);
-    }
-
-    if (this->buffer_texture == 0) {
-        glGenTextures(1, &this->buffer_texture);
-    }
-
     glBindFramebuffer(GL_FRAMEBUFFER, this->buffer_fbo);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

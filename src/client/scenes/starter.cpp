@@ -79,6 +79,7 @@ void client::scenes::starter::on_create() {
     this->p_slider_fog_dist->set_value(512.0f);
 
     this->p_checkbox_post_processing = ekg::checkbox("Post processing effects", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_check_box_hdr = ekg::checkbox("Enable HDR", ekg::dock::top | ekg::dock::left | ekg::dock::next);
 
     ekg::button("Reset light-spot", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback", this, [](void *p_data) {
         auto starter {static_cast<client::scenes::starter*>(p_data)};
@@ -144,6 +145,7 @@ void client::scenes::starter::on_update() {
     auto &r {api::world::renderer()};
     r->config_fog_distance.set_value({0, this->p_slider_fog_dist->get_value()});
     r->config_post_processing.set_value(this->p_checkbox_post_processing->get_value());
+    r->config_hdr.set_value(this->p_check_box_hdr->get_value());
 
     ekg::display::dt = api::dt;
     ekg::update();

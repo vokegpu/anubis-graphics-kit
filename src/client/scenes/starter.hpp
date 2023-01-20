@@ -27,6 +27,7 @@ namespace client::scenes {
         ekg::ui::slider *p_slider_noise_control_offset {};
         ekg::ui::slider *p_slider_fog_dist {};
         ekg::ui::checkbox *p_checkbox_post_processing {};
+        ekg::ui::checkbox *p_check_box_hdr {};
 
         void on_create() override;
         void on_destroy() override;

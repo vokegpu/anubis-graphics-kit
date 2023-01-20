@@ -193,8 +193,8 @@ void renderer::process_post_processing() {
     auto &framebuffer_global {this->framebuffer_map["global"]};
 
     /* Invoke framebuffer and start collect screen buffers. */
-    framebuffer_global.invoke();
     framebuffer_global.send(api::app.screen_width, api::app.screen_height);
+    framebuffer_global.invoke();
 
     this->process_terrain();
     this->process_environment();
@@ -203,8 +203,33 @@ void renderer::process_post_processing() {
     framebuffer_global.revoke();
 
     /* Draw the current frame buffer. */
+    uint32_t texture {framebuffer_global.get_texture()};
+    float ave_lum {};
+
+    if (this->config_hdr.get_value()) {
+        int32_t size {api::app.screen_width * api::app.screen_height};
+        this->high_resolution_hdr.dimension[0] = api::app.screen_width;
+        this->high_resolution_hdr.dimension[1] = api::app.screen_height;
+
+        this->high_resolution_hdr.invoke();
+        this->high_resolution_hdr.send({api::app.screen_width, api::app.screen_height, 0}, nullptr, {GL_RGB32F, GL_RGB});
+        glCopyImageSubData(framebuffer_global.get_texture(), GL_TEXTURE_2D, 0, 0, 0, 0,
+                           this->high_resolution_hdr.get_texture(), GL_TEXTURE_2D, 0, 0, 0, 0,
+                           api::app.screen_width, api::app.screen_height, 1);
+        this->high_resolution_hdr.attach();
+        this->high_resolution_hdr.dispatch();
+
+        float *p_ave_lum {};
+        this->high_resolution_hdr.invoke_bind<float>("LogAvgLum", p_ave_lum);
+        ave_lum = *p_ave_lum;
+        this->high_resolution_hdr.revoke_bind();
+        this->high_resolution_hdr.revoke();
+    }
+
     this->immshape_post_processing.invoke();
-    this->immshape_post_processing.bind_texture(framebuffer_global.get_texture());
+    this->immshape_post_processing.p_program->set_uniform_float("AveLuminance", ave_lum);
+    this->immshape_post_processing.p_program->set_uniform_bool("Effects.HighDynamicRange", this->config_hdr.get_value());
+    this->immshape_post_processing.bind_texture(texture);
     this->immshape_post_processing.draw({0, 0, api::app.screen_width, api::app.screen_height}, {1.0f, 1.0f, 1.0f, 1.0f});
     this->immshape_post_processing.revoke();
 }
@@ -213,21 +238,26 @@ void renderer::on_create() {
     feature::on_create();
 
     api::shading::create_program("m.brdf.pbr", new ::shading::program {}, {
-            {"./data/effects/material.brdf.pbr.vert", shading::stage::vertex},
-            {"./data/effects/material.brdf.pbr.frag", shading::stage::fragment}
+            {"./data/effects/material.brdf.pbr.vert", ::shading::stage::vertex},
+            {"./data/effects/material.brdf.pbr.frag", ::shading::stage::fragment}
     });
 
     api::shading::create_program("terrain.pbr", new ::shading::program {}, {
-            {"./data/effects/terrain.pbr.vert", shading::stage::vertex},
-            {"./data/effects/terrain.pbr.frag", shading::stage::fragment},
-            {"./data/effects/terrain.pbr.tesc", shading::stage::tesscontrol},
-            {"./data/effects/terrain.pbr.tese", shading::stage::tessevaluation}
+            {"./data/effects/terrain.pbr.vert", ::shading::stage::vertex},
+            {"./data/effects/terrain.pbr.frag", ::shading::stage::fragment},
+            {"./data/effects/terrain.pbr.tesc", ::shading::stage::tesscontrol},
+            {"./data/effects/terrain.pbr.tese", ::shading::stage::tessevaluation}
     });
 
     ::shading::program *p_program_post_processing {new ::shading::program {}};
     api::shading::create_program("processing.post", p_program_post_processing, {
-            {"./data/effects/processing.post.vert", shading::stage::vertex},
-            {"./data/effects/processing.post.frag", shading::stage::fragment},
+            {"./data/effects/processing.post.vert", ::shading::stage::vertex},
+            {"./data/effects/processing.post.frag", ::shading::stage::fragment},
+    });
+
+    ::shading::program *p_program_hd_luminance {new ::shading::program {}};
+    api::shading::create_program("hdr.luminance.script", p_program_hd_luminance, {
+            {"./data/scripts/hdr.luminance.script.comp", ::shading::stage::compute}
     });
 
     this->config_fog_distance.set_value({0.0f, 512.0f});
@@ -235,13 +265,13 @@ void renderer::on_create() {
 
     auto *&p_camera {api::world::current_camera()};
 
-    float mesh[12] {
-        0.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        0.0f, 0.0f
+    float mesh[] {
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            1.0f, 1.0f,
+            0.0f, 1.0f,
+            0.0f, 0.0f
     };
 
     this->buffer_post_processing.invoke();
@@ -253,6 +283,14 @@ void renderer::on_create() {
     this->buffer_post_processing.attach(0, 2);
 
     /* Texture coordinates. */
+    int32_t it {};
+    mesh[it++] = 0.0f; mesh[it++] = 0.0f;
+    mesh[it++] = 1.0f; mesh[it++] = 0.0f;
+    mesh[it++] = 1.0f; mesh[it++] = -1.0f;
+    mesh[it++] = 1.0f; mesh[it++] = -1.0f;
+    mesh[it++] = 0.0f; mesh[it++] = -1.0f;
+    mesh[it++] = 0.0f; mesh[it++] = 0.0f;
+
     this->buffer_post_processing.bind({GL_ARRAY_BUFFER, GL_FLOAT});
     this->buffer_post_processing.send(sizeof(float) * 12, mesh, GL_STATIC_DRAW);
     this->buffer_post_processing.attach(1, 2);
@@ -260,6 +298,46 @@ void renderer::on_create() {
 
     /* Link to immediate shape. */
     this->immshape_post_processing.link(&this->buffer_post_processing, p_program_post_processing);
+
+    this->high_resolution_hdr.p_program_parallel = p_program_hd_luminance;
+    this->high_resolution_hdr.primitive = GL_FLOAT;
+    this->high_resolution_hdr.texture_type = GL_TEXTURE_2D;
+    this->high_resolution_hdr.operation = GL_READ_WRITE;
+    this->high_resolution_hdr.dispatch_groups[0] = 8;
+    this->high_resolution_hdr.dispatch_groups[1] = 8;
+    this->high_resolution_hdr.invoke();
+    this->high_resolution_hdr.bind_map<float>("LogAvgLum", 1, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT, {GL_SHADER_STORAGE_BUFFER, GL_MAP_READ_BIT});
+    this->high_resolution_hdr.revoke_bind();
+    this->high_resolution_hdr.revoke();
+
+    float pseudo_image[] {
+        1.0f, 1.0f, 1.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,
+        1.0f, 2.0f, 2.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,
+        2.0f, 2.0f, 2.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,
+        3.0f, 1.0f, 2.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f
+    };
+
+    //this->high_resolution_hdr.send({4, 4, 0}, pseudo_image, {GL_RGBA32F, GL_RGBA});
+
+    //int32_t size {4 * 4};
+    //float lum {};
+    //float sum {};
+
+    //for (it = 0; it < size; it++) {
+    //    lum = 0.2126f * pseudo_image[(it * 4) + 0] + 0.7152f * pseudo_image[(it * 4) + 1] + 0.722f * pseudo_image[(it * 4) + 2];
+    //    sum += logf(lum + 0.00001f);
+
+    //    util::log(std::to_string(lum));
+    //}
+
+    //util::log("CPU: " + std::to_string(sum));
+
+    //this->high_resolution_hdr.attach();
+    //this->high_resolution_hdr.dispatch();
+
+    //util::log("GPU: " + std::to_string(this->high_resolution_hdr.get()[(size * 4) - 1]));
+    //this->high_resolution_hdr.revoke();
+    // std::string *p_str_debug {}; p_str_debug->clear();
 }
 
 void renderer::on_destroy() {

@@ -21,3 +21,7 @@ void util::to_world_pos(glm::vec3 &world_pos, const glm::ivec2 &grid_pos, const 
     world_pos.x = static_cast<float>(grid_pos.x * grid_size.x);
     world_pos.z = static_cast<float>(grid_pos.y * grid_size.y);
 }
+
+float util::luminance(float r, float g, float b) {
+    return 0.2126f * r + 0.7152f * g + 0.0722f * b;
+}

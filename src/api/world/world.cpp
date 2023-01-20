@@ -29,8 +29,8 @@ void world::on_create() {
 
     paralleling<float> parallel {};
     parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-    parallel.dispatch_groups[0] = 1;
-    parallel.dispatch_groups[1] = 1;
+    parallel.dispatch_groups[0] = 16;
+    parallel.dispatch_groups[1] = 16;
     parallel.primitive = GL_FLOAT;
     parallel.texture_type = GL_TEXTURE_2D;
 
@@ -38,7 +38,6 @@ void world::on_create() {
     parallel.invoke();
 
     parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-    parallel.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
     parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
 
     int32_t chunk_size {20};
@@ -57,6 +56,8 @@ void world::on_create() {
 
     //for (float &f : parallel.get()) std::cout << std::to_string(f) << '\n';
     parallel.revoke();
+
+    //std::string *p_str {}; p_str->clear();
 }
 
 void world::on_destroy() {
@@ -247,14 +248,14 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
     api::shading::find("hmap.randomizer.script", parallel.p_program_parallel);
 
     parallel.primitive = GL_FLOAT;
-    parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+    parallel.memory_barrier = GL_TEXTURE_FETCH_BARRIER_BIT;
     parallel.texture_type = GL_TEXTURE_2D;
-    parallel.dispatch_groups[0] = 1;
-    parallel.dispatch_groups[1] = 1;
+    parallel.operation = GL_READ_ONLY;
+    parallel.dispatch_groups[0] = 16;
+    parallel.dispatch_groups[1] = 16;
 
     parallel.invoke();
     parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-    parallel.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
     parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
 
     int32_t chunk_size {this->config_chunk_size.get_value()};
@@ -293,7 +294,7 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
     parallel.bind_texture();
     parallel.send(
             {chunk_size, chunk_size, 0}, nullptr,
-            {GL_RGBA32F, GL_RGBA}, {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE});
+            {GL_RGBA32F, GL_RGBA}, {GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE});
     parallel.attach();
     parallel.dispatch();
     parallel.revoke();

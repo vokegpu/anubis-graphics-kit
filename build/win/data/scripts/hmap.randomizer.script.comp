@@ -1,13 +1,11 @@
 #version 450 core
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 layout (rgba32f, binding = 0) uniform image2D OutTexture;
 
 uniform float Delta;
 uniform float Offset;
-
 uniform vec2 Scale;
-uniform vec2 Resolution;
 
 #define LEFT 1
 #define RIGHT 5
@@ -144,10 +142,11 @@ float Lerp(float a, float b, float delta) {
 
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    vec2 uv = texelCoord / Resolution;
+    ivec2 size = imageSize(OutTexture);
+    vec2 uv = texelCoord / size;
 
     float noise = Noise4D(uv * (Scale * 0.1) + Offset);
-    float greyscale = noise;
+    float greyscale = 0;
 
     float leftY = 0.0f;
     float rightY = 0.0f;
@@ -155,23 +154,6 @@ void main() {
     float bottomY = 0.0f;
     float delta = 0.5;
 
-    CheckNearest(uv, leftY, rightY, topY, bottomY);
-
-    for (int it = 0; it < 4; it++) {
-        if (!ChunkContains[it]) {
-            continue;
-        }
-
-        if (it == LEFT) {
-            greyscale = Lerp(greyscale, leftY, delta);
-        } else if (it == RIGHT) {
-            greyscale = Lerp(greyscale, rightY, delta);
-        } else if (it == TOP) {
-            greyscale = Lerp(greyscale, topY, delta);
-        } else if (it == BOTTOM) {
-            greyscale = Lerp(greyscale, bottomY, delta);
-        }
-    }
-
+    //CheckNearest(uv, leftY, rightY, topY, bottomY);
     imageStore(OutTexture, texelCoord, vec4(greyscale, greyscale, greyscale, 1.0));
 }

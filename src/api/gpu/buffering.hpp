@@ -43,10 +43,7 @@ template<typename t>
 class paralleling {
 protected:
     std::vector<t> data {};
-
-    uint32_t buffer_texture {};
-    uint32_t dimension[3] {};
-    uint32_t format[2] {};
+    std::map<std::string, uint32_t> buffer_map {};
 public:
     uint32_t primitive {};
     uint32_t memory_barrier {GL_ALL_ATTRIB_BITS};
@@ -54,11 +51,35 @@ public:
     uint32_t texture_type {GL_TEXTURE_2D};
     uint32_t dispatch_groups[3] {1, 1, 1};
 
+    uint32_t buffer_texture {};
+    uint32_t dimension[3] {};
+    uint32_t format[2] {};
+    uint32_t map_buffer_type[2] {};
+
     shading::program *p_program_parallel {};
 
     explicit paralleling() = default;
     ~paralleling() {
 
+    }
+
+    template<typename v>
+    void bind_map(const std::string &name, int32_t size, v *p_data, uint32_t flags, const glm::ivec2 &buffer_type) {
+        this->map_buffer_type[0] = buffer_type.x;
+        this->map_buffer_type[1] = buffer_type.y;
+
+        if (this->buffer_map[name] == 0) glGenBuffers(1, &this->buffer_map[name]);
+        glBindBuffer(buffer_type.x, this->buffer_map[name]);
+        glBufferStorage(buffer_type.x, sizeof(v), p_data, flags);
+    }
+
+    template<typename v>
+    void invoke_bind(const std::string &name, v *&p_data, int32_t size = 1) {
+        p_data = (v*) glMapBufferRange(this->map_buffer_type[0], 0, sizeof(v) * size, this->map_buffer_type[1]);
+    }
+
+    void revoke_bind() {
+        glUnmapBuffer(this->map_buffer_type[0]);
     }
 
     void send(const glm::ivec3 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec3 &in_filter = {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE}) {
@@ -90,7 +111,7 @@ public:
 
     void attach() {
         /* Bind image to the compute shader. */
-        glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, operation, this->format[0]);
+        glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, this->operation, this->format[0]);
     }
 
     void invoke() {
@@ -187,6 +208,70 @@ public:
     void invoke();
     void revoke();
     void free_buffers();
+};
+
+#endif
+
+#ifndef AGK_API_GPU_BUFFERING_TEXTURING_H
+#define AGK_API_GPU_BUFFERING_TEXTURING_H
+
+template<typename t>
+class texturing {
+protected:
+    uint32_t buffer_texture {};
+    std::vector<t> data_list {};
+public:
+    uint32_t primitive {GL_UNSIGNED_BYTE};
+    uint32_t texture_type {GL_TEXTURE_2D};
+    uint32_t dimension[3] {};
+    uint32_t format[2] {};
+
+    explicit texturing() = default;
+    ~texturing() {};
+
+    uint32_t get_texture() {
+        return this->buffer_texture;
+    }
+
+    void free_buffers() {
+        if (this->buffer_texture != 0) glDeleteTextures(1, &this->buffer_texture);
+    }
+
+    void invoke() {
+        if (this->buffer_texture == 0) glGenTextures(1, &this->buffer_texture);
+        glBindTexture(this->texture_type, this->buffer_texture);
+    }
+
+    void revoke() {
+        glBindTexture(this->texture_type, 0);
+    }
+
+    void send(const glm::ivec3 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec3 &in_filter = {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE}) {
+        this->dimension[0] = in_dimension.x;
+        this->dimension[1] = in_dimension.y;
+        this->dimension[2] = in_dimension.z;
+        this->format[0] = in_format.x;
+        this->format[1] = in_format.y;
+
+        /* Pass image filtering. */
+        glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, in_filter.x);
+        glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, in_filter.y);
+
+        glTexParameteri(texture_type, GL_TEXTURE_WRAP_S, in_filter.z);
+        glTexParameteri(texture_type, GL_TEXTURE_WRAP_T, in_filter.z);
+
+        /* Send texture buffer to GPU. */
+        if (texture_type == GL_TEXTURE_3D) {
+            glTexParameteri(texture_type, GL_TEXTURE_WRAP_R, in_filter.z);
+            glTexImage3D(texture_type, 0, this->format[0], this->dimension[0], this->dimension[1], this->dimension[2], 0, this->format[1], this->primitive, p_data);
+        } else {
+            glTexImage2D(texture_type, 0, this->format[0], this->dimension[0], this->dimension[1], 0, this->format[1], this->primitive, p_data);
+        }
+    }
+
+    std::vector<t> &data() {
+        return this->data_list;
+    }
 };
 
 #endif
