@@ -1,10 +1,8 @@
 #version 450 core
 
-layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-layout (rgba32f, binding = 0) uniform image2D OutImg;
-layout (std140, binding = 0) buffer LuminanceData {
-    float LogAvgLum;
-};
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout (rgba16f, binding = 0) uniform image2D OutImg;
+layout (r32f, binding = 1) uniform image2D OutAveLuminance;
 
 float Luminance(vec3 color) {
     return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
@@ -12,10 +10,9 @@ float Luminance(vec3 color) {
 
 void main() {
     ivec2 texelFetch = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 texelSize = imageSize(OutImg);
-    ivec2 prevTexelFetch = ivec2(0);
-
+    if (texelFetch.x == 0 && texelFetch.y == 0) imageStore(OutAveLuminance, ivec2(0, 0), vec4(0, 0, 0, 0));
     float luminance = Luminance(imageLoad(OutImg, texelFetch).xyz);
-    imageStore(OutImg, texelFetch, vec4(luminance, luminance, luminance, 1.0f));
-    atomicAdd(LogAvgLum, log2(luminance + 0.00001));
+    float sum = log(luminance + 0.00001);
+
+    imageStore(OutAveLuminance, ivec2(0, 0), vec4(imageLoad(OutAveLuminance, ivec2(0, 0)).r + sum, 0, 0, 0));
 }

@@ -109,9 +109,12 @@ public:
         glBindTexture(this->texture_type, this->buffer_texture);
     }
 
-    void attach() {
+    void attach(uint32_t slot, const glm::ivec2 &image_type = {0, GL_RGBA32F}) {
+        uint32_t texture = image_type.x;
+        if (texture == 0) texture = this->buffer_texture;
+
         /* Bind image to the compute shader. */
-        glBindImageTexture(0, this->buffer_texture, 0, GL_FALSE, 0, this->operation, this->format[0]);
+        glBindImageTexture(slot, texture, 0, GL_FALSE, 0, this->operation, image_type.y);
     }
 
     void invoke() {
@@ -120,8 +123,15 @@ public:
         }
 
         glUseProgram(this->p_program_parallel->id);
-        glActiveTexture(GL_TEXTURE0);
         glBindTexture(this->texture_type, this->buffer_texture);
+    }
+
+    void invoke_texture() {
+        glBindTexture(this->texture_type, this->buffer_texture);
+    }
+
+    void revoke_texture() {
+        glBindTexture(this->texture_type, 0);
     }
 
     void dispatch() {
@@ -204,7 +214,7 @@ public:
     explicit framebuffering() = default;
     ~framebuffering();
 
-    void send(int32_t width, int32_t height);
+    void send(int32_t width, int32_t height, const glm::ivec2 &format = {GL_RGBA32F, GL_RGBA});
     void invoke();
     void revoke();
     void free_buffers();
@@ -270,6 +280,29 @@ public:
     }
 
     std::vector<t> &data() {
+        int32_t channel {1};
+        switch (this->format[1]) {
+            case GL_RG: {
+                channel = 2;
+                break;
+            }
+
+            case GL_RGB: {
+                channel = 3;
+                break;
+            }
+
+
+            case GL_RGBA: {
+                channel = 4;
+                break;
+            }
+        }
+
+        /* Get the new texture data from GPU. */
+        this->data_list.clear();
+        this->data_list.resize(this->dimension[0] * this->dimension[1] * channel);
+        glGetTexImage(this->texture_type, 0, this->format[1], this->primitive, this->data_list.data());
         return this->data_list;
     }
 };

@@ -208,26 +208,28 @@ void renderer::process_post_processing() {
 
     if (this->config_hdr.get_value()) {
         int32_t size {api::app.screen_width * api::app.screen_height};
-        this->high_resolution_hdr.dimension[0] = api::app.screen_width;
-        this->high_resolution_hdr.dimension[1] = api::app.screen_height;
 
         this->high_resolution_hdr.invoke();
-        this->high_resolution_hdr.send({api::app.screen_width, api::app.screen_height, 0}, nullptr, {GL_RGB32F, GL_RGB});
+        this->high_resolution_hdr.send({api::app.screen_width, api::app.screen_height, 1}, nullptr, {GL_RGBA16F, GL_RGBA});
         glCopyImageSubData(framebuffer_global.get_texture(), GL_TEXTURE_2D, 0, 0, 0, 0,
                            this->high_resolution_hdr.get_texture(), GL_TEXTURE_2D, 0, 0, 0, 0,
                            api::app.screen_width, api::app.screen_height, 1);
-        this->high_resolution_hdr.attach();
+        this->high_resolution_hdr.attach(0, {0, GL_RGBA16F});
+
+        this->hdr_log_luminance.invoke();
+        this->hdr_log_luminance.send({1, 1, 1}, nullptr, {GL_R32F, GL_RED});
+        this->high_resolution_hdr.attach(1, {this->hdr_log_luminance.get_texture(), GL_R32F});
         this->high_resolution_hdr.dispatch();
 
-        float *p_ave_lum {};
-        this->high_resolution_hdr.invoke_bind<float>("LogAvgLum", p_ave_lum);
-        ave_lum = *p_ave_lum;
-        this->high_resolution_hdr.revoke_bind();
+        this->hdr_log_luminance.invoke();
+        ave_lum = expf(this->hdr_log_luminance.data()[0] / static_cast<float>(size));
+        this->hdr_log_luminance.revoke();
         this->high_resolution_hdr.revoke();
     }
 
     this->immshape_post_processing.invoke();
     this->immshape_post_processing.p_program->set_uniform_float("AveLuminance", ave_lum);
+    this->immshape_post_processing.p_program->set_uniform_float("Exposure", this->config_hdr_exposure.get_value());
     this->immshape_post_processing.p_program->set_uniform_bool("Effects.HighDynamicRange", this->config_hdr.get_value());
     this->immshape_post_processing.bind_texture(texture);
     this->immshape_post_processing.draw({0, 0, api::app.screen_width, api::app.screen_height}, {1.0f, 1.0f, 1.0f, 1.0f});
@@ -261,7 +263,7 @@ void renderer::on_create() {
     });
 
     this->config_fog_distance.set_value({0.0f, 512.0f});
-    this->config_fog_color.set_value({1.0f, 1.0f, 1.0f});
+    this->config_fog_color.set_value({0.0f, 0.0f, 0.0f});
 
     auto *&p_camera {api::world::current_camera()};
 
@@ -303,12 +305,15 @@ void renderer::on_create() {
     this->high_resolution_hdr.primitive = GL_FLOAT;
     this->high_resolution_hdr.texture_type = GL_TEXTURE_2D;
     this->high_resolution_hdr.operation = GL_READ_WRITE;
-    this->high_resolution_hdr.dispatch_groups[0] = 8;
-    this->high_resolution_hdr.dispatch_groups[1] = 8;
+    this->high_resolution_hdr.dispatch_groups[0] = 32;
+    this->high_resolution_hdr.dispatch_groups[1] = 32;
     this->high_resolution_hdr.invoke();
-    this->high_resolution_hdr.bind_map<float>("LogAvgLum", 1, nullptr, GL_DYNAMIC_STORAGE_BIT | GL_MAP_READ_BIT, {GL_SHADER_STORAGE_BUFFER, GL_MAP_READ_BIT});
-    this->high_resolution_hdr.revoke_bind();
     this->high_resolution_hdr.revoke();
+
+    this->hdr_log_luminance.primitive = GL_FLOAT;
+    this->hdr_log_luminance.texture_type = GL_TEXTURE_2D;
+    this->hdr_log_luminance.invoke();
+    this->hdr_log_luminance.revoke();
 
     float pseudo_image[] {
         1.0f, 1.0f, 1.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,

@@ -50,7 +50,7 @@ void world::on_create() {
     parallel.p_program_parallel->set_uniform_int("ChunkContains[3]", false);
 
     parallel.send({20, 20, 0}, nullptr, {GL_RGBA32F, GL_RGBA}, {GL_NEAREST, GL_NEAREST, GL_REPEAT});
-    parallel.attach();
+    parallel.attach(0);
     parallel.dispatch();
     //parallel.overwrite();
 
@@ -295,7 +295,7 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
     parallel.send(
             {chunk_size, chunk_size, 0}, nullptr,
             {GL_RGBA32F, GL_RGBA}, {GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE});
-    parallel.attach();
+    parallel.attach(0);
     parallel.dispatch();
     parallel.revoke();
 

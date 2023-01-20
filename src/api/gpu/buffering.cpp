@@ -90,7 +90,7 @@ uint32_t framebuffering::get_depth_buffer() {
     return this->buffer_renderbuffer;
 }
 
-void framebuffering::send(int32_t width, int32_t height) {
+void framebuffering::send(int32_t width, int32_t height, const glm::ivec2 &format) {
     if (this->w == width && this->h == height) {
         return;
     }
@@ -117,7 +117,7 @@ void framebuffering::send(int32_t width, int32_t height) {
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->buffer_texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB32F, this->w, this->h);
+    glTexStorage2D(GL_TEXTURE_2D, 1, format.x, this->w, this->h);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->buffer_renderbuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->buffer_texture, 0);

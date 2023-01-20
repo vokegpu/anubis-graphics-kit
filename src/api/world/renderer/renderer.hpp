@@ -22,6 +22,7 @@ protected:
     immshape immshape_post_processing {};
     std::map<std::string, framebuffering> framebuffer_map {};
     paralleling<float> high_resolution_hdr {};
+    texturing<float> hdr_log_luminance {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);
     void on_event_refresh_chunk(SDL_Event &sdl_event);
@@ -33,6 +34,7 @@ public:
     value<glm::vec3> config_fog_color {};
     value<bool> config_post_processing {};
     value<bool> config_hdr {};
+    value<float> config_hdr_exposure {};
 
     model *add(std::string_view tag, mesh::data &mesh_data);
     void add(chunk *p_chunk);
