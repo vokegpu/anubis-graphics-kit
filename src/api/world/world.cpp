@@ -216,15 +216,18 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
     api::shading::find("hmap.randomizer.script", this->parallel_chunk.p_program_parallel);
     this->parallel_chunk.memory_barrier = GL_TEXTURE_FETCH_BARRIER_BIT;
 
-    this->parallel_chunk.dispatch_groups[0] = 16;
-    this->parallel_chunk.dispatch_groups[1] = 16;
-
     this->parallel_chunk.invoke();
     this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
     this->parallel_chunk.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
+    this->parallel_chunk.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
 
     int32_t chunk_size {this->config_chunk_size.get_value()};
     float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
+
+    this->parallel_chunk.dimension[0] = chunk_size;
+    this->parallel_chunk.dimension[1] = chunk_size;
+    this->parallel_chunk.dispatch_groups[0] = 16;
+    this->parallel_chunk.dispatch_groups[1] = 16;
 
     std::string chunk_around {};
     int32_t slot {};
@@ -246,9 +249,9 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
         chunk_around += ']';
 
         if (p_chunk_around != nullptr) {
-            glActiveTexture(GL_TEXTURE1 + slot);
-            glBindTexture(GL_TEXTURE_2D, p_chunk_around->texture);
-            contains = true;
+        //    glActiveTexture(GL_TEXTURE1 + slot);
+        //    glBindTexture(GL_TEXTURE_2D, p_chunk_around->texture);
+        //    contains = true;
         }
 
         this->parallel_chunk.p_program_parallel->set_uniform_int(chunk_around, contains);

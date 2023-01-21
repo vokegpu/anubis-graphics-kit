@@ -107,7 +107,7 @@ public:
 
     void attach(uint32_t slot, gpu::texture &texture, uint32_t mode) const {
         /* Bind image to the compute shader. */
-        glBindImageTexture(slot, texture.id, 0, GL_FALSE, 0, mode, texture.channel);
+        glBindImageTexture(slot, texture.id, 0, GL_FALSE, 0, mode, texture.format);
     }
 
     void invoke() const {
@@ -251,7 +251,7 @@ public:
 
     void invoke(uint32_t key, const glm::ivec2 &texture_info) {
         texturing::current_texture_info[0] = key;
-        texturing::current_texture_info[1] = texture_info.y;
+        texturing::current_texture_info[1] = texture_info.x;
 
         gpu::texture &texture {this->texture_map[key]};
         texture.type = texture_info.x;
@@ -289,7 +289,7 @@ public:
 
         texture.w = in_dimension.x;
         texture.h = in_dimension.y;
-        texture.h = in_dimension.z;
+        texture.z = in_dimension.z;
 
         texture.format = in_format.x;
         texture.channel = in_format.y;

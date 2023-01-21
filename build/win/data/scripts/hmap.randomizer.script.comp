@@ -142,10 +142,11 @@ float Lerp(float a, float b, float delta) {
 
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 size = imageSize(OutTexture);
+    vec2 size = imageSize(OutTexture);
     vec2 uv = texelCoord / size;
 
-    float noise = Noise4D(uv * (Scale * 0.1) + Offset);
+    vec2 uvNoised = uv * (Scale * 0.1) + Offset;
+    float noise = snoise(uvNoised);
     float greyscale = noise;
 
     float leftY = 0.0f;
@@ -153,6 +154,8 @@ void main() {
     float topY = 0.0;
     float bottomY = 0.0f;
     float delta = 0.5;
+
+    if (uv.x == 0 || uv.y == 0 || uv.x == 1.0f || uv.y == 1.0f) greyscale = 0.0f;
 
     //CheckNearest(uv, leftY, rightY, topY, bottomY);
     imageStore(OutTexture, texelCoord, vec4(greyscale, greyscale, greyscale, 1.0));
