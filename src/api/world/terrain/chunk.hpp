@@ -1,7 +1,7 @@
 #ifndef AGK_API_WORLD_TERRAIN_CHUNK_H
 #define AGK_API_WORLD_TERRAIN_CHUNK_H
 
-#include "api/gpu/buffering.hpp"
+#include "api/gpu/tools.hpp"
 #include "api/mesh/mesh.hpp"
 #include "api/world/world_feature.hpp"
 #include "api/util/math.hpp"

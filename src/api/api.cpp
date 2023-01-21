@@ -65,8 +65,9 @@ void api::mainloop(feature *p_scene_initial) {
     util::log("Initialising main scene...");
 
     /* Flush all object. */
-    api::app.p_current_camera->process_perspective(api::app.screen_width, api::app.screen_height);
     api::app.garbage_collector.do_update();
+    api::app.p_current_camera->process_perspective(api::app.screen_width, api::app.screen_height);
+    api::app.p_world_renderer->process_framebuffer(api::app.screen_width, api::app.screen_height);
 
     api::app.mainloop = true;
     util::log("Anubis Graphics Kit initialised with successfully!");
@@ -123,7 +124,7 @@ void api::mainloop(feature *p_scene_initial) {
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         api::app.p_world_renderer->on_render();
 

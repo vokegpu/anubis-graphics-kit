@@ -1,7 +1,7 @@
 #ifndef AGK_API_UI_IMMEDIATE_SHAPE
 #define AGK_API_UI_IMMEDIATE_SHAPE
 
-#include "api/gpu/buffering.hpp"
+#include "api/gpu/tools.hpp"
 
 class immshape {
 protected:

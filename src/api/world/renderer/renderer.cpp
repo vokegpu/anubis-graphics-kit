@@ -190,41 +190,51 @@ void renderer::process_environment() {
 }
 
 void renderer::process_post_processing() {
-    auto &framebuffer_global {this->framebuffer_map["global"]};
-
     /* Invoke framebuffer and start collect screen buffers. */
-    framebuffer_global.send(api::app.screen_width, api::app.screen_height);
-    framebuffer_global.invoke();
+    this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     this->process_terrain();
     this->process_environment();
 
     /* Revoke all buffers from frame. */
-    framebuffer_global.revoke();
+    this->framebuffer_post_processing.invoke(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw the current frame buffer. */
-    uint32_t texture {framebuffer_global.get_texture()};
+    uint32_t texture {this->framebuffer_post_processing[0].id_texture};
     float ave_lum {};
 
     if (this->config_hdr.get_value()) {
         int32_t size {api::app.screen_width * api::app.screen_height};
 
-        this->high_resolution_hdr.invoke();
-        this->high_resolution_hdr.send({api::app.screen_width, api::app.screen_height, 1}, nullptr, {GL_RGBA16F, GL_RGBA});
-        glCopyImageSubData(framebuffer_global.get_texture(), GL_TEXTURE_2D, 0, 0, 0, 0,
-                           this->high_resolution_hdr.get_texture(), GL_TEXTURE_2D, 0, 0, 0, 0,
-                           api::app.screen_width, api::app.screen_height, 1);
-        this->high_resolution_hdr.attach(0, {0, GL_RGBA16F});
+        this->parallel_post_processing.dispatch_groups[0] = 32;
+        this->parallel_post_processing.dispatch_groups[0] = 32;
+        this->parallel_post_processing.dimension[0] = api::app.screen_width;
+        this->parallel_post_processing.dimension[1] = api::app.screen_height;
 
-        this->hdr_log_luminance.invoke();
-        this->hdr_log_luminance.send({1, 1, 1}, nullptr, {GL_R32F, GL_RED});
-        this->high_resolution_hdr.attach(1, {this->hdr_log_luminance.get_texture(), GL_R32F});
-        this->high_resolution_hdr.dispatch();
+        /* Pass current framebuffer to HDR luminance texture.  */
+        this->texture_post_processing.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
+        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].id = texture;
+        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].w = api::app.screen_width;
+        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].h = api::app.screen_height;
+        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].channel = GL_RGBA;
+        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].format = GL_RGBA32F;
+        this->parallel_post_processing.invoke();
+        this->parallel_post_processing.attach(0, this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE], GL_READ_WRITE);
 
-        this->hdr_log_luminance.invoke();
-        ave_lum = expf(this->hdr_log_luminance.data()[0] / static_cast<float>(size));
-        this->hdr_log_luminance.revoke();
-        this->high_resolution_hdr.revoke();
+        this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
+        this->texture_post_processing.send<float>({1, 1, 0}, nullptr, {GL_R32F, GL_RED});
+        this->parallel_post_processing.attach(1, this->texture_post_processing[HDR_LUMINANCE_TEXTURE], GL_READ_WRITE);
+
+        this->parallel_post_processing.invoke();
+        this->parallel_post_processing.attach(0, this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE], GL_READ_WRITE);
+        this->parallel_post_processing.dispatch();
+
+        /* Read luminance texture for get the sum of all pixels log(Lum + 0.0001f) */
+        this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
+        std::vector<float> luminance_image_list {};
+        this->texture_post_processing.get<float>(luminance_image_list);
+        ave_lum = luminance_image_list[0];
+        this->parallel_post_processing.revoke();
     }
 
     this->immshape_post_processing.invoke();
@@ -263,7 +273,7 @@ void renderer::on_create() {
     });
 
     this->config_fog_distance.set_value({0.0f, 512.0f});
-    this->config_fog_color.set_value({0.0f, 0.0f, 0.0f});
+    this->config_fog_color.set_value({1.0f, 1.0f, 1.0f});
 
     auto *&p_camera {api::world::current_camera()};
 
@@ -301,48 +311,11 @@ void renderer::on_create() {
     /* Link to immediate shape. */
     this->immshape_post_processing.link(&this->buffer_post_processing, p_program_post_processing);
 
-    this->high_resolution_hdr.p_program_parallel = p_program_hd_luminance;
-    this->high_resolution_hdr.primitive = GL_FLOAT;
-    this->high_resolution_hdr.texture_type = GL_TEXTURE_2D;
-    this->high_resolution_hdr.operation = GL_READ_WRITE;
-    this->high_resolution_hdr.dispatch_groups[0] = 32;
-    this->high_resolution_hdr.dispatch_groups[1] = 32;
-    this->high_resolution_hdr.invoke();
-    this->high_resolution_hdr.revoke();
-
-    this->hdr_log_luminance.primitive = GL_FLOAT;
-    this->hdr_log_luminance.texture_type = GL_TEXTURE_2D;
-    this->hdr_log_luminance.invoke();
-    this->hdr_log_luminance.revoke();
-
-    float pseudo_image[] {
-        1.0f, 1.0f, 1.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,
-        1.0f, 2.0f, 2.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,
-        2.0f, 2.0f, 2.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f,
-        3.0f, 1.0f, 2.0f, 0.0f,    2.0f, 2.0f, 1.0f, 0.0f,    2.0f, 1.0f, 2.0f, 0.0f,   1.0f, 1.0f, 1.0f, 0.0f
-    };
-
-    //this->high_resolution_hdr.send({4, 4, 0}, pseudo_image, {GL_RGBA32F, GL_RGBA});
-
-    //int32_t size {4 * 4};
-    //float lum {};
-    //float sum {};
-
-    //for (it = 0; it < size; it++) {
-    //    lum = 0.2126f * pseudo_image[(it * 4) + 0] + 0.7152f * pseudo_image[(it * 4) + 1] + 0.722f * pseudo_image[(it * 4) + 2];
-    //    sum += logf(lum + 0.00001f);
-
-    //    util::log(std::to_string(lum));
-    //}
-
-    //util::log("CPU: " + std::to_string(sum));
-
-    //this->high_resolution_hdr.attach();
-    //this->high_resolution_hdr.dispatch();
-
-    //util::log("GPU: " + std::to_string(this->high_resolution_hdr.get()[(size * 4) - 1]));
-    //this->high_resolution_hdr.revoke();
-    // std::string *p_str_debug {}; p_str_debug->clear();
+    this->parallel_post_processing.p_program_parallel = p_program_hd_luminance;
+    this->parallel_post_processing.dispatch_groups[0] = 32;
+    this->parallel_post_processing.dispatch_groups[1] = 32;
+    this->parallel_post_processing.invoke();
+    this->parallel_post_processing.revoke();
 }
 
 void renderer::on_destroy() {
@@ -386,6 +359,13 @@ void renderer::on_event(SDL_Event &sdl_event) {
     feature::on_event(sdl_event);
 
     switch (sdl_event.type) {
+        case SDL_WINDOWEVENT: {
+            if (sdl_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                this->process_framebuffer(sdl_event.window.data1, sdl_event.window.data2);
+            }
+            break;
+        }
+
         case SDL_USEREVENT: {
             switch (sdl_event.user.code) {
                 case event::WORLD_REFRESH_ENVIRONMENT: {
@@ -474,4 +454,10 @@ void renderer::add(chunk *p_chunk) {
 
 void renderer::refresh() {
     this->update_disabled_chunks = true;
+}
+
+void renderer::process_framebuffer(int32_t w, int32_t h) {
+    this->framebuffer_post_processing.invoke(0);
+    this->framebuffer_post_processing.send_depth({w, h, 0}, GL_RGBA, true);
+    this->framebuffer_post_processing.revoke();
 }

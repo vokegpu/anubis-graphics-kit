@@ -11,6 +11,7 @@ float Luminance(vec3 color) {
 void main() {
     ivec2 texelFetch = ivec2(gl_GlobalInvocationID.xy);
     if (texelFetch.x == 0 && texelFetch.y == 0) imageStore(OutAveLuminance, ivec2(0, 0), vec4(0, 0, 0, 0));
+
     float luminance = Luminance(imageLoad(OutImg, texelFetch).xyz);
     float sum = log(luminance + 0.00001);
 

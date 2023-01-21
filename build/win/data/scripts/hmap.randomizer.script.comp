@@ -146,7 +146,7 @@ void main() {
     vec2 uv = texelCoord / size;
 
     float noise = Noise4D(uv * (Scale * 0.1) + Offset);
-    float greyscale = 0;
+    float greyscale = noise;
 
     float leftY = 0.0f;
     float rightY = 0.0f;

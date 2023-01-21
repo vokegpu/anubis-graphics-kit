@@ -26,38 +26,6 @@ void world::on_create() {
 
     //util::read_image("./data/textures/hmap.jpg", this->chunk_heightmap_texture);
     api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 10, 40);
-
-    paralleling<float> parallel {};
-    parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-    parallel.dispatch_groups[0] = 16;
-    parallel.dispatch_groups[1] = 16;
-    parallel.primitive = GL_FLOAT;
-    parallel.texture_type = GL_TEXTURE_2D;
-
-    parallel.p_program_parallel = p_program_hmap_randomizer;
-    parallel.invoke();
-
-    parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-    parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
-
-    int32_t chunk_size {20};
-    float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
-    parallel.p_program_parallel->set_uniform_vec2("Resolution", chunk_resolution);
-
-    parallel.p_program_parallel->set_uniform_int("ChunkContains[0]", false);
-    parallel.p_program_parallel->set_uniform_int("ChunkContains[1]", false);
-    parallel.p_program_parallel->set_uniform_int("ChunkContains[2]", false);
-    parallel.p_program_parallel->set_uniform_int("ChunkContains[3]", false);
-
-    parallel.send({20, 20, 0}, nullptr, {GL_RGBA32F, GL_RGBA}, {GL_NEAREST, GL_NEAREST, GL_REPEAT});
-    parallel.attach(0);
-    parallel.dispatch();
-    //parallel.overwrite();
-
-    //for (float &f : parallel.get()) std::cout << std::to_string(f) << '\n';
-    parallel.revoke();
-
-    //std::string *p_str {}; p_str->clear();
 }
 
 void world::on_destroy() {
@@ -184,6 +152,7 @@ void world::do_update_chunk() {
 
         if (static_cast<int32_t>(glm::length(sub)) / chunk_size > chunk_gen_dist * chunk_gen_dist) {
             api::world::renderer()->refresh();
+            this->texture_chunk.delete_buffer(p_chunks->id);
             p_chunks->on_destroy();
             delete p_chunks;
             p_chunks = nullptr;
@@ -244,23 +213,18 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
     p_chunk->scale = scale;
 
     /* Invoke parallel computation to randomize map. */
-    paralleling<float> parallel {};
-    api::shading::find("hmap.randomizer.script", parallel.p_program_parallel);
+    api::shading::find("hmap.randomizer.script", this->parallel_chunk.p_program_parallel);
+    this->parallel_chunk.memory_barrier = GL_TEXTURE_FETCH_BARRIER_BIT;
 
-    parallel.primitive = GL_FLOAT;
-    parallel.memory_barrier = GL_TEXTURE_FETCH_BARRIER_BIT;
-    parallel.texture_type = GL_TEXTURE_2D;
-    parallel.operation = GL_READ_ONLY;
-    parallel.dispatch_groups[0] = 16;
-    parallel.dispatch_groups[1] = 16;
+    this->parallel_chunk.dispatch_groups[0] = 16;
+    this->parallel_chunk.dispatch_groups[1] = 16;
 
-    parallel.invoke();
-    parallel.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-    parallel.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
+    this->parallel_chunk.invoke();
+    this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
+    this->parallel_chunk.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
 
     int32_t chunk_size {this->config_chunk_size.get_value()};
     float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
-    parallel.p_program_parallel->set_uniform_vec2("Resolution", chunk_resolution);
 
     std::string chunk_around {};
     int32_t slot {};
@@ -287,19 +251,17 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
             contains = true;
         }
 
-        parallel.p_program_parallel->set_uniform_int(chunk_around, contains);
+        this->parallel_chunk.p_program_parallel->set_uniform_int(chunk_around, contains);
         slot++;
     }
 
-    parallel.bind_texture();
-    parallel.send(
-            {chunk_size, chunk_size, 0}, nullptr,
-            {GL_RGBA32F, GL_RGBA}, {GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE});
-    parallel.attach(0);
-    parallel.dispatch();
-    parallel.revoke();
+    this->texture_chunk.invoke(p_chunk->id, {GL_TEXTURE_2D, GL_FLOAT});
+    this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA});
+    this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_READ_WRITE);
+    this->parallel_chunk.dispatch();
+    this->parallel_chunk.revoke();
 
-    p_chunk->texture = parallel.get_texture();
+    p_chunk->texture = this->texture_chunk[p_chunk->id].id;
     this->chunk_map[chunk_tag] = p_chunk;
     this->loaded_chunk_list.push_back(p_chunk);
     this->config_delta.set_value(this->config_delta.get_value() + 1.0f) ;

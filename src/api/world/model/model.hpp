@@ -2,7 +2,7 @@
 #define AGK_API_WORLD_MODEL_H
 
 #include "api/world/world_feature.hpp"
-#include "api/gpu/buffering.hpp"
+#include "api/gpu/tools.hpp"
 
 class model : public world_feature {
 public:

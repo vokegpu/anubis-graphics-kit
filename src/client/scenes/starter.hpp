@@ -2,7 +2,7 @@
 #define AGK_IMPL_SCENE_STARTER_H
 
 #include "api/feature/feature.hpp"
-#include "api/gpu/buffering.hpp"
+#include "api/gpu/tools.hpp"
 #include "client/services/camera_manager.hpp"
 #include "api/world/environment/light.hpp"
 #include "api/world/environment/object.hpp"

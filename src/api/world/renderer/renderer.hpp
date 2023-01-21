@@ -9,6 +9,9 @@
 #include <vector>
 #include <map>
 
+#define HDR_FRAMEBUFFER_TEXTURE 0
+#define HDR_LUMINANCE_TEXTURE 1
+
 class renderer : public feature {
 protected:
     std::vector<model*> loaded_model_list {};
@@ -20,9 +23,9 @@ protected:
 
     buffering buffer_post_processing {};
     immshape immshape_post_processing {};
-    std::map<std::string, framebuffering> framebuffer_map {};
-    paralleling<float> high_resolution_hdr {};
-    texturing<float> hdr_log_luminance {};
+    paralleling parallel_post_processing {};
+    texturing texture_post_processing {};
+    framebuffering framebuffer_post_processing {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);
     void on_event_refresh_chunk(SDL_Event &sdl_event);
@@ -46,6 +49,7 @@ public:
     void process_terrain();
     void process_environment();
     void process_post_processing();
+    void process_framebuffer(int32_t w, int32_t h);
 
     void on_create() override;
     void on_destroy() override;

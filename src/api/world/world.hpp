@@ -53,6 +53,9 @@ public:
     value<float> config_chunk_noise_offset {};
     value<float> config_delta {};
 
+    paralleling parallel_chunk {};
+    texturing texture_chunk {};
+
     chunk *find_chunk_wf(int32_t wf_id);
     chunk *find_chunk_wf(const std::string &grid_pos);
     /* End of terrain segment. */
