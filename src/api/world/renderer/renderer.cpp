@@ -233,7 +233,7 @@ void renderer::process_post_processing() {
         this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
         std::vector<float> luminance_image_list {};
         this->texture_post_processing.get<float>(luminance_image_list);
-        ave_lum = luminance_image_list[0];
+        ave_lum = expf(luminance_image_list[0] / static_cast<float>(size));
         this->parallel_post_processing.revoke();
     }
 

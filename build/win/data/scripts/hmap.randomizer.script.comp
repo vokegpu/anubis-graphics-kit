@@ -1,6 +1,6 @@
-#version 450 core
+#version 450
 
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout (local_size_x = 1, local_size_y = 1) in;
 layout (rgba32f, binding = 0) uniform image2D OutTexture;
 
 uniform float Delta;
@@ -143,20 +143,15 @@ float Lerp(float a, float b, float delta) {
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 size = imageSize(OutTexture);
-    vec2 uv = texelCoord / size;
+    vec2 uv = vec2(float(texelCoord.x) / float(size.x), float(texelCoord.y) / float(size.y));
+    vec2 uvNoised = uv * Scale + Offset;
+    float noise = Noise4D(uvNoised);
 
-    vec2 uvNoised = uv * (Scale * 0.1) + Offset;
-    float noise = snoise(uvNoised);
-    float greyscale = noise;
+    float yLevel = noise;
 
-    float leftY = 0.0f;
-    float rightY = 0.0f;
-    float topY = 0.0;
-    float bottomY = 0.0f;
-    float delta = 0.5;
+    if (texelCoord.x == 0 || texelCoord.y == 0|| texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
+        yLevel = 0.0f;
+    }
 
-    if (uv.x == 0 || uv.y == 0 || uv.x == 1.0f || uv.y == 1.0f) greyscale = 0.0f;
-
-    //CheckNearest(uv, leftY, rightY, topY, bottomY);
-    imageStore(OutTexture, texelCoord, vec4(greyscale, greyscale, greyscale, 1.0));
+    imageStore(OutTexture, texelCoord, vec4(yLevel, yLevel, yLevel, yLevel));
 }

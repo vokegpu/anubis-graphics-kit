@@ -209,6 +209,10 @@ public:
     }
 
     void delete_buffer(uint32_t key) {
+        if (!this->frame_map.count(key)) {
+            return;
+        }
+
         gpu::frame &frame {this->frame_map[key]};
         if (frame.id_fbo != 0) glDeleteFramebuffers(1, &frame.id_fbo);
         if (frame.id_depth != 0) glDeleteRenderbuffers(1, &frame.id_depth);
@@ -278,6 +282,10 @@ public:
     }
 
     void delete_buffer(uint32_t key) {
+        if (!this->texture_map.count(key)) {
+            return;
+        }
+
         gpu::texture &texture {this->texture_map[key]};
         if (texture.id != 0) glDeleteTextures(1, &texture.id);
         this->texture_map.erase(key);

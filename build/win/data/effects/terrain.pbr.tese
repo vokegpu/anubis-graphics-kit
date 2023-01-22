@@ -22,7 +22,7 @@ void main() {
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
 
-    Height = texture(ActiveTexture, texCoord).y * 64.0 - 16;
+    Height = texture(ActiveTexture, texCoord).r * 255.0f;
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;

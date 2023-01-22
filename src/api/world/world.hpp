@@ -53,6 +53,7 @@ public:
     value<float> config_chunk_noise_offset {};
     value<float> config_delta {};
 
+    std::vector<float> texture_map_list {};
     paralleling parallel_chunk {};
     texturing texture_chunk {};
 
