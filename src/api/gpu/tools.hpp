@@ -74,7 +74,7 @@ class paralleling {
 protected:
     std::map<std::string, uint32_t> buffer_map {};
 public:
-    uint32_t memory_barrier {GL_ALL_ATTRIB_BITS};
+    uint32_t memory_barrier {GL_ALL_BARRIER_BITS};
     uint32_t dispatch_groups[3] {1, 1, 1};
     uint32_t dimension[3] {};
     uint32_t map_buffer_type[2] {};
