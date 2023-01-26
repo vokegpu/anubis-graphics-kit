@@ -144,7 +144,7 @@ void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 size = imageSize(OutTexture);
     vec2 uv = vec2(float(texelCoord.x) / float(size.x), float(texelCoord.y) / float(size.y));
-    vec2 uvNoised = uv * Scale + Offset;
+    vec2 uvNoised = uv * (Scale + Offset);
     float noise = Noise4D(uvNoised);
 
     float yLevel = noise;

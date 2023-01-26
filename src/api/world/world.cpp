@@ -25,7 +25,7 @@ void world::on_create() {
     p_program_hmap_randomizer->revoke();
 
     //util::read_image("./data/textures/hmap.jpg", this->chunk_heightmap_texture);
-    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 10, 40);
+    api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
 }
 
 void world::on_destroy() {
@@ -152,7 +152,7 @@ void world::do_update_chunk() {
 
         if (static_cast<int32_t>(glm::length(sub)) / chunk_size > chunk_gen_dist * chunk_gen_dist) {
             api::world::renderer()->refresh();
-            this->texture_chunk.delete_buffer(p_chunks->id);
+            this->queue_texture_trash.push(p_chunks->texture);
             p_chunks->on_destroy();
             delete p_chunks;
             p_chunks = nullptr;
@@ -258,13 +258,19 @@ void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm:
         slot++;
     }
 
-    this->texture_chunk.invoke(p_chunk->id, {GL_TEXTURE_2D, GL_FLOAT});
-    this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA});
+    uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
+    if (!this->queue_texture_trash.empty()) {
+        texture_key = this->queue_texture_trash.front();
+        this->queue_texture_trash.pop();
+    }
+
+    this->texture_chunk.invoke(texture_key, {GL_TEXTURE_2D, GL_FLOAT});
+    this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA}, {GL_LINEAR, GL_LINEAR, GL_MIRRORED_REPEAT});
     this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_READ_WRITE);
     this->parallel_chunk.dispatch();
     this->parallel_chunk.revoke();
 
-    p_chunk->texture = this->texture_chunk[p_chunk->id].id;
+    p_chunk->texture = this->texture_chunk[texture_key].id;
     this->chunk_map[chunk_tag] = p_chunk;
     this->loaded_chunk_list.push_back(p_chunk);
     this->config_delta.set_value(this->config_delta.get_value() + 1.0f) ;

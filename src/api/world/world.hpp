@@ -54,8 +54,10 @@ public:
     value<float> config_delta {};
 
     std::vector<float> texture_map_list {};
+
     paralleling parallel_chunk {};
     texturing texture_chunk {};
+    std::queue<uint32_t> queue_texture_trash {};
 
     chunk *find_chunk_wf(int32_t wf_id);
     chunk *find_chunk_wf(const std::string &grid_pos);

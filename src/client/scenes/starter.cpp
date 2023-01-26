@@ -54,7 +54,7 @@ void client::scenes::starter::on_create() {
     this->p_slider_base_speed->set_value(0.9540f);
 
     ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_range = ekg::slider("ChunkRange", 3, 1, 8, ekg::dock::top | ekg::dock::left);
+    this->p_slider_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::top | ekg::dock::left);
     this->p_slider_range->set_precision(1);
     this->p_slider_range->set_value(3);
 

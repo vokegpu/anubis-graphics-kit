@@ -313,7 +313,7 @@ bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
 
 bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint32_t height) {
     glm::vec3 vertex {};
-    data.faces = static_cast<int32_t>(width * height);
+    data.faces = static_cast<int32_t>(4 * width * height);
 
     for (uint32_t h {}; h <= height - 1; h++) {
         for (uint32_t w {}; w <= width - 1; w++) {
@@ -355,7 +355,5 @@ bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint
         }
     }
 
-
-    bool hivcégotostoso{};
     return false;
 }
