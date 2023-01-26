@@ -21,6 +21,7 @@ protected:
     glm::mat4 mat4x4_mvp {};
     bool update_disabled_chunks {};
 
+    buffering buffer_chunk {};
     buffering buffer_post_processing {};
     immshape immshape_post_processing {};
     paralleling parallel_post_processing {};

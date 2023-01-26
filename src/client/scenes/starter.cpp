@@ -74,7 +74,7 @@ void client::scenes::starter::on_create() {
     this->p_slider_noise_control_offset->set_value(0.5f);
 
     ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_fog_dist = ekg::slider("FogDist", 512.0f, 0.0f, 1024.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_fog_dist = ekg::slider("FogDist", 512.0f, 0.0f, 1024.0f * 4, ekg::dock::top | ekg::dock::left);
     this->p_slider_fog_dist->set_precision(2);
     this->p_slider_fog_dist->set_value(512.0f);
 

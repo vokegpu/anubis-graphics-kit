@@ -86,6 +86,7 @@ void renderer::process_terrain() {
     p_program_terrain_pbr->set_uniform_vec3("Fog.Color", &this->config_fog_color.get_value()[0]);
     p_program_terrain_pbr->set_uniform_int("ActiveTexture", 0);
 
+    this->buffer_chunk.invoke();
     glActiveTexture(GL_TEXTURE0);
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
@@ -102,12 +103,11 @@ void renderer::process_terrain() {
         mat4x4_model = this->mat4x4_mvp * mat4x4_model;
         p_program_terrain_pbr->set_uniform_mat4("MVP", &mat4x4_model[0][0]);
         p_program_terrain_pbr->set_uniform_mat4("MatrixViewModel", &mat4x4_model[0][0]);
-
-        p_chunks->buffer.invoke();
-        p_chunks->buffer.draw();
-        p_chunks->buffer.revoke();
+        
+        this->buffer_chunk.draw();
     }
 
+    this->buffer_chunk.revoke();
     glUseProgram(0);
 }
 
@@ -316,6 +316,28 @@ void renderer::on_create() {
     this->parallel_post_processing.dispatch_groups[1] = 32;
     this->parallel_post_processing.invoke();
     this->parallel_post_processing.revoke();
+
+    /* Process chunking buffer. */
+    auto &mesh_chunk {api::world::get()->chunk_mesh_data};
+    auto &v {mesh_chunk.get_float_list(mesh::type::vertex)};
+    auto &t {mesh_chunk.get_float_list(mesh::type::textcoord)};
+    auto &c {mesh_chunk.get_float_list(mesh::type::color)};
+    auto &i {mesh_chunk.get_uint_list(mesh::type::vertex)};
+
+    this->buffer_chunk.invoke();
+    this->buffer_chunk.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_chunk.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
+    this->buffer_chunk.attach(0, 3);
+
+    this->buffer_chunk.bind({GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_chunk.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
+    this->buffer_chunk.attach(1, 2);
+
+    this->buffer_chunk.stride[0] = 0;
+    this->buffer_chunk.stride[1] = mesh_chunk.faces;
+
+    this->buffer_chunk.tessellation(4);
+    this->buffer_chunk.revoke();
 }
 
 void renderer::on_destroy() {
@@ -425,29 +447,6 @@ void renderer::add(chunk *p_chunk) {
     if (p_chunk == nullptr || !p_chunk->is_processed()) {
         return;
     }
-
-    auto &mesh_chunk {api::world::get()->chunk_mesh_data};
-
-    auto &buffer {p_chunk->buffer};
-    auto &v {mesh_chunk.get_float_list(mesh::type::vertex)};
-    auto &t {mesh_chunk.get_float_list(mesh::type::textcoord)};
-    auto &c {mesh_chunk.get_float_list(mesh::type::color)};
-    auto &i {mesh_chunk.get_uint_list(mesh::type::vertex)};
-
-    buffer.invoke();
-    buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-    buffer.send(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
-    buffer.attach(0, 3);
-
-    buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
-    buffer.send(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
-    buffer.attach(1, 2);
-
-    buffer.stride[0] = 0;
-    buffer.stride[1] = mesh_chunk.faces;
-
-    buffer.tessellation(4);
-    buffer.revoke();
 
     this->wf_chunk_draw_list.push_back(p_chunk);
 }

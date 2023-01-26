@@ -12,7 +12,7 @@
 #include <queue>
 #include <map>
 
-static const float agk_perspective_clip_distance {1000.0f};
+static const float agk_perspective_clip_distance {4096.0f};
 
 class world : public feature {
 protected:
@@ -44,6 +44,7 @@ public:
 
     util::image chunk_heightmap_texture {};
     util::timing chunk_checker_timing {};
+    util::timing chunk_poll_chunking {};
     mesh::data chunk_mesh_data {};
 
     value<int32_t> config_chunk_gen_dist {};
@@ -57,6 +58,8 @@ public:
 
     paralleling parallel_chunk {};
     texturing texture_chunk {};
+    
+    std::queue<chunk*> queue_chunking {};
     std::queue<uint32_t> queue_texture_trash {};
 
     chunk *find_chunk_wf(int32_t wf_id);

@@ -1,7 +1,7 @@
 #version 450
 
 layout (local_size_x = 1, local_size_y = 1) in;
-layout (rgba32f, binding = 0) uniform image2D OutTexture;
+layout (rgba16f, binding = 0) uniform image2D OutTexture;
 
 uniform float Delta;
 uniform float Offset;
@@ -143,15 +143,13 @@ float Lerp(float a, float b, float delta) {
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 size = imageSize(OutTexture);
-    vec2 uv = vec2(float(texelCoord.x) / float(size.x), float(texelCoord.y) / float(size.y));
-    vec2 uvNoised = uv * (Scale + Offset);
-    float noise = Noise4D(uvNoised);
+    vec2 uv = texelCoord / size;
+    vec2 uvNoised = cos(uv * Delta) + (cos(Delta) + 7);
+    float yLevel = Noise(uvNoised);
 
-    float yLevel = noise;
-
-    if (texelCoord.x == 0 || texelCoord.y == 0|| texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
-        yLevel = 0.0f;
+    if (texelCoord.x == 0 || texelCoord.y == 0 || texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
+        yLevel = 0;
     }
 
-    imageStore(OutTexture, texelCoord, vec4(yLevel, yLevel, yLevel, yLevel));
+    imageStore(OutTexture, texelCoord, vec4(yLevel, yLevel, yLevel, 1));
 }

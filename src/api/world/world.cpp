@@ -10,12 +10,14 @@
 void world::on_create() {
     this->config_chunk_gen_dist.set_value(3);
     this->config_chunk_gen_interval.set_value(1000);
-    this->config_chunk_size.set_value(128);
+    this->config_chunk_size.set_value(128 * 4);
 
     shading::program *p_program_hmap_randomizer {new shading::program {}};
     api::shading::create_program("hmap.randomizer.script", p_program_hmap_randomizer, {
             {"./data/scripts/hmap.randomizer.script.comp", shading::stage::compute}
     });
+
+    this->parallel_chunk.p_program_parallel = p_program_hmap_randomizer;
 
     p_program_hmap_randomizer->invoke();
     p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[0]", 1); // left
@@ -24,8 +26,12 @@ void world::on_create() {
     p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[3]", 4); // bottom
     p_program_hmap_randomizer->revoke();
 
-    //util::read_image("./data/textures/hmap.jpg", this->chunk_heightmap_texture);
+    util::read_image("./data/textures/iceland_heightmap.png", this->chunk_heightmap_texture);
     api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
+
+    this->texture_chunk.invoke(0, {GL_TEXTURE_2D, GL_UNSIGNED_BYTE});
+    this->texture_chunk.send<uint8_t>({128, 128, 0}, this->chunk_heightmap_texture.p_data, {GL_RGBA, GL_RGBA});
+    this->texture_chunk.revoke();
 }
 
 void world::on_destroy() {
@@ -83,6 +89,47 @@ void world::on_update() {
     /* World terrain segment. */
     if (util::reset_when(this->chunk_checker_timing, this->config_chunk_gen_interval.get_value())) {
         this->do_update_chunk();
+    } else if (!this->queue_chunking.empty() && util::reset_when(this->chunk_poll_chunking, 16)) {
+        chunk *&p_chunk {this->queue_chunking.front()};
+
+        /* Invoke parallel computation to randomize map. */
+        this->parallel_chunk.invoke();
+        this->parallel_chunk.memory_barrier =  GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
+
+        int32_t chunk_size {this->config_chunk_size.get_value()};
+        float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
+
+        this->parallel_chunk.dimension[0] = chunk_size;
+        this->parallel_chunk.dimension[1] = chunk_size;
+        this->parallel_chunk.dispatch_groups[0] = 1;
+        this->parallel_chunk.dispatch_groups[1] = 1;
+
+        uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
+        if (!this->queue_texture_trash.empty()) {
+            texture_key = this->queue_texture_trash.front();
+            this->queue_texture_trash.pop();
+
+            if (this->queue_texture_trash.size() >= 12) {
+                this->queue_texture_trash = {};
+            }
+        }
+
+        this->texture_chunk.invoke(texture_key, {GL_TEXTURE_2D, GL_FLOAT});
+        this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA16F, GL_RGBA});
+        this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_WRITE_ONLY);
+        this->parallel_chunk.dispatch();
+
+        p_chunk->texture = this->texture_chunk[p_chunk->id].id;
+        this->loaded_chunk_list.push_back(p_chunk);
+        this->config_delta.set_value(this->config_delta.get_value() + 1.0f);
+        api::world::renderer()->add(p_chunk);
+        
+        this->queue_chunking.pop();
+        this->parallel_chunk.revoke();
     }
 }
 
@@ -156,7 +203,7 @@ void world::do_update_chunk() {
             p_chunks->on_destroy();
             delete p_chunks;
             p_chunks = nullptr;
-            this->chunk_map[chunk_tag] = nullptr;
+            this->chunk_map.erase(chunk_tag);
             continue;
         }
 
@@ -167,7 +214,7 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {14.0f, 1.0f, 14.0f};
+    glm::vec3 chunk_scale {7.0f * 4, 1.0f, 7.0f * 4};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);
@@ -186,7 +233,15 @@ void world::do_update_chunk() {
                 continue;
             }
 
-            this->gen_chunk(chunk_tag, {grid_pos.x, 0, grid_pos.y}, chunk_scale);
+                chunk *p_chunk {new chunk {}};
+                p_chunk->on_create();
+                p_chunk->position.x = grid_pos.x * chunk_size;
+                p_chunk->position.z = grid_pos.y * chunk_size;
+                p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
+                p_chunk->scale = chunk_scale;
+
+                this->queue_chunking.push(p_chunk);
+                this->chunk_map[chunk_tag] = p_chunk;
         }
     }
 }
@@ -206,76 +261,5 @@ chunk *world::find_chunk_wf(const std::string &grid_pos) {
 }
 
 void world::gen_chunk(std::string &chunk_tag, const glm::ivec3 &ipos, const glm::vec3 &scale) {
-    chunk *p_chunk {new chunk {}};
-    p_chunk->on_create();
-    p_chunk->position = ipos * this->config_chunk_size.get_value();
-    p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
-    p_chunk->scale = scale;
 
-    /* Invoke parallel computation to randomize map. */
-    api::shading::find("hmap.randomizer.script", this->parallel_chunk.p_program_parallel);
-    this->parallel_chunk.memory_barrier =  GL_ALL_BARRIER_BITS;
-
-    this->parallel_chunk.invoke();
-    this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-    this->parallel_chunk.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
-    this->parallel_chunk.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
-
-    int32_t chunk_size {this->config_chunk_size.get_value()};
-    float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
-
-    this->parallel_chunk.dimension[0] = chunk_size;
-    this->parallel_chunk.dimension[1] = chunk_size;
-    this->parallel_chunk.dispatch_groups[0] = 1;
-    this->parallel_chunk.dispatch_groups[1] = 1;
-
-    std::string chunk_around {};
-    int32_t slot {};
-    int32_t index {};
-    bool contains {};
-
-    for (uint8_t it {0}; it < 4; it++) {
-        chunk_around.clear();
-        chunk_around += std::to_string(ipos.x + util::SURROUND[index++]);
-        chunk_around += 'x';
-        chunk_around += std::to_string(ipos.z + util::SURROUND[index++]);
-
-        chunk *&p_chunk_around {this->chunk_map[chunk_around]};
-        contains = false;
-
-        chunk_around.clear();
-        chunk_around += "ChunkContains[";
-        chunk_around += std::to_string(slot);
-        chunk_around += ']';
-
-        if (p_chunk_around != nullptr) {
-            glActiveTexture(GL_TEXTURE1 + slot);
-            glBindTexture(GL_TEXTURE_2D, p_chunk_around->texture);
-            contains = true;
-        }
-
-        this->parallel_chunk.p_program_parallel->set_uniform_int(chunk_around, contains);
-        slot++;
-    }
-
-    uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
-    if (!this->queue_texture_trash.empty()) {
-        texture_key = this->queue_texture_trash.front();
-        this->queue_texture_trash.pop();
-    }
-
-    this->texture_chunk.invoke(texture_key, {GL_TEXTURE_2D, GL_FLOAT});
-    this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA}, {GL_LINEAR, GL_LINEAR, GL_MIRRORED_REPEAT});
-    this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_READ_WRITE);
-    this->parallel_chunk.dispatch();
-    this->parallel_chunk.revoke();
-
-    p_chunk->texture = this->texture_chunk[texture_key].id;
-    this->chunk_map[chunk_tag] = p_chunk;
-    this->loaded_chunk_list.push_back(p_chunk);
-    this->config_delta.set_value(this->config_delta.get_value() + 1.0f) ;
-
-    SDL_Event sdl_event_chunk {};
-    sdl_event_chunk.user.data1 = new std::string(chunk_tag);
-    event::dispatch(sdl_event_chunk, event::WORLD_REFRESH_CHUNK);
 }
