@@ -1,6 +1,6 @@
 #version 450
 
-layout (local_size_x = 1, local_size_y = 1) in;
+layout (local_size_x = 32, local_size_y = 32) in;
 layout (rgba16f, binding = 0) uniform image2D OutTexture;
 
 uniform float Delta;
@@ -125,7 +125,7 @@ float Lerp(float a, float b, float delta) {
 float fbm(vec3 x) {
     float v = 0.0f;
     float a = Amplitude;
-    vec3 shift = vec3(100) * Delta;
+    vec3 shift = vec3(100);
     for (int i = 0; i < Octaves; ++i) {
         v += a * Noise4D(x.xy);
         x = x * (2.0f + Lacunarity) + shift;
@@ -170,11 +170,10 @@ void main() {
 
     float average = left + right + top + bottom;
     average /= 4;
-
     yLevel = (yLevel - average);
 
     if (texelCoord.x == 0 || texelCoord.y == 0 || texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
-        yLevel = 0;
+        yLevel = 0.0f;
     }
 
     imageStore(OutTexture, texelCoord, vec4(yLevel, yLevel, yLevel, 1));

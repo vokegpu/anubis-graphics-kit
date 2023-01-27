@@ -197,7 +197,7 @@ void renderer::process_post_processing() {
     this->process_environment();
 
     /* Revoke all buffers from frame. */
-    this->framebuffer_post_processing.invoke(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw the current frame buffer. */
     uint32_t texture {this->framebuffer_post_processing[0].id_texture};
@@ -212,21 +212,19 @@ void renderer::process_post_processing() {
         this->parallel_post_processing.dimension[1] = api::app.screen_height;
 
         /* Pass current framebuffer to HDR luminance texture.  */
+        this->parallel_post_processing.invoke();
         this->texture_post_processing.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
         this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].id = texture;
         this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].w = api::app.screen_width;
         this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].h = api::app.screen_height;
         this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].channel = GL_RGBA;
         this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].format = GL_RGBA32F;
-        this->parallel_post_processing.invoke();
-        this->parallel_post_processing.attach(0, this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE], GL_READ_WRITE);
+        this->parallel_post_processing.attach(0, this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE], GL_READ_ONLY);
 
         this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
         this->texture_post_processing.send<float>({1, 1, 0}, nullptr, {GL_R32F, GL_RED});
         this->parallel_post_processing.attach(1, this->texture_post_processing[HDR_LUMINANCE_TEXTURE], GL_READ_WRITE);
 
-        this->parallel_post_processing.invoke();
-        this->parallel_post_processing.attach(0, this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE], GL_READ_WRITE);
         this->parallel_post_processing.dispatch();
 
         /* Read luminance texture for get the sum of all pixels log(Lum + 0.0001f) */
@@ -457,6 +455,6 @@ void renderer::refresh() {
 
 void renderer::process_framebuffer(int32_t w, int32_t h) {
     this->framebuffer_post_processing.invoke(0);
-    this->framebuffer_post_processing.send_depth({w, h, 0}, GL_RGBA, true);
+    this->framebuffer_post_processing.send_depth({w, h, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
     this->framebuffer_post_processing.revoke();
 }

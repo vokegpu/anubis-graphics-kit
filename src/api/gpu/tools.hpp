@@ -1,6 +1,10 @@
 #ifndef AGK_API_GPU_TOOLS_H
 #define AGK_API_GPU_TOOLS_H
 
+#include "program.hpp"
+#include <glm/glm.hpp>
+#include "api/util/env.hpp"
+
 namespace gpu {
     typedef struct texture {
         unsigned int w {};
@@ -29,9 +33,6 @@ namespace gpu {
 
 #ifndef AGK_API_GPU_TOOLS_BUFFERING_H
 #define AGK_API_GPU_TOOLS_BUFFERING_H
-
-#include "program.hpp"
-#include <glm/glm.hpp>
 
 class buffering {
 protected:
@@ -145,16 +146,23 @@ public:
         return this->frame_map[key];
     }
 
-    void send_depth(const glm::ivec3 &in_dimension, uint32_t in_format, bool attach_unique = false) {
+    void send_depth(const glm::ivec3 &in_dimension, const glm::ivec2 &in_format, bool attach_unique = false) {
         gpu::frame &framebuffer {this->frame_map[framebuffering::current_frame_info]};
-        if (framebuffer.w != in_dimension.x && framebuffer.h == in_dimension.y && framebuffer.z == in_dimension.z) {
+        if (framebuffer.w == in_dimension.x && framebuffer.h == in_dimension.y && framebuffer.z == in_dimension.z) {
             return;
         }
 
         framebuffer.w = in_dimension.x;
         framebuffer.h = in_dimension.y;
         framebuffer.z = in_dimension.z;
-        framebuffer.format = in_format;
+        framebuffer.format = in_format.y;
+        framebuffer.type = in_format.x;
+
+        /* Attach renderbuffer (depth buffer) to framebuffer. */
+        if (framebuffer.id_depth == 0) glGenRenderbuffers(1, &framebuffer.id_depth);
+        glBindRenderbuffer(GL_RENDERBUFFER, framebuffer.id_depth);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, framebuffer.w, framebuffer.h);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, framebuffer.id_depth);
 
         if (framebuffer.id_texture == 0) glGenTextures(1, &framebuffer.id_texture);
         glBindTexture(framebuffer.type, framebuffer.id_texture);
@@ -166,16 +174,25 @@ public:
             glTexStorage2D(framebuffer.type, 1, framebuffer.format, framebuffer.w, framebuffer.h);
         }
 
-        /* Attach renderbuffer (depth buffer) to framebuffer. */
-        if (framebuffer.id_depth == 0) glGenRenderbuffers(1, &framebuffer.id_depth);
-        glBindRenderbuffer(GL_RENDERBUFFER, framebuffer.id_depth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, framebuffer.w, framebuffer.h);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_COMPONENT, GL_RENDERBUFFER, framebuffer.id_depth);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer.type, framebuffer.id_texture, 0);
 
+        GLenum enums {};
         if (attach_unique) {
-            GLenum enums {GL_COLOR_ATTACHMENT0};
+            enums = GL_COLOR_ATTACHMENT0;
             glDrawBuffers(1, &enums);
         }
+
+        enums = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        std::string msg {"Framebuffer key "};
+        msg += std::to_string(framebuffering::current_frame_info);
+
+        if (enums == GL_FRAMEBUFFER_COMPLETE) {
+            msg += " complete.";
+        } else {
+            msg += " incomplete.";
+        }
+
+        util::log(msg);
     }
 
     void attach(uint32_t attachment, uint32_t type, uint32_t texture) {
@@ -324,7 +341,7 @@ public:
 
     template<typename t>
     std::vector<t> &get(std::vector<t> &data) {
-        uint32_t channel {};
+        uint32_t channel {1};
         gpu::texture &texture {this->texture_map[texturing::current_texture_info[0]]};
 
         switch (texture.channel) {

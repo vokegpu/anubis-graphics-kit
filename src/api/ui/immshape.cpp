@@ -38,7 +38,6 @@ void immshape::draw(const glm::vec4 &rectangle, const glm::vec4 &color) {
     this->p_program->set_uniform_bool("TextureEnabled", this->texture_going_on);
     this->p_program->set_uniform_vec4("Rectangle", &rectangle[0]);
     this->p_program->set_uniform_vec4("Color", &color[0]);
-
     this->p_buffer->draw();
 
     if (this->texture_going_on) {

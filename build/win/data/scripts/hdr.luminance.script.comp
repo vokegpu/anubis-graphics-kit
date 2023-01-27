@@ -1,7 +1,7 @@
 #version 450 core
 
-layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
-layout (rgba16f, binding = 0) uniform image2D OutImg;
+layout (local_size_x = 32, local_size_y = 32) in;
+layout (rgba16f, binding = 0) uniform readonly image2D OutImg;
 layout (r32f, binding = 1) uniform image2D OutAveLuminance;
 
 float Luminance(vec3 color) {
@@ -10,7 +10,9 @@ float Luminance(vec3 color) {
 
 void main() {
     ivec2 texelFetch = ivec2(gl_GlobalInvocationID.xy);
-    if (texelFetch.x == 0 && texelFetch.y == 0) imageStore(OutAveLuminance, ivec2(0, 0), vec4(0, 0, 0, 0));
+    if (texelFetch.x == 0 && texelFetch.y == 0) {
+        imageStore(OutAveLuminance, ivec2(0, 0), vec4(0, 0, 0, 0));
+    }
 
     float luminance = Luminance(imageLoad(OutImg, texelFetch).xyz);
     float sum = log(luminance + 0.00001);

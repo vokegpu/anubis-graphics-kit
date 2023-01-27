@@ -141,8 +141,8 @@ void world::on_update() {
 
         this->parallel_chunk.dimension[0] = chunk_size;
         this->parallel_chunk.dimension[1] = chunk_size;
-        this->parallel_chunk.dispatch_groups[0] = 1;
-        this->parallel_chunk.dispatch_groups[1] = 1;
+        this->parallel_chunk.dispatch_groups[0] = 32;
+        this->parallel_chunk.dispatch_groups[1] = 32;
 
         uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
         if (!this->queue_texture_trash.empty()) {
@@ -150,7 +150,7 @@ void world::on_update() {
             this->queue_texture_trash.pop();
 
             if (this->queue_texture_trash.size() >= 12) {
-                while (!this->queue_texture_trash.empty()) {
+                for (;!this->queue_texture_trash.empty();) {
                     glDeleteTextures(1, &this->queue_texture_trash.front());
                     this->queue_texture_trash.pop();
                 }
@@ -158,7 +158,7 @@ void world::on_update() {
         }
 
         this->texture_chunk.invoke(texture_key, {GL_TEXTURE_2D, GL_FLOAT});
-        this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA16F, GL_RGBA});
+        this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA});
         this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_WRITE_ONLY);
         this->parallel_chunk.dispatch();
 
@@ -253,7 +253,7 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {8.0f * 4, 1.0f, 8.0f * 4};
+    glm::vec3 chunk_scale {6.4f * 4, 1.0f, 6.4f * 4};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);
@@ -272,15 +272,15 @@ void world::do_update_chunk() {
                 continue;
             }
 
-                chunk *p_chunk {new chunk {}};
-                p_chunk->on_create();
-                p_chunk->position.x = grid_pos.x * chunk_size;
-                p_chunk->position.z = grid_pos.y * chunk_size;
-                p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
-                p_chunk->scale = chunk_scale;
+            chunk *p_chunk {new chunk {}};
+            p_chunk->on_create();
+            p_chunk->position.x = grid_pos.x * chunk_size;
+            p_chunk->position.z = grid_pos.y * chunk_size;
+            p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
+            p_chunk->scale = chunk_scale;
 
-                this->queue_chunking.push(p_chunk);
-                this->chunk_map[chunk_tag] = p_chunk;
+            this->queue_chunking.push(p_chunk);
+            this->chunk_map[chunk_tag] = p_chunk;
         }
     }
 }

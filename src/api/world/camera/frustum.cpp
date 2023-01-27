@@ -61,4 +61,6 @@ void frustum::process_perspective(int32_t w, int32_t h) {
 
     this->perspective = glm::perspective(glm::radians(this->fov), size[0] / size[1], 0.1f, agk_perspective_clip_distance);
     immshape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
+    api::app.screen_width = w;
+    api::app.screen_height = h;
 }
