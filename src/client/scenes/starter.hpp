@@ -6,7 +6,6 @@
 #include "client/services/camera_manager.hpp"
 #include "api/world/environment/light.hpp"
 #include "api/world/environment/object.hpp"
-#include <amogpu/amogpu.hpp>
 #include <ekg/ekg.hpp>
 
 namespace client::scenes {
@@ -16,19 +15,19 @@ namespace client::scenes {
         object *p_object_dino {};
 
         client::services::camera_manager *p_camera_manager {};
-        font_renderer f_render {};
-        dynamic_batching batching {};
 
         ekg::ui::slider *p_slider_light_intensity {};
-        ekg::ui::slider *p_slider_base_speed {};
         ekg::ui::slider *p_slider_range {};
-        ekg::ui::slider *p_slider_noise_control_x {};
-        ekg::ui::slider *p_slider_noise_control_y {};
-        ekg::ui::slider *p_slider_noise_control_offset {};
         ekg::ui::slider *p_slider_fog_dist {};
         ekg::ui::checkbox *p_checkbox_post_processing {};
         ekg::ui::checkbox *p_check_box_hdr {};
         ekg::ui::slider *p_slider_hdr_exposure {};
+
+        ekg::ui::slider *p_frequency;
+        ekg::ui::slider *p_amplitude;
+        ekg::ui::slider *p_persistence;
+        ekg::ui::slider *p_lacunarity;
+        ekg::ui::slider *p_octaves;
 
         void on_create() override;
         void on_destroy() override;

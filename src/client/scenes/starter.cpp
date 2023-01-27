@@ -33,8 +33,6 @@ void client::scenes::starter::on_create() {
     this->p_camera_manager->set_rotation_enabled(true);
     this->p_camera_manager->bind_editor_rotate.set_value("mouse-2");
 
-    this->f_render.load("./data/fonts/impact.ttf", 18);
-
     ekg::gl_version = "#version 450 core";
     ekg::init(api::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
 
@@ -48,35 +46,39 @@ void client::scenes::starter::on_create() {
     this->p_slider_light_intensity->set_precision(2);
     this->p_slider_light_intensity->set_value(50.0f);
 
-    ekg::label("Base Speed:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_base_speed = ekg::slider("BaseSpeed", 0.9f, 0.1f, 10.0f, ekg::dock::top | ekg::dock::left);
-    this->p_slider_base_speed->set_precision(4);
-    this->p_slider_base_speed->set_value(0.9540f);
-
     ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::top | ekg::dock::left);
     this->p_slider_range->set_precision(1);
     this->p_slider_range->set_value(3);
 
-    ekg::label("Noise X:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_noise_control_x = ekg::slider("NoiseX", 2.0f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
-    this->p_slider_noise_control_x->set_precision(2);
-    this->p_slider_noise_control_x->set_value(2.0f);
-
-    ekg::label("Noise Y:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_noise_control_y = ekg::slider("NoiseY", 2.0f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
-    this->p_slider_noise_control_y->set_precision(2);
-    this->p_slider_noise_control_y->set_value(2.0f);
-
-    ekg::label("Noise Offset:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_noise_control_offset = ekg::slider("NoiseOffset", 0.5f, 0.0f, 100.0f, ekg::dock::top | ekg::dock::left);
-    this->p_slider_noise_control_offset->set_precision(2);
-    this->p_slider_noise_control_offset->set_value(0.5f);
-
     ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_fog_dist = ekg::slider("FogDist", 512.0f, 0.0f, 1024.0f * 4, ekg::dock::top | ekg::dock::left);
     this->p_slider_fog_dist->set_precision(2);
     this->p_slider_fog_dist->set_value(512.0f);
+
+    ekg::label("Chunking Frequency:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_frequency = ekg::slider("Frequency", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_frequency->set_value(0.15f);
+    this->p_frequency->set_precision(3);
+
+    ekg::label("Chunking Amplitude:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_amplitude = ekg::slider("Amplitude", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_amplitude->set_value(0.15f);
+    this->p_amplitude->set_precision(3);
+
+    ekg::label("Chunking Persistence:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_persistence = ekg::slider("Persistence", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_persistence->set_value(0.15f);
+    this->p_persistence->set_precision(3);
+    
+    ekg::label("Chunking Lacunarity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_lacunarity = ekg::slider("Lacunarity", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_lacunarity->set_value(0.15f);
+    this->p_lacunarity->set_precision(3);
+
+    this->p_octaves = ekg::slider("Octaves", 2, 0, 30, ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_octaves->set_value(6);
+    this->p_octaves->set_precision(1);
 
     this->p_checkbox_post_processing = ekg::checkbox("Post processing effects", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_check_box_hdr = ekg::checkbox("Enable HDR", ekg::dock::top | ekg::dock::left | ekg::dock::next);
@@ -142,8 +144,11 @@ void client::scenes::starter::on_update() {
 
     auto &w {api::world::get()};
     w->config_chunk_gen_dist.set_value((int32_t) this->p_slider_range->get_value());
-    w->config_chunk_noise.set_value({this->p_slider_noise_control_x->get_value(), this->p_slider_noise_control_y->get_value()});
-    w->config_chunk_noise_offset.set_value(this->p_slider_noise_control_offset->get_value());
+    w->config_chunk_frequency.set_value(this->p_frequency->get_value());
+    w->config_chunk_amplitude.set_value(this->p_amplitude->get_value());
+    w->config_chunk_persistence.set_value(this->p_persistence->get_value());
+    w->config_chunk_lacunarity.set_value(this->p_lacunarity->get_value());
+    w->config_chunk_octaves.set_value((int32_t) this->p_octaves->get_value());
 
     auto &r {api::world::renderer()};
     r->config_fog_distance.set_value({0, this->p_slider_fog_dist->get_value()});

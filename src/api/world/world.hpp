@@ -50,8 +50,12 @@ public:
     value<int32_t> config_chunk_gen_dist {};
     value<int32_t> config_chunk_size {};
     value<uint64_t> config_chunk_gen_interval {};
-    value<glm::vec2> config_chunk_noise {};
-    value<float> config_chunk_noise_offset {};
+
+    value<float> config_chunk_frequency {};
+    value<float> config_chunk_amplitude {};
+    value<float> config_chunk_persistence {};
+    value<float> config_chunk_lacunarity {};
+    value<int32_t> config_chunk_octaves {};
     value<float> config_delta {};
 
     std::vector<float> texture_map_list {};

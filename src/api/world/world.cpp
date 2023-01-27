@@ -96,12 +96,48 @@ void world::on_update() {
         this->parallel_chunk.invoke();
         this->parallel_chunk.memory_barrier =  GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", this->config_delta.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Offset", this->config_chunk_noise_offset.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_vec2("Scale", &this->config_chunk_noise.get_value()[0]);
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", static_cast<float>(SDL_GetTicks())  / 1000);
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Frequency", this->config_chunk_frequency.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Amplitude", this->config_chunk_amplitude.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Persistence", this->config_chunk_persistence.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("Lacunarity", this->config_chunk_lacunarity.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_int("Octaves", this->config_chunk_octaves.get_value());
 
         int32_t chunk_size {this->config_chunk_size.get_value()};
         float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
+
+        std::string grid_next {};
+        glm::ivec2 player_grid {};
+        glm::ivec4 iteration {};
+        uint32_t texture_pass {};
+
+        bool contains_chunk {};
+        auto &p_player {api::world::current_player()};
+
+        player_grid.x = static_cast<int32_t>(p_player->position.x);
+        player_grid.y = static_cast<int32_t>(p_player->position.z);
+        util::to_grid_pos(player_grid, p_player->position, glm::ivec2(chunk_size));
+
+        for (int it {}; it < 4; it++) {
+            iteration.x = player_grid.x + util::SURROUND[iteration.y++];
+            iteration.z = player_grid.y + util::SURROUND[iteration.y++];
+
+            grid_next.clear();
+            grid_next += std::to_string(iteration.x);
+            grid_next += 'x';
+            grid_next += std::to_string(iteration.y);
+
+            auto &chunk {this->chunk_map[grid_next]};
+            contains_chunk = chunk != nullptr;
+            
+            if (contains_chunk) {
+                glActiveTexture(GL_TEXTURE0 + iteration.w);
+                glBindTexture(GL_TEXTURE_2D, chunk->texture);
+            }
+
+            this->parallel_chunk.p_program_parallel->set_uniform_bool("ChunkContains[" + std::to_string(iteration.w) + ']',  contains_chunk);
+            iteration.w++;
+        }
 
         this->parallel_chunk.dimension[0] = chunk_size;
         this->parallel_chunk.dimension[1] = chunk_size;
@@ -114,7 +150,10 @@ void world::on_update() {
             this->queue_texture_trash.pop();
 
             if (this->queue_texture_trash.size() >= 12) {
-                this->queue_texture_trash = {};
+                while (!this->queue_texture_trash.empty()) {
+                    glDeleteTextures(1, &this->queue_texture_trash.front());
+                    this->queue_texture_trash.pop();
+                }
             }
         }
 
@@ -214,7 +253,7 @@ void world::do_update_chunk() {
     this->loaded_chunk_list = current_loaded_chunk;
 
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {7.0f * 4, 1.0f, 7.0f * 4};
+    glm::vec3 chunk_scale {8.0f * 4, 1.0f, 8.0f * 4};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);

@@ -4,13 +4,17 @@ layout (local_size_x = 1, local_size_y = 1) in;
 layout (rgba16f, binding = 0) uniform image2D OutTexture;
 
 uniform float Delta;
-uniform float Offset;
-uniform vec2 Scale;
+uniform float Frequency;
+uniform float Amplitude;
+uniform float Persistence;
+uniform float Lacunarity;
+uniform int Octaves;
 
 #define LEFT 1
 #define RIGHT 5
 #define TOP 5
 #define BOTTOM 5
+#define PI 3.14159265358979323846
 
 uniform sampler2D ChunkActiveTexture[4];
 uniform bool ChunkContains[4];
@@ -114,7 +118,23 @@ float snoise(vec2 v)  {
     return n;
 }
 
-void CheckNearest(vec2 uv, out float left, out float right, out float top, out float bottom) {
+float Lerp(float a, float b, float delta) {
+    return a + (b - a) * delta;
+}
+
+float fbm(vec3 x) {
+    float v = 0.0f;
+    float a = Amplitude;
+    vec3 shift = vec3(100) * Delta;
+    for (int i = 0; i < Octaves; ++i) {
+        v += a * Noise4D(x.xy);
+        x = x * (2.0f + Lacunarity) + shift;
+        a *= Persistence;
+    }
+    return v;
+}
+
+void checkNearest(vec2 uv, out float left, out float right, out float top, out float bottom) {
     for (int it = 0; it < 4; it++) {
         if (!ChunkContains[it]) {
             continue;
@@ -136,16 +156,22 @@ void CheckNearest(vec2 uv, out float left, out float right, out float top, out f
     }
 }
 
-float Lerp(float a, float b, float delta) {
-    return a + (b - a) * delta;
-}
-
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 size = imageSize(OutTexture);
     vec2 uv = texelCoord / size;
-    vec2 uvNoised = cos(uv * Delta) + (cos(Delta) + 7);
-    float yLevel = Noise(uvNoised);
+    float yLevel = fbm(vec3(uv * Frequency, PI));
+
+    float left = 0;
+    float right = 0;
+    float top = 0;
+    float bottom = 0;
+    checkNearest(uv, left, right, top, bottom);
+
+    float average = left + right + top + bottom;
+    average /= 4;
+
+    yLevel = (yLevel - average);
 
     if (texelCoord.x == 0 || texelCoord.y == 0 || texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
         yLevel = 0;
