@@ -167,6 +167,9 @@ public:
         if (framebuffer.id_texture == 0) glGenTextures(1, &framebuffer.id_texture);
         glBindTexture(framebuffer.type, framebuffer.id_texture);
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
         /* Gen a storage buffer. */
         if (framebuffer.type == GL_TEXTURE_3D) {
             glTexStorage3D(framebuffer.type, 1, framebuffer.format, framebuffer.w, framebuffer.h, framebuffer.z);
@@ -176,13 +179,12 @@ public:
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer.type, framebuffer.id_texture, 0);
 
-        GLenum enums {};
         if (attach_unique) {
-            enums = GL_COLOR_ATTACHMENT0;
-            glDrawBuffers(1, &enums);
+            GLenum enums[] {GL_COLOR_ATTACHMENT0};
+            glDrawBuffers(1, enums);
         }
 
-        enums = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        GLenum enums = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         std::string msg {"Framebuffer key "};
         msg += std::to_string(framebuffering::current_frame_info);
 

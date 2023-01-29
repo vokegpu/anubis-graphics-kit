@@ -16,8 +16,6 @@ public:
     void invoke();
     void link(buffering *p_buffer_linked, shading::program *p_program_linked);
     void revoke();
-
-    void bind_texture(uint32_t texture);
     void draw(const glm::vec4 &rectangle, const glm::vec4 &color);
 };
 

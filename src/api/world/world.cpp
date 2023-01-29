@@ -94,7 +94,7 @@ void world::on_update() {
 
         /* Invoke parallel computation to randomize map. */
         this->parallel_chunk.invoke();
-        this->parallel_chunk.memory_barrier =  GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+        this->parallel_chunk.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 
         this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", static_cast<float>(SDL_GetTicks())  / 1000);
         this->parallel_chunk.p_program_parallel->set_uniform_float("Frequency", this->config_chunk_frequency.get_value());
@@ -236,7 +236,7 @@ void world::do_update_chunk() {
         chunk_tag += 'x';
         chunk_tag += std::to_string(grid_pos.y);
 
-        if (static_cast<int32_t>(glm::length(sub)) / chunk_size > chunk_gen_dist * chunk_gen_dist) {
+        if (static_cast<int32_t>(glm::length(sub)) / chunk_size > chunk_gen_dist + 1) {
             api::world::renderer()->refresh();
             this->queue_texture_trash.push(p_chunks->texture);
             p_chunks->on_destroy();

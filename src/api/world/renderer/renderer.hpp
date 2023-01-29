@@ -20,6 +20,8 @@ protected:
     int32_t loaded_light_size {};
     glm::mat4 mat4x4_mvp {};
     bool update_disabled_chunks {};
+    glm::mat4 previous_mvp {};
+    util::timing motion_blur_timing {};
 
     buffering buffer_chunk {};
     buffering buffer_post_processing {};

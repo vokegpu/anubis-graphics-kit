@@ -86,6 +86,7 @@ void renderer::process_terrain() {
     p_program_terrain_pbr->set_uniform_vec3("Fog.Color", &this->config_fog_color.get_value()[0]);
     p_program_terrain_pbr->set_uniform_int("ActiveTexture", 0);
 
+    glCullFace(GL_FRONT);
     this->buffer_chunk.invoke();
     glActiveTexture(GL_TEXTURE0);
 
@@ -109,6 +110,7 @@ void renderer::process_terrain() {
 
     this->buffer_chunk.revoke();
     glUseProgram(0);
+    glCullFace(GL_BACK);
 }
 
 void renderer::process_environment() {
@@ -197,7 +199,7 @@ void renderer::process_post_processing() {
     this->process_environment();
 
     /* Revoke all buffers from frame. */
-    this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT);
 
     /* Draw the current frame buffer. */
     uint32_t texture {this->framebuffer_post_processing[0].id_texture};
@@ -224,7 +226,6 @@ void renderer::process_post_processing() {
         this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
         this->texture_post_processing.send<float>({1, 1, 0}, nullptr, {GL_R32F, GL_RED});
         this->parallel_post_processing.attach(1, this->texture_post_processing[HDR_LUMINANCE_TEXTURE], GL_READ_WRITE);
-
         this->parallel_post_processing.dispatch();
 
         /* Read luminance texture for get the sum of all pixels log(Lum + 0.0001f) */
@@ -239,7 +240,19 @@ void renderer::process_post_processing() {
     this->immshape_post_processing.p_program->set_uniform_float("AveLuminance", ave_lum);
     this->immshape_post_processing.p_program->set_uniform_float("Exposure", this->config_hdr_exposure.get_value());
     this->immshape_post_processing.p_program->set_uniform_bool("Effects.HighDynamicRange", this->config_hdr.get_value());
-    this->immshape_post_processing.bind_texture(texture);
+
+    this->previous_mvp = this->mat4x4_mvp;
+    this->immshape_post_processing.p_program->set_uniform_mat4("PreviousMVP", &this->previous_mvp[0][0]);
+
+    this->mat4x4_mvp = glm::inverse(this->mat4x4_mvp);
+    this->immshape_post_processing.p_program->set_uniform_mat4("InverseMVP", &this->mat4x4_mvp[0][0]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_depth);
+
     this->immshape_post_processing.draw({0, 0, api::app.screen_width, api::app.screen_height}, {1.0f, 1.0f, 1.0f, 1.0f});
     this->immshape_post_processing.revoke();
 }

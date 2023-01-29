@@ -73,7 +73,7 @@ void api::mainloop(feature *p_scene_initial) {
     util::log("Anubis Graphics Kit initialised with successfully!");
 
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     while (api::app.mainloop) {
         cpu_ticks_last = cpu_ticks_now;
