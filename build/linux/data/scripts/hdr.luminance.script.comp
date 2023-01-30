@@ -1,0 +1,21 @@
+#version 450 core
+
+layout (local_size_x = 32, local_size_y = 32) in;
+layout (rgba16f, binding = 0) uniform readonly image2D OutImg;
+layout (r32f, binding = 1) uniform image2D OutAveLuminance;
+
+float Luminance(vec3 color) {
+    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+}
+
+void main() {
+    ivec2 texelFetch = ivec2(gl_GlobalInvocationID.xy);
+    if (texelFetch.x == 0 && texelFetch.y == 0) {
+        imageStore(OutAveLuminance, ivec2(0, 0), vec4(0, 0, 0, 0));
+    }
+
+    float luminance = Luminance(imageLoad(OutImg, texelFetch).xyz);
+    float sum = log(luminance + 0.00001);
+
+    imageStore(OutAveLuminance, ivec2(0, 0), vec4(imageLoad(OutAveLuminance, ivec2(0, 0)).r + sum, 0, 0, 0));
+}

@@ -1,11 +1,180 @@
-#version 450 core
+#version 450
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout (r32i, binding = 0) uniform image2D OutTexture;
+layout (local_size_x = 32, local_size_y = 32) in;
+layout (rgba16f, binding = 0) uniform image2D OutTexture;
+
+uniform float Delta;
+uniform float Frequency;
+uniform float Amplitude;
+uniform float Persistence;
+uniform float Lacunarity;
+uniform int Octaves;
+
+#define LEFT 1
+#define RIGHT 5
+#define TOP 5
+#define BOTTOM 5
+#define PI 3.14159265358979323846
+
+uniform sampler2D ChunkActiveTexture[4];
+uniform bool ChunkContains[4];
+
+float rand(vec2 co) {
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec4 hash4(vec4 n) {
+    return fract(sin(n) * 1399763.5453123);
+}
+
+vec3 hash3(vec3 n) {
+    return fract(sin(n) * 1399763.5453123);
+}
+
+vec3 hpos(vec3 n) {
+    return hash3(vec3(dot(n, vec3(157.0, 113.0, 271.0)), dot(n, vec3(311.0, 337.0, 179.0)), dot(n, vec3(271.0, 557.0, 431.0))));
+}
+
+vec4 mod289(vec4 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x) {
+    return mod(((x * 34.0) + 1.0) * x, 289.0);
+}
+
+vec4 taylorInvSqrt(vec4 r) {
+    return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec2 fade(vec2 t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+float Noise4D(vec2 p) {
+    vec4 Pi = floor(p.xyxy) + vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 Pf = fract(p.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+
+    Pi = mod289(Pi);
+
+    vec4 ix = Pi.xzxz;
+    vec4 iy = Pi.yyww;
+    vec4 fx = Pf.xzxz;
+    vec4 fy = Pf.yyww;
+
+    vec4 i = permute(permute(ix) + iy);
+    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0;
+    vec4 gy = abs(gx) - 0.5;
+    vec4 tx = floor(gx + 0.5);
+    gx = gx - tx;
+
+    vec2 g00 = vec2(gx.x, gy.x);
+    vec2 g10 = vec2(gx.y, gy.y);
+    vec2 g01 = vec2(gx.z, gy.z);
+    vec2 g11 = vec2(gx.w, gy.w);
+    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+    g00 *= norm.x;
+    g01 *= norm.y;
+    g10 *= norm.z;
+    g11 *= norm.z;
+
+    float n00 = dot(g00, vec2(fx.x, fy.y));
+    float n10 = dot(g10, vec2(fx.y, fy.y));
+    float n01 = dot(g01, vec2(fx.z, fy.z));
+    float n11 = dot(g11, vec2(fx.w, fy.w));
+
+    vec2 fade_xy = fade(Pf.xy);
+    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+    return 2.3 * n_xy;
+}
+
+float Noise(vec2 st) {
+    vec2 i = floor(st);
+    vec2 f = fract(st);
+
+    float a = rand(i);
+    float b = rand(i + vec2(1.0, 0.0));
+    float c = rand(i + vec2(0.0, 1.0));
+    float d = rand(i + vec2(1.0, 1.0));
+
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+float snoise(vec2 v)  {
+    vec2 i = floor(v + dot(v, vec2(0.898, 0.2357)));
+    vec2 x = v - i + dot(i, vec2(0.3678, 0.153));
+
+    vec2 p;
+    p = vec2(0.5) + 0.5*vec2(dot(x, x), dot(x, x + vec2(0.153, 0.9135)));
+
+    vec2 lo = floor(x);
+    vec2 hi = lo + vec2(1.0);
+    vec2 f = smoothstep(vec2(0.0), vec2(1.0), fract(p));
+
+    float n = (mix(dot(lo, vec2(0.153, 0.9135)), dot(hi, vec2(0.153, 0.9135)), f.x));
+    n += (mix(dot(lo, vec2(0.898, 0.2357)), dot(hi, vec2(0.898, 0.2357)), f.y));
+    return n;
+}
+
+float Lerp(float a, float b, float delta) {
+    return a + (b - a) * delta;
+}
+
+float fbm(vec3 x) {
+    float v = 0.0f;
+    float a = Amplitude;
+    vec3 shift = vec3(100);
+    for (int i = 0; i < Octaves; ++i) {
+        v += a * Noise4D(x.xy);
+        x = x * (2.0f + Lacunarity) + shift;
+        a *= Persistence;
+    }
+    return v;
+}
+
+void checkNearest(vec2 uv, out float left, out float right, out float top, out float bottom) {
+    for (int it = 0; it < 4; it++) {
+        if (!ChunkContains[it]) {
+            continue;
+        }
+
+        if (it == LEFT) {
+            vec2 projectUv = vec2(1.0, uv.y);
+            left = texture(ChunkActiveTexture[it], projectUv).y;
+        } else if (it == RIGHT) {
+            vec2 projectUv = vec2(0.0, uv.y);
+            right = texture(ChunkActiveTexture[it], projectUv).y;
+        } else if (it == TOP) {
+            vec2 projectUv = vec2(uv.x, 1.0);
+            top = texture(ChunkActiveTexture[it], projectUv).y;
+        } else if (it == BOTTOM) {
+            vec2 projectUv = vec2(uv.x, 0.0);
+            bottom = texture(ChunkActiveTexture[it], projectUv).y;
+        }
+    }
+}
 
 void main() {
-	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
-	float in_val = imageLoad(OutTexture, pos).r;
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 size = imageSize(OutTexture);
+    vec2 uv = texelCoord / size;
+    float yLevel = fbm(vec3(uv * Frequency, PI));
 
-	imageStore(OutTexture, pos, vec4(in_val + 1, 0.0, 0.0, 0.0));
+    float left = 0;
+    float right = 0;
+    float top = 0;
+    float bottom = 0;
+    checkNearest(uv, left, right, top, bottom);
+
+    float average = left + right + top + bottom;
+    average /= 4;
+    yLevel = (yLevel - average);
+
+    if (texelCoord.x == 0 || texelCoord.y == 0 || texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
+        yLevel = 0.0f;
+    }
+
+    imageStore(OutTexture, texelCoord, vec4(yLevel, yLevel, yLevel, 1));
 }
