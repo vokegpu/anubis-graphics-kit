@@ -96,12 +96,12 @@ void world::on_update() {
         this->parallel_chunk.invoke();
         this->parallel_chunk.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Delta", static_cast<float>(SDL_GetTicks())  / 1000);
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Frequency", this->config_chunk_frequency.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Amplitude", this->config_chunk_amplitude.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Persistence", this->config_chunk_persistence.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("Lacunarity", this->config_chunk_lacunarity.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_int("Octaves", this->config_chunk_octaves.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uDelta", static_cast<float>(SDL_GetTicks())  / 1000);
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uFrequency", this->config_chunk_frequency.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uAmplitude", this->config_chunk_amplitude.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uPersistence", this->config_chunk_persistence.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uLacunarity", this->config_chunk_lacunarity.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_int("uOctaves", this->config_chunk_octaves.get_value());
 
         int32_t chunk_size {this->config_chunk_size.get_value()};
         float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
@@ -141,8 +141,8 @@ void world::on_update() {
 
         this->parallel_chunk.dimension[0] = chunk_size;
         this->parallel_chunk.dimension[1] = chunk_size;
-        this->parallel_chunk.dispatch_groups[0] = 32;
-        this->parallel_chunk.dispatch_groups[1] = 32;
+        this->parallel_chunk.dispatch_groups[0] = 16;
+        this->parallel_chunk.dispatch_groups[1] = 16;
 
         uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
         if (!this->queue_texture_trash.empty()) {
@@ -252,8 +252,9 @@ void world::do_update_chunk() {
 
     this->loaded_chunk_list = current_loaded_chunk;
 
+    float scale_factor {static_cast<float>(this->config_chunk_size.get_value()) / 128};
     glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {6.4f * 4, 1.0f, 6.4f * 4};
+    glm::vec3 chunk_scale {6.4f * scale_factor, 1.0f, 6.4f * scale_factor};
 
     player_grid.x = static_cast<int32_t>(p_player->position.x);
     player_grid.y = static_cast<int32_t>(p_player->position.z);

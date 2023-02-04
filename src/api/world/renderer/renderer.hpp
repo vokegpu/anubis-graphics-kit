@@ -17,18 +17,25 @@ protected:
     std::vector<model*> loaded_model_list {};
     std::map<std::string, int32_t> model_register_map {};
 
-    int32_t loaded_light_size {};
     glm::mat4 mat4x4_mvp {};
+    glm::mat4 mat4x4_inverse {};
+    glm::mat4 mat4x4_view {};
+    glm::mat4 mat4x4_perspective {};
+
+    int32_t loaded_light_size {};
     bool update_disabled_chunks {};
-    glm::mat4 previous_mvp {};
     util::timing motion_blur_timing {};
 
     buffering buffer_chunk {};
+    texturing texture_chunk {};
+
     buffering buffer_post_processing {};
     immshape immshape_post_processing {};
     paralleling parallel_post_processing {};
     texturing texture_post_processing {};
     framebuffering framebuffer_post_processing {};
+
+    buffering buffer_coordinate_debug {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);
     void on_event_refresh_chunk(SDL_Event &sdl_event);
@@ -52,6 +59,7 @@ public:
     void process_terrain();
     void process_environment();
     void process_post_processing();
+    void process_editor();
     void process_framebuffer(int32_t w, int32_t h);
 
     void on_create() override;

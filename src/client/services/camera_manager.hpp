@@ -4,15 +4,15 @@
 #include "api/feature/feature.hpp"
 #include "api/world/camera/camera.hpp"
 #include "api/value/value.hpp"
-#include "api/world/environment/entity.hpp"
+#include "api/world/environment/env_entity.hpp"
 #include <iostream>
 
 namespace client::services {
     class camera_manager : public feature {
     protected:
-        bool camera_rotation{};
-        bool camera_movement{};
-        bool camera_editor{};
+        bool camera_rotation {};
+        bool camera_movement {};
+        bool camera_editor {};
     public:
         camera *p_camera_linked {};
         entity *p_entity_linked {};

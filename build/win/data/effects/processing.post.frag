@@ -1,78 +1,82 @@
-#version 450 core
+#version 450
 
-layout (location = 0) out vec4 FragColor;
-layout (binding = 0) uniform sampler2D FramebufferTexture;
-layout (binding = 1) uniform sampler2D DepthbufferTexture;
+layout (location = 0) out vec4 vFragColor;
+layout (binding = 0) uniform sampler2D uTexture;
+layout (binding = 1) uniform sampler2D uDepthSampler;
 
-in vec4 Rect;
-in vec2 Texcoord;
+in vec4 vRect;
+uniform vec4 uColor;
 
-uniform vec4 Color;
-
-uniform mat3 RGBtoXYZ = mat3(
-    0.4124564, 0.2126729, 0.0193339,
-    0.3575761, 0.7151522, 0.1191920,
-    0.1804375, 0.0721750, 0.9503041
+const mat3 RGBtoXYZ = mat3(
+    0.4124564f, 0.2126729f, 0.0193339f,
+    0.3575761f, 0.7151522f, 0.1191920f,
+    0.1804375f, 0.0721750f, 0.9503041f
 );
 
-uniform mat3 XYZtoRGB = mat3(
-    3.2404542, -0.9692660, 0.0556434,
-    -1.5371385, 1.8760108, -0.2040259,
-    -0.4985314, 0.0415560, 1.0572252
+const mat3 XYZtoRGB = mat3(
+    3.2404542f, -0.9692660f, 0.0556434f,
+    -1.5371385f, 1.8760108f, -0.2040259f,
+    -0.4985314f, 0.0415560f, 1.0572252f
 );
 
-uniform float Exposure = 0.35;
-uniform float White = 0.928;
-uniform float AveLuminance;
-uniform mat4 PreviousMVP;
-uniform mat4 InverseMVP;
+uniform mat4 uMVP;
+uniform mat4 uInverseMVP;
 
 uniform struct {
-    bool HighDynamicRange;
-    float AveLuminanceHDR;
-} Effects;
+    bool uEnabled;
+    float uAverageLuminance;
+    float uExposure;
+    float uWhite;
+} uHDR;
 
 void main() {
-    vec4 sum = texture(FramebufferTexture, Texcoord);
-    vec4 depw = texture(DepthbufferTexture, Texcoord);
-    vec4 c = sum;
-    float dep = depw.w;
+    vec2 fragCoord = gl_FragCoord.xy / textureSize(uTexture, 0);
+    vec4 framebufferColor = texture(uTexture, fragCoord);
+    vec4 framebufferDepth = texture(uDepthSampler, fragCoord);
 
-    vec4 h = vec4(Texcoord.x * 2 - 1.0f, (1.0f - Texcoord.y) * 2 - 1, dep, 1);
-    vec4 d = h * InverseMVP;
-    vec4 worldPos = vec4(d.xyz / d.w, 1);
-    vec4 currentPos = h;
+    float dep = framebufferDepth.r;
+    vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, dep, 1.0f);
+    vec4 d = uInverseMVP * h;
+    vec4 w = d / d.w;
 
-    vec4 previousPos = worldPos * PreviousMVP;
-    previousPos /= previousPos.w;
+    vec4 currPos = h;
+    vec4 prevPos = uMVP * w;
+    prevPos = prevPos / prevPos.w;
 
-    vec2 texcoord = Texcoord;
-    vec2 velocity = (currentPos.xy - previousPos.xy);
-
-    for (int i = 1; i < 5; ++i) {
-        texcoord += velocity;
-        vec4 color = texture(FramebufferTexture, texcoord);
-        sum += color;
+    vec2 velocity = (currPos.xy - prevPos.xy);
+    vec2 texCoord = fragCoord + velocity;
+    int numSamples = 1;
+    if (velocity.x == 0 && velocity.y == 0) {
+        numSamples = 1;
     }
 
-    sum = vec4(sum.xyz / 5, 1.0f);
+    for (int i = 1; i < numSamples; ++i) {
+        texCoord += velocity;
+        vec4 currColor = texture(uTexture, texCoord);
+        framebufferColor += currColor;
+    }
 
-    if (Effects.HighDynamicRange) {
+    vec4 sum = framebufferColor / numSamples;
+
+    if (uHDR.uEnabled) {
+        float white = 0.928f;
+        float exposure = 0.35f;
+
         vec3 xyzCol = RGBtoXYZ * vec3(sum);
 
         float xyzSum = xyzCol.x + xyzCol.y + xyzCol.z;
-        vec3 xyYCol = vec3(0);
-        if (xyzSum > 0.0) xyYCol = vec3(xyzCol.x / xyzSum, xyzCol.y / xyzSum, xyzCol.y);
+        vec3 xyYCol = vec3(0.0f);
+        if (xyzSum > 0.0f) xyYCol = vec3(xyzCol.x / xyzSum, xyzCol.y / xyzSum, xyzCol.y);
 
-        float l = (Exposure * xyYCol.z) / AveLuminance;
-        l = (l * (1 + l / (White * White))) / (1 + l);
+        float l = (exposure * xyYCol.z) / uHDR.uAverageLuminance;
+        l = (l * (1 + l / (white * white))) / (1.0f + l);
 
         xyzCol.x = (l * xyYCol.x) / (xyYCol.y);
         xyzCol.y = l;
-        xyzCol.z = (l * (1 - xyYCol.x - xyYCol.y)) / xyYCol.y;
+        xyzCol.z = (l * (1.0f - xyYCol.x - xyYCol.y)) / xyYCol.y;
 
-        sum = vec4(XYZtoRGB * xyzCol, 1.0);
+        sum = vec4(XYZtoRGB * xyzCol, 1.0f);
     }
 
-    FragColor = sum;
+    vFragColor = sum;
 }

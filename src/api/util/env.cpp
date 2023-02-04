@@ -3,7 +3,6 @@
 #include <SDL2/SDL_image.h>
 #include <sstream>
 #include <string>
-#include <lodepng/lodepng.h>
 #include "GL/glew.h"
 
 #define STB_IMAGE_IMPLEMENTATION

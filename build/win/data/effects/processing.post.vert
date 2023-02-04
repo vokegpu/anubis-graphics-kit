@@ -1,16 +1,12 @@
 #version 450 core
 
-layout (location = 0) in vec2 VertexPosition;
-layout (location = 1) in vec2 Texcoordinate;
+layout (location = 0) in vec2 aPos;
 
-uniform vec4 Rectangle;
-uniform mat4 MatrixPerspective;
-
-out vec2 Texcoord;
-out vec4 Rect;
+uniform vec4 uRectangle;
+uniform mat4 uOrthographicMatrix;
+out vec4 vRect;
 
 void main() {
-    gl_Position = MatrixPerspective * vec4((Rectangle.zw * VertexPosition) + Rectangle.xy, 0.0f, 1.0f);
-    Texcoord = Texcoordinate;
-    Rect = Rectangle;
+    gl_Position = uOrthographicMatrix * vec4((uRectangle.zw * aPos) + uRectangle.xy, 0.0f, 1.0f);
+    vRect = uRectangle;
 }

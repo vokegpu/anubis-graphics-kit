@@ -1,93 +1,103 @@
 #version 450 core
 #define PI 3.1415926535897932384626433832795
 
-layout (location = 0) out vec4 FragColor;
+layout (location = 0) out vec4 vFragColor;
 
-in vec3 Pos;
-in vec2 Texcoord;
-in vec3 Normal;
+in vec3 vPos;
+in vec2 vTexCoord;
+in vec3 vNormal;
 
-uniform vec3 CameraPosition;
+uniform vec3 uCameraPos;
+uniform float uAmbientColor;
+uniform int uLightAmount;
+uniform float uGamma = 1.0f;
+
+vec3 mMaterialColor;
+
 uniform struct {
-    vec3 Color;
-    bool Metal;
-    float Rough;
-} Material;
+    vec3 uColor;
+    bool uMetal;
+    float uRough;
+} uMaterial;
 
-uniform int LoadedLightLen;
 uniform struct {
-    vec3 Intensity;
-    bool Directional;
-    vec3 POD;
-} Light[100];
+    vec3 uIntensity;
+    bool uDirectional;
+    vec3 uVector;
+} uLight[100];
 
-vec3 SchlickFresnel(float lDotH) {
-    vec3 f0 = vec3(0.04);
-    if (Material.Metal) {
-        f0 = Material.Color;
+uniform struct {
+    vec2 uDistance;
+    vec3 uColor;
+} uFog;
+
+vec3 shlickFresnel(float lDotH) {
+    vec3 f0 = vec3(0.04f);
+    if (uMaterial.uMetal) {
+        f0 = mMaterialColor;
+    }
+    return f0 + (1 - f0) * pow(clamp(1.0f - lDotH, 0.0f, 1.0f), 5.0f);
+}
+
+float geometrySmith(float dotProd) {
+    float k = (uMaterial.uRough + 1.0f) * (uMaterial.uRough + 1.0f) / 8.0f;
+    float denom = dotProd * (1.0f - k) + k;
+    return 1.0f / denom;
+}
+
+float ggxDistribution(float nDotH) {
+    float a2 = uMaterial.uRough * uMaterial.uRough * uMaterial.uRough * uMaterial.uRough;
+    float d = (nDotH * nDotH) * (a2 - 1.0f) + 1.0f;
+    return a2 / (PI * d * d);
+}
+
+vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
+    vec3 diffuse = vec3(0.0f);
+    if (!uMaterial.uMetal) {
+        diffuse = mMaterialColor;
     }
 
-    return f0 + (1 - f0) * pow(clamp(1.0 - lDotH, 0.0f, 1.0), 5.0);
-}
+    vec3 intensity = uLight[index].uIntensity;
+    vec3 l = vec3(0.0f);
 
-float GeometrySmith(float dotProduct) {
-    float k = (Material.Rough + 1.0) * (Material.Rough + 1.0) / 8.0;
-    float denom = dotProduct * (1 - k) + k;
-    return 1.0 / denom;
-}
-
-float GGxDistribution(float nDotH) {
-    float alpha2 = Material.Rough * Material.Rough * Material.Rough * Material.Rough;
-    float d = (nDotH * nDotH) * (alpha2 - 1) + 1;
-    return alpha2 / (PI * d * d);
-}
-
-vec3 BRDFunction(vec3 n, vec3 v, int lightIndex) {
-    vec3 diffuse = vec3(0.0);
-    if (!Material.Metal) {
-        diffuse = Material.Color;
-    }
-
-    vec3 intensity = Light[lightIndex].Intensity;
-    vec3 l = vec3(0.0);
-
-    if (Light[lightIndex].Directional) {
-        l = normalize(Light[lightIndex].POD);
+    if (uLight[index].uDirectional) {
+        l = normalize(uLight[index].uVector);
     } else {
-        l = Light[lightIndex].POD - Pos;
-        float distance = length(l);
+        l = uLight[index].uVector - vPos;
+        float dist = length(l);
         l = normalize(l);
-        intensity /= (distance * distance);
+        intensity /= (dist * dist);
     }
-
-    float Wrap = 0.0;
 
     vec3 h = normalize(v + l);
     float nDotH = dot(n, h);
     float lDotH = dot(l, h);
-    float nDotL = max(dot(l, n), 0.0);
+    float nDotL = max(dot(n, l), 1.0f);
     float nDotV = dot(n, v);
-    vec3 spec = 0.25 * GGxDistribution(nDotH) * SchlickFresnel(lDotH) * GeometrySmith(nDotL) * GeometrySmith(nDotV);
 
-    return (diffuse + PI * spec) * intensity * nDotL;
+    /* 0.25f == fracion of 4 */
+    vec3 specular = 0.25f * ggxDistribution(nDotH) * shlickFresnel(lDotH) * geometrySmith(nDotL) * geometrySmith(nDotV);
+    return (diffuse + PI * specular) * intensity * nDotL;
 }
 
 void main() {
-    vec3 color = vec3(0.0f);
-    
-    if (Material.Rough == -1) {
-        color = Material.Color;
+    float dist = length(vPos);
+    float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
+    mMaterialColor = uMaterial.uColor;
+    vec3 sum = mMaterialColor * uAmbientColor;
+
+    if (uMaterial.uRough == -1) {
+        sum = mMaterialColor;
     } else {
-        vec3 n = normalize(Normal);
-        vec3 v = normalize(CameraPosition - Pos);
+        vec3 n = normalize(vNormal);
+        vec3 v = normalize(uCameraPos - vPos);
 
         if (!gl_FrontFacing) n = -n;
-        for (int it = 0; it <= LoadedLightLen; it++) {
-            color += BRDFunction(n, v, it);
+        for (int index = 0; index <= uLightAmount; index++) {
+            sum += bidirecionalReflectanceDistributionFunc(n, v, index);
         }
-
-        color = pow(color, vec3(1.0 / 2.0));
     }
 
-    FragColor = vec4(color, 1.0f);
+    sum = mix(uFog.uColor, sum, fogFactor);
+    vFragColor = vec4(sum, 1.0f);
 }

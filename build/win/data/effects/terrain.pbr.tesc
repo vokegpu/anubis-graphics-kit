@@ -2,13 +2,13 @@
 
 layout (vertices = 4) out;
 
-uniform vec4 MatrixViewModel;
-in vec2 TexCoord[];
-out vec2 TextureCoord[];
+uniform vec4 uMVP_TescStage;
+in vec2 vTexCoord_VertStage[];
+out vec2 vTexCoord_TescStage[];
 
 void main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-    TextureCoord[gl_InvocationID] = TexCoord[gl_InvocationID];
+    vTexCoord_TescStage[gl_InvocationID] = vTexCoord_VertStage[gl_InvocationID];
 
     if (gl_InvocationID == 0) {
         const int MIN_TESS_LEVEL = 4;
@@ -17,10 +17,10 @@ void main() {
         const float MIN_DIST = 20;
         const float MAX_DIST = 800;
 
-        vec4 eyeSpacePos00 = MatrixViewModel * gl_in[0].gl_Position;
-        vec4 eyeSpacePos01 = MatrixViewModel * gl_in[1].gl_Position;
-        vec4 eyeSpacePos10 = MatrixViewModel * gl_in[2].gl_Position;
-        vec4 eyeSpacePos11 = MatrixViewModel * gl_in[3].gl_Position;
+        vec4 eyeSpacePos00 = uMVP_TescStage * gl_in[0].gl_Position;
+        vec4 eyeSpacePos01 = uMVP_TescStage * gl_in[1].gl_Position;
+        vec4 eyeSpacePos10 = uMVP_TescStage * gl_in[2].gl_Position;
+        vec4 eyeSpacePos11 = uMVP_TescStage * gl_in[3].gl_Position;
 
         float dist00 = clamp((abs(eyeSpacePos00.z) - MIN_DIST) / (MAX_DIST - MIN_DIST), 0.0, 1.0f);
         float dist01 = clamp((abs(eyeSpacePos01.z) - MIN_DIST) / (MAX_DIST - MIN_DIST), 0.0, 1.0f);

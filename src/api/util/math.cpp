@@ -25,3 +25,7 @@ void util::to_world_pos(glm::vec3 &world_pos, const glm::ivec2 &grid_pos, const 
 float util::luminance(float r, float g, float b) {
     return 0.2126f * r + 0.7152f * g + 0.0722f * b;
 }
+
+float util::lerp(float a, float b, float delta) {
+    return a + (b - a) * delta;
+}

@@ -13,10 +13,10 @@ public:
     buffering *p_buffer {};
     shading::program *p_program {};
 
-    void invoke();
+    void invoke() const;
     void link(buffering *p_buffer_linked, shading::program *p_program_linked);
-    void revoke();
-    void draw(const glm::vec4 &rectangle, const glm::vec4 &color);
+    void revoke() const;
+    void draw(const glm::vec4 &rectangle, const glm::vec4 &color) const;
 };
 
 #endif

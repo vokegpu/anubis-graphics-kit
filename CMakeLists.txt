@@ -6,17 +6,17 @@ set(BUILD_LOCATION "")
 set(CMAKE_BINARY_DIR "build-debug-build/")
 
 if(WIN32)
-	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/win/libamogpu.a" ekg mingw32 opengl32 glew32 SDL2main SDL2 freetype)
+	set(LINKED_LIBRARIES ekg mingw32 opengl32 glew32 SDL2main SDL2 freetype)
 	set(BUILD_LOCATION "../build/win/")
 else()
-	set(LINKED_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/external/lib/linux/libamogpu.a" SDL2main SDL2 GL GLEW freetype)
+	set(LINKED_LIBRARIES SDL2main SDL2 GL GLEW freetype)
 	set(BUILD_LOCATION "../build/linux/")
 endif()
 
 # Set the version of C++ 17 and the build location.
 set(CMAKE_CXX_STANDARD 17)
 set(EXECUTABLE_OUTPUT_PATH ${BUILD_LOCATION})
-# add_compile_options("-O3")
+add_compile_options("-O3")
 
 # Find for all files.
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
@@ -26,5 +26,5 @@ include_directories(src)
 include_directories(external)
 
 # Inject at the executable the src files and link the libraries used in the project.
-add_executable(agk ${SRC_FILES} "external/lodepng/lodepng.cpp")
+add_executable(agk ${SRC_FILES})
 target_link_libraries(agk ${LINKED_LIBRARIES})

@@ -9,6 +9,7 @@ namespace api {
 
     void mainloop(feature *p_scene_initial);
     void path(const char*);
+    void viewport();
 
     namespace service {
         void registry(feature *p_feature);
@@ -36,6 +37,7 @@ namespace api {
 
         ::world *&get();
         renderer *&renderer();
+        world_time_manager *&time_manager();
 
         model *create(std::string_view tag, std::string_view path, ::mesh::format format);
         void create(world_feature *p_world_feature);

@@ -14,6 +14,7 @@ namespace util {
 
     bool read_file(std::string_view path, std::string &string_builder);
     bool read_image(std::string_view path, util::image &resource);
+    void free_image(util::image &resource);
 }
 
 #endif

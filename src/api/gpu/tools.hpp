@@ -25,6 +25,7 @@ namespace gpu {
         unsigned int format {};
         unsigned int id_texture {};
         unsigned int id_fbo {};
+        unsigned int id_renderbuffer {};
         unsigned int id_depth {};
     } frame;
 }
@@ -50,14 +51,14 @@ public:
 
     buffering::type type {};
     uint32_t primitive {GL_TRIANGLES};
-    uint64_t stride[3] {};
+    int32_t stride[3] {};
 
     explicit buffering() = default;
     ~buffering();
 
     void tessellation(int32_t patches);
     void bind(const glm::ivec2 &buffer_type);
-    void send(size_t size, void *p_data, uint32_t gl_driver_read_mode);
+    void send(int64_t size, void *p_data, uint32_t gl_driver_read_mode);
     void attach(int32_t location, int32_t vec, const glm::ivec2 &array_stride = {0, 0});
     
     void invoke();
@@ -158,17 +159,11 @@ public:
         framebuffer.format = in_format.y;
         framebuffer.type = in_format.x;
 
-        /* Attach renderbuffer (depth buffer) to framebuffer. */
-        if (framebuffer.id_depth == 0) glGenRenderbuffers(1, &framebuffer.id_depth);
-        glBindRenderbuffer(GL_RENDERBUFFER, framebuffer.id_depth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, framebuffer.w, framebuffer.h);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, framebuffer.id_depth);
-
         if (framebuffer.id_texture == 0) glGenTextures(1, &framebuffer.id_texture);
         glBindTexture(framebuffer.type, framebuffer.id_texture);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(framebuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(framebuffer.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         /* Gen a storage buffer. */
         if (framebuffer.type == GL_TEXTURE_3D) {
@@ -179,6 +174,29 @@ public:
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, framebuffer.type, framebuffer.id_texture, 0);
 
+        /* Depth sampler texture. */
+        if (framebuffer.id_depth == 0) glGenTextures(1, &framebuffer.id_depth);
+        glBindTexture(GL_TEXTURE_2D, framebuffer.id_depth);
+        float border[] {1.0f, 0.0f, 0.0f, 0.0f};
+
+        // Set filter linear.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        // Apply clamp to border and the border color.
+        // (1, 0, 0, 0) because depth value can not be less than zero, or otherwise it becomes at sample place of near Z.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        //glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+
+        // Interpolate the depth result to generate only value.
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, framebuffer.w, framebuffer.h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, framebuffer.id_depth, 0);
+
+        /* Allocate draw buffers to framebuffer. */
         if (attach_unique) {
             GLenum enums[] {GL_COLOR_ATTACHMENT0};
             glDrawBuffers(1, enums);
@@ -205,7 +223,7 @@ public:
         }
     }
 
-    void draw_buffers(uint32_t size, const GLenum *p_buffers) {
+    void draw_buffers(int32_t size, const GLenum *p_buffers) {
         glDrawBuffers(size, p_buffers);
     }
 
@@ -234,7 +252,7 @@ public:
 
         gpu::frame &frame {this->frame_map[key]};
         if (frame.id_fbo != 0) glDeleteFramebuffers(1, &frame.id_fbo);
-        if (frame.id_depth != 0) glDeleteRenderbuffers(1, &frame.id_depth);
+        if (frame.id_renderbuffer != 0) glDeleteRenderbuffers(1, &frame.id_renderbuffer);
         if (frame.id_texture != 0) glDeleteTextures(1, &frame.id_texture);
         this->frame_map.erase(key);
     }
@@ -242,7 +260,7 @@ public:
     void delete_buffers() {
         for (auto const &[key, texture] : this->frame_map) {
             if (texture.id_fbo != 0) glDeleteFramebuffers(1, &texture.id_fbo);
-            if (texture.id_depth != 0) glDeleteRenderbuffers(1, &texture.id_depth);
+            if (texture.id_renderbuffer != 0) glDeleteRenderbuffers(1, &texture.id_renderbuffer);
             if (texture.id_texture != 0) glDeleteTextures(1, &texture.id_texture);
         }
 

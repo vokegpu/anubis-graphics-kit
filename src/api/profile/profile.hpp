@@ -9,7 +9,8 @@
 #include "api/mesh/mesh_loader.hpp"
 #include "api/input/input.hpp"
 #include "api/world/renderer/renderer.hpp"
-#include "api/world/environment/entity.hpp"
+#include "api/world/environment/env_entity.hpp"
+#include "api/world/environment/env_world_time_manager.hpp"
 
 class profile {
 public:
@@ -20,12 +21,14 @@ public:
     bool mainloop {};
     uint64_t fps {60};
     uint64_t display_fps {};
+    float background[3] {1.0f, 1.0f, 1.0f};
 
     feature *p_current_scene {nullptr};
     camera *p_current_camera {nullptr};
     entity *p_current_player {nullptr};
     world *p_world_client {nullptr};
     renderer *p_world_renderer {nullptr};
+    world_time_manager *p_world_time_manager {nullptr};
 
     gc garbage_collector {};
     mesh_loader mesher_loader {};

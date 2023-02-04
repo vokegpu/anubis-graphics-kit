@@ -54,7 +54,7 @@ void frustum::on_event(SDL_Event &sdl_event) {
 }
 
 void frustum::process_perspective(int32_t w, int32_t h) {
-    float size[2] {
+    const float size[2] {
             static_cast<float>(w),
             static_cast<float>(h)
     };
@@ -63,4 +63,12 @@ void frustum::process_perspective(int32_t w, int32_t h) {
     immshape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
     api::app.screen_width = w;
     api::app.screen_height = h;
+
+    std::string msg {"Window resized ("};
+    msg += std::to_string(w);
+    msg += ", ";
+    msg += std::to_string(h);
+    msg += ')';
+
+    util::log(msg);
 }

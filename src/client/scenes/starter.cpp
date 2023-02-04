@@ -2,8 +2,8 @@
 #include "api/gpu/tools.hpp"
 #include "api/util/env.hpp"
 #include "api/api.hpp"
-#include "api/world/environment/object.hpp"
-#include "api/world/environment/light.hpp"
+#include "api/world/environment/env_object.hpp"
+#include "api/world/environment/env_light.hpp"
 
 void client::scenes::starter::on_create() {
     model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl", mesh::format::stl)};
@@ -42,9 +42,9 @@ void client::scenes::starter::on_create() {
 
     ekg::label("Welcome to AGK!", ekg::dock::top | ekg::dock::left);
     ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_light_intensity = ekg::slider("LightIntensity", 50.0f, 0.0f, 255.0f, ekg::dock::top | ekg::dock::left);
+    this->p_slider_light_intensity = ekg::slider("LightIntensity", 50.0f, 0.0f, 4024.0f, ekg::dock::top | ekg::dock::left);
     this->p_slider_light_intensity->set_precision(2);
-    this->p_slider_light_intensity->set_value(50.0f);
+    this->p_slider_light_intensity->set_value(0.8f);
 
     ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_slider_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::top | ekg::dock::left);
@@ -52,23 +52,23 @@ void client::scenes::starter::on_create() {
     this->p_slider_range->set_value(3);
 
     ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_fog_dist = ekg::slider("FogDist", 512.0f, 0.0f, 1024.0f * 4, ekg::dock::top | ekg::dock::left);
+    this->p_slider_fog_dist = ekg::slider("FogDist", 1024.0f, 0.0f, 1024.0f * 4, ekg::dock::top | ekg::dock::left);
     this->p_slider_fog_dist->set_precision(2);
-    this->p_slider_fog_dist->set_value(512.0f);
+    this->p_slider_fog_dist->set_value(2048.0f);
 
     ekg::label("Chunking Frequency:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_frequency = ekg::slider("Frequency", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
-    this->p_frequency->set_value(0.15f);
+    this->p_frequency->set_value(0.66260f);
     this->p_frequency->set_precision(3);
 
     ekg::label("Chunking Amplitude:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_amplitude = ekg::slider("Amplitude", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
-    this->p_amplitude->set_value(0.15f);
+    this->p_amplitude->set_value(0.35206f);
     this->p_amplitude->set_precision(3);
 
     ekg::label("Chunking Persistence:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_persistence = ekg::slider("Persistence", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
-    this->p_persistence->set_value(0.15f);
+    this->p_persistence->set_value(0.51004f);
     this->p_persistence->set_precision(3);
     
     ekg::label("Chunking Lacunarity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
@@ -135,6 +135,14 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 }
 
 void client::scenes::starter::on_update() {
+    if (api::input::pressed("x")) {
+        api::world::current_player()->speed_base += 0.5f;
+    }
+
+    if (api::input::pressed("z")) {
+        api::world::current_player()->speed_base -= 0.5f;
+    }
+
     glm::vec3 intensity {glm::vec3(this->p_slider_light_intensity->get_value())};
 
     if (this->p_light_spot->intensity != intensity) {

@@ -39,3 +39,7 @@ bool util::read_image(std::string_view path, util::image &resource) {
 
     return false;
 }
+
+void util::free_image(util::image &resource) {
+    stbi_image_free(resource.p_data);
+}

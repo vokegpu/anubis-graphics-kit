@@ -22,7 +22,7 @@ void buffering::bind(const glm::ivec2 &buffer_type) {
     buffering::current_type_bind[1] = buffer_type.y;
 }
 
-void buffering::send(size_t size, void *p_data, uint32_t gl_driver_read_mode) {
+void buffering::send(int64_t size, void *p_data, uint32_t gl_driver_read_mode) {
     glBufferData(buffering::current_type_bind[0], size, p_data, gl_driver_read_mode);
 }
 
@@ -47,18 +47,19 @@ void buffering::draw() {
     switch (this->type) {
         case buffering::type::direct: {
             if (this->buffer_ebo != 0) {
-                glDrawElements(this->primitive, stride[0], GL_UNSIGNED_INT, (void*) stride[1]);
+                const void *p_hack_cast {(void*) static_cast<int64_t>(this->stride[1])};
+                glDrawElements(this->primitive, this->stride[0], GL_UNSIGNED_INT, p_hack_cast);
             } else {
-                glDrawArrays(this->primitive, stride[0], stride[1]);
+                glDrawArrays(this->primitive, this->stride[0], this->stride[1]);
             }
             break;
         }
 
         case buffering::type::instanced: {
             if (this->buffer_ebo != 0) {
-                glDrawElementsInstanced(this->primitive, stride[1], GL_UNSIGNED_INT, nullptr, stride[2]);
+                glDrawElementsInstanced(this->primitive, this->stride[1], GL_UNSIGNED_INT, nullptr, this->stride[2]);
             } else {
-                glDrawArraysInstanced(this->primitive, stride[0], stride[1], stride[2]);
+                glDrawArraysInstanced(this->primitive, this->stride[0], this->stride[1], this->stride[2]);
             }
             break;
         }
