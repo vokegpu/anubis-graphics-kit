@@ -12,6 +12,7 @@ protected:
 public:
     buffering buffer {};
     uint32_t texture {};
+    uint32_t texture_key {};
 
     explicit chunk();
     ~chunk();

@@ -1,6 +1,6 @@
 # AGK
 
-Anubis Graphics Kit (AGK) is a photo-realism rendering engine made in OpenGL 4 for SDL2, the purpose of this engine is to do rendering tests and implement impirical rendering equations, techniques, concetps & specifically the umbrealla PBR.  
+Anubis Graphics Kit (AGK) is a photo-realism rendering engine made in OpenGL 4 for SDL2, the purpose of this engine is to do rendering tests and implement empirical rendering equations, techniques, concepts & specifically the umbrella PBR.  
 There is an official researcher article being write together with this project to investigate a way to connect heightmaps. The research is not linked to any institution, perhaps I will publish here at the ends of article project,  
 but VokeGpu will keep update this engine project.
 
@@ -24,7 +24,7 @@ The location of executables is in `./build/`, choose your system and run Anubis 
 * Dynamic input system.
 * ~~Motion blur~~.
 * ~~Screen space occlusion ambient (SSAO)~~.
-* ~~Connected heightmaps.~~
+* Connected heightmaps.
 * ~~Subsurface scattering~~.
 * ~~Depth of field~~.
 * ~~Animation.~~
@@ -37,11 +37,14 @@ One of most important rendering technique used here is the umbrella of physicall
 The BRDF make the terrain and world objects looks soft and realistic at some point, the visual effect also do subsurface scattering or known as BSSDF (bidirectional subsurface scattering distribution function) effect.
 ![Alt text](/splash/splash-brdf-2.png?raw=true)
 
-The terrain is procedural generated using compute shaders and FBM equation with perlin noise from Ken Perlin, the volume of terrain processed from grey-scale is real-time computed using tessellation shader with 4 patches, credits to [learnopengl](https://learnopengl.com) which I have used as book to learn about terrain generator.
-For rendering all terrain AGK come with a chunking system.
-![Alt text](/splash/splash-terrain-1.png)
-
+The terrain is procedural generated using compute shaders and FBM equation with perlin noise from Ken Perlin, the volume of terrain processed from grey-scale is real-time computed using tessellation shader with 4 patches, credits to [learnopengl](https://learnopengl.com) which I have used as book to learn about terrain rendering.
+For rendering all terrain AGK come with a chunking system.  
 The GUI is powered by VokeGpu [ekg ui library](https://github.com/vokegpu/ekg-ui-library) a high-performance library made in OpenGL for SDL2 written in C++.
+All detailed process are include in the article writen for this project, called Real-Time Terrain Generator by Rina.
+
+![Alt text](/splash/splash-terrain-6.png)
+![Alt text](/splash/splash-terrain-rochoso.png)
+![Alt text](/splash/splash-terrain-arenoso.png)
 
 # License & credits
 The project is under license MIT.  

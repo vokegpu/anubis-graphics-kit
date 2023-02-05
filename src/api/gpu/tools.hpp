@@ -386,6 +386,10 @@ public:
         glGetTexImage(texture.type, 0, texture.channel, texture.primitive, data.data());
         return data;
     }
+
+    int64_t size() {
+        return this->texture_map.size();
+    }
 };
 
 #endif

@@ -10,11 +10,11 @@ void world_time_manager::on_create() {
     this->color_nightmare = {0.0f, 0.0f, 0.08117647058827604f};
 
     // The start hour is 6am.
-    this->delta_si_real_elapsed = 60 * 6;
-    this->color_from_sky = this->color_nightmare;
+    this->delta_si_real_elapsed = 60 * 7;
+    this->color_from_sky = this->color_day;
     this->day_ambient_light = 0.4f;
     this->nightmare_ambient_light = 0.0f;
-    this->ambient_light = this->nightmare_ambient_light;
+    this->ambient_light = this->day_ambient_light;
     this->ambient_next_light = this->ambient_light;
 }
 
@@ -30,7 +30,7 @@ void world_time_manager::on_update() {
     feature::on_update();
 
     /* Add + 1 (true), else false add 0. */
-    this->delta_si_real_elapsed += static_cast<uint64_t>(util::reset_when(this->delta_ms_real, 100));
+    this->delta_si_real_elapsed += static_cast<uint64_t>(util::reset_when(this->delta_ms_real, 1000));
     this->delta_hour_virtual = this->delta_si_real_elapsed / 60;
     this->delta_min_virtual = this->delta_si_real_elapsed;
 

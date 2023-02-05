@@ -58,7 +58,7 @@ public:
     value<int32_t> config_chunk_octaves {};
     value<float> config_delta {};
 
-    std::vector<float> texture_map_list {};
+    glm::vec4 chunking_global_uv {};
 
     paralleling parallel_chunk {};
     texturing texture_chunk {};

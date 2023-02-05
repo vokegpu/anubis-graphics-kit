@@ -37,7 +37,6 @@ void api::mainloop(feature *p_scene_initial) {
     SDL_FreeSurface(p_surf);
 
     util::timing reduce_cpu_ticks_timing {};
-    util::timing counter_fps_timing {};
 
     uint64_t cpu_ticks_interval {1000 / api::app.fps}, cpu_ticks_now {SDL_GetPerformanceCounter()}, cpu_ticks_last {};
     uint64_t fps_interval {1000};

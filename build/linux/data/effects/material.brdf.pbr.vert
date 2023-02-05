@@ -1,21 +1,22 @@
 #version 450 core
 
-layout (location = 0) in vec3 VertexPosition;
-layout (location = 1) in vec2 TextureCoordinate;
-layout (location = 2) in vec3 FaceNormal;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 aNormal;
 
-out vec3 Pos;
-out vec2 Texcoord;
-out vec3 Normal;
+out vec3 vPos;
+out vec2 vTexCoord;
+out vec3 vNormal;
 
-uniform mat4 MVP;
-uniform mat4 MatrixModel;
-uniform mat3 MatrixNormal;
+uniform mat4 uMVP;
+uniform mat4 uModelMatrix;
+uniform mat3 uNormalMatrix;
 
 void main() {
-    Pos = (MatrixModel * vec4(VertexPosition, 1.0f)).xyz;
-    Texcoord = TextureCoordinate;
-    Normal = normalize(MatrixNormal * FaceNormal);
+    gl_Position = uMVP * vec4(aPos, 1.0f);
+    vec4 modelPos = uModelMatrix * vec4(aPos, 1.0f);
 
-    gl_Position = MVP * vec4(VertexPosition, 1.0f);
+    vPos = modelPos.xyz;
+    vTexCoord = aTexCoord;
+    vNormal = normalize(uNormalMatrix * aNormal);
 }

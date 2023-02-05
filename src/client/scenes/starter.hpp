@@ -15,6 +15,7 @@ namespace client::scenes {
         object *p_object_dino {};
 
         client::services::camera_manager *p_camera_manager {};
+        uint64_t last_display_fps {};
 
         ekg::ui::slider *p_slider_light_intensity {};
         ekg::ui::slider *p_slider_range {};

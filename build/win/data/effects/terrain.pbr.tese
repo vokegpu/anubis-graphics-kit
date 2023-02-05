@@ -1,4 +1,4 @@
-#version 450 core
+#version 450
 
 layout (quads, fractional_odd_spacing, ccw) in;
 layout (binding = 0) uniform sampler2D uTextureHeightMap;

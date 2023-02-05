@@ -67,13 +67,14 @@ void camera::set_mouse_locked(bool state) {
 
     switch (this->visible) {
         case enums::state::disable: {
-            if (state) {
+            if (!this->mouse_shown && state) {
                 SDL_SetRelativeMouseMode(SDL_TRUE);
-            } else {
+                this->mouse_shown = true;
+            } else if (this->mouse_shown && !state) {
                 SDL_SetRelativeMouseMode(SDL_FALSE);
+                this->mouse_shown = false;
             }
 
-            this->mouse_shown = !state;
             break;
         }
 

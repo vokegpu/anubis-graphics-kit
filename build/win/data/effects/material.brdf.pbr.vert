@@ -5,6 +5,7 @@ layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec3 aNormal;
 
 out vec3 vPos;
+out vec3 vPosModel;
 out vec2 vTexCoord;
 out vec3 vNormal;
 
@@ -16,7 +17,8 @@ void main() {
     gl_Position = uMVP * vec4(aPos, 1.0f);
     vec4 modelPos = uModelMatrix * vec4(aPos, 1.0f);
 
-    vPos = modelPos.xyz;
+    vPos = gl_Position.xyz;
+    vPosModel = modelPos.xyz;
     vTexCoord = aTexCoord;
     vNormal = normalize(uNormalMatrix * aNormal);
 }

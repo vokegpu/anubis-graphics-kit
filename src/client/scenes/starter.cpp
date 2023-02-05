@@ -99,6 +99,9 @@ void client::scenes::starter::on_create() {
         starter->p_object_dino->position = p->position;
         starter->p_object_dino->rotation = p->rotation;
     }});
+
+    SDL_SetWindowSize(api::app.p_sdl_window, 1920, 1080);
+    SDL_SetWindowFullscreen(api::app.p_sdl_window, true);
 }
 
 void client::scenes::starter::on_destroy() {
@@ -141,6 +144,14 @@ void client::scenes::starter::on_update() {
 
     if (api::input::pressed("z")) {
         api::world::current_player()->speed_base -= 0.5f;
+    }
+
+    if (this->last_display_fps != api::app.display_fps) {
+        std::string title {"Anubis Graphics Kit "};
+        title += std::to_string(api::app.display_fps);
+        title += "fps";
+        SDL_SetWindowTitle(api::app.p_sdl_window, title.c_str());
+        this->last_display_fps = api::app.display_fps;
     }
 
     glm::vec3 intensity {glm::vec3(this->p_slider_light_intensity->get_value())};

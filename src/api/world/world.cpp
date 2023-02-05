@@ -19,19 +19,8 @@ void world::on_create() {
 
     this->parallel_chunk.p_program_parallel = p_program_hmap_randomizer;
 
-    p_program_hmap_randomizer->invoke();
-    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[0]", 1); // left
-    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[1]", 2); // right
-    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[2]", 3); // top
-    p_program_hmap_randomizer->set_uniform_int("ChunkActiveTexture[3]", 4); // bottom
-    p_program_hmap_randomizer->revoke();
-
     util::read_image("./data/textures/iceland_heightmap.png", this->chunk_heightmap_texture);
     api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
-
-    this->texture_chunk.invoke(0, {GL_TEXTURE_2D, GL_UNSIGNED_BYTE});
-    this->texture_chunk.send<uint8_t>({128, 128, 0}, this->chunk_heightmap_texture.p_data, {GL_RGBA, GL_RGBA});
-    this->texture_chunk.revoke();
 }
 
 void world::on_destroy() {
@@ -92,6 +81,15 @@ void world::on_update() {
     } else if (!this->queue_chunking.empty() && util::reset_when(this->chunk_poll_chunking, 16)) {
         chunk *&p_chunk {this->queue_chunking.front()};
 
+        /* Use grid position as global UV for height map connection. */
+        glm::vec2 global_uv {};
+        glm::ivec2 grid_pos {};
+
+        int32_t chunk_size {this->config_chunk_size.get_value()};
+        util::to_grid_pos(grid_pos, p_chunk->position, {chunk_size, chunk_size});
+
+        global_uv = grid_pos;
+
         /* Invoke parallel computation to randomize map. */
         this->parallel_chunk.invoke();
         this->parallel_chunk.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
@@ -102,42 +100,7 @@ void world::on_update() {
         this->parallel_chunk.p_program_parallel->set_uniform_float("uPersistence", this->config_chunk_persistence.get_value());
         this->parallel_chunk.p_program_parallel->set_uniform_float("uLacunarity", this->config_chunk_lacunarity.get_value());
         this->parallel_chunk.p_program_parallel->set_uniform_int("uOctaves", this->config_chunk_octaves.get_value());
-
-        int32_t chunk_size {this->config_chunk_size.get_value()};
-        float chunk_resolution[2] {static_cast<float>(chunk_size), static_cast<float>(chunk_size)};
-
-        std::string grid_next {};
-        glm::ivec2 player_grid {};
-        glm::ivec4 iteration {};
-        uint32_t texture_pass {};
-
-        bool contains_chunk {};
-        auto &p_player {api::world::current_player()};
-
-        player_grid.x = static_cast<int32_t>(p_player->position.x);
-        player_grid.y = static_cast<int32_t>(p_player->position.z);
-        util::to_grid_pos(player_grid, p_player->position, glm::ivec2(chunk_size));
-
-        for (int it {}; it < 4; it++) {
-            iteration.x = player_grid.x + util::SURROUND[iteration.y++];
-            iteration.z = player_grid.y + util::SURROUND[iteration.y++];
-
-            grid_next.clear();
-            grid_next += std::to_string(iteration.x);
-            grid_next += 'x';
-            grid_next += std::to_string(iteration.y);
-
-            auto &chunk {this->chunk_map[grid_next]};
-            contains_chunk = chunk != nullptr;
-            
-            if (contains_chunk) {
-                glActiveTexture(GL_TEXTURE0 + iteration.w);
-                glBindTexture(GL_TEXTURE_2D, chunk->texture);
-            }
-
-            this->parallel_chunk.p_program_parallel->set_uniform_bool("ChunkContains[" + std::to_string(iteration.w) + ']',  contains_chunk);
-            iteration.w++;
-        }
+        this->parallel_chunk.p_program_parallel->set_uniform_vec2("uGlobalUV", &global_uv[0]);
 
         this->parallel_chunk.dimension[0] = chunk_size;
         this->parallel_chunk.dimension[1] = chunk_size;
@@ -145,24 +108,14 @@ void world::on_update() {
         this->parallel_chunk.dispatch_groups[1] = 16;
 
         uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
-        if (!this->queue_texture_trash.empty()) {
-            texture_key = this->queue_texture_trash.front();
-            this->queue_texture_trash.pop();
-
-            if (this->queue_texture_trash.size() >= 12) {
-                for (;!this->queue_texture_trash.empty();) {
-                    glDeleteTextures(1, &this->queue_texture_trash.front());
-                    this->queue_texture_trash.pop();
-                }
-            }
-        }
-
         this->texture_chunk.invoke(texture_key, {GL_TEXTURE_2D, GL_FLOAT});
         this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA});
         this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_WRITE_ONLY);
         this->parallel_chunk.dispatch();
 
-        p_chunk->texture = this->texture_chunk[p_chunk->id].id;
+        p_chunk->texture_key = texture_key;
+        p_chunk->texture = this->texture_chunk[texture_key].id;
+
         this->loaded_chunk_list.push_back(p_chunk);
         this->config_delta.set_value(this->config_delta.get_value() + 1.0f);
         api::world::renderer()->add(p_chunk);
@@ -225,9 +178,11 @@ void world::do_update_chunk() {
 
     glm::ivec2 grid_pos {};
     glm::ivec2 vec_chunk_size {chunk_size, chunk_size};
+    float div {static_cast<float>(chunk_size) / 2};
+    float distance_toward_generator {static_cast<float>(chunk_gen_dist + chunk_gen_dist / 2) * static_cast<float>(chunk_size)};
 
     for (chunk *&p_chunks : this->loaded_chunk_list) {
-        sub = p_chunks->position + (float) chunk_size / 2;
+        sub = p_chunks->position + div;
         sub = p_player->position - sub;
         sub.y = 0;
 
@@ -236,9 +191,9 @@ void world::do_update_chunk() {
         chunk_tag += 'x';
         chunk_tag += std::to_string(grid_pos.y);
 
-        if (static_cast<int32_t>(glm::length(sub)) / chunk_size > chunk_gen_dist + 1) {
+        if (glm::length(sub) > distance_toward_generator) {
             api::world::renderer()->refresh();
-            this->queue_texture_trash.push(p_chunks->texture);
+            this->texture_chunk.delete_buffer(p_chunks->texture_key);
             p_chunks->on_destroy();
             delete p_chunks;
             p_chunks = nullptr;

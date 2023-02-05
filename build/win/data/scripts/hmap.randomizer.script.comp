@@ -1,7 +1,7 @@
 #version 450
 
-layout (local_size_x = 32, local_size_y = 32) in;
-layout (rgba16f, binding = 0) uniform image2D uTexture;
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (rgba32f, binding = 0) uniform image2D uTexture;
 
 uniform float uDelta;
 uniform float uFrequency;
@@ -9,15 +9,13 @@ uniform float uAmplitude;
 uniform float uPersistence;
 uniform float uLacunarity;
 uniform int uOctaves;
+uniform vec2 uGlobalUV;
 
 #define LEFT 1
 #define RIGHT 5
 #define TOP 5
 #define BOTTOM 5
 #define PI 3.14159265358979323846
-
-uniform sampler2D ChunkActiveTexture[4];
-uniform bool ChunkContains[4];
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -51,7 +49,7 @@ vec2 fade(vec2 t) {
     return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
 }
 
-float Noise4D(vec2 p) {
+float noise4D(vec2 p) {
     vec4 Pi = floor(p.xyxy) + vec4(0.0, 0.0, 0.0, 1.0);
     vec4 Pf = fract(p.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
 
@@ -89,7 +87,7 @@ float Noise4D(vec2 p) {
     return 2.3 * n_xy;
 }
 
-float Noise(vec2 st) {
+float noise(vec2 st) {
     vec2 i = floor(st);
     vec2 f = fract(st);
 
@@ -118,59 +116,26 @@ float snoise(vec2 v)  {
     return n;
 }
 
-float Lerp(float a, float b, float delta) {
-    return a + (b - a) * delta;
-}
-
 float fbm(vec3 x) {
     float v = 0.0f;
     float a = uAmplitude;
     vec3 shift = vec3(100);
     for (int i = 0; i < uOctaves; ++i) {
-        v += a * Noise4D(x.xy);
+        v += a * noise(x.xy);
         x = x * (2.0f + uLacunarity) + shift;
         a *= uPersistence;
     }
     return v;
 }
 
-void checkNearest(vec2 uv, out float left, out float right, out float top, out float bottom, out vec4 distances) {
-    for (int it = 0; it < 4; it++) {
-        if (!ChunkContains[it]) {
-            continue;
-        }
-
-        if (it == LEFT) {
-            vec2 projectUv = vec2(1.0, uv.y);
-            left = texture(ChunkActiveTexture[it], projectUv).y;
-            distances.x = length(uv - left);
-        } else if (it == RIGHT) {
-            vec2 projectUv = vec2(0.0, uv.y);
-            right = texture(ChunkActiveTexture[it], projectUv).y;
-            distances.y = length(uv - right);
-        } else if (it == TOP) {
-            vec2 projectUv = vec2(uv.x, 1.0);
-            top = texture(ChunkActiveTexture[it], projectUv).y;
-            distances.z = length(uv - top);
-        } else if (it == BOTTOM) {
-            vec2 projectUv = vec2(uv.x, 0.0);
-            bottom = texture(ChunkActiveTexture[it], projectUv).y;
-            distances.w = length(uv - bottom);
-        }
-    }
-}
-
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 size = imageSize(uTexture);
-    vec2 uv = texelCoord / size;
+    vec2 uv = (texelCoord / size);
+    uv += uGlobalUV;
 
     float yLevel = fbm(vec3(uv * uFrequency, PI));
     yLevel = clamp(yLevel, 0.0f, 1.0f);
-
-    if (texelCoord.x == 0 || texelCoord.y == 0 || texelCoord.x == size.x - 1 || texelCoord.y == size.y - 1) {
-        yLevel = 0.0f;
-    }
 
     imageStore(uTexture, texelCoord, vec4(yLevel, yLevel, yLevel, 1));
 }
