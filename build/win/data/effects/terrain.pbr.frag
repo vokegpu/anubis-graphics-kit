@@ -1,5 +1,6 @@
 #version 450 core
 #define PI 3.1415926535897932384626433832795
+#define TERRAIN_HEIGHT_SIZE 128.0f
 
 layout (location = 0) out vec4 vFragColor;
 layout (binding = 1) uniform sampler2D uTextureGrain;
@@ -77,7 +78,7 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     float nDotL = max(dot(n, l), 1.0f);
     float nDotV = dot(n, v);
 
-    /* 0.25f == fracion of 4 */
+    /* 0.25f == same as divid by 4 */
     vec3 specular = 0.25f * ggxDistrubution(nDotH) * schlickFresnel(lDotH) * geometryDistribution(nDotL) * geometryDistribution(nDotV);
     return (diffuse + PI * specular) * intensity * nDotL;
 }
@@ -86,9 +87,9 @@ void main() {
     float dist = length(vPos);
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
 
-    float g = vHeight / 255.0;
-    mCurrentMaterialRGB = texture(uTextureStone, vTessCoord).rgb * (g * 0.9f);
-    vec3 sum = mCurrentMaterialRGB * uAmbientColor;
+    float g = vHeight / 20.0f;
+    mCurrentMaterialRGB = texture(uTextureStone, vTessCoord).rgb;
+    vec3 sum = mCurrentMaterialRGB * g;
 
     vec3 n = normalize(vNormal);
     vec3 v = normalize(uCameraPos - vPosModel);

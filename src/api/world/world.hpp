@@ -12,7 +12,7 @@
 #include <queue>
 #include <map>
 
-static const float agk_perspective_clip_distance {4096.0f};
+static const float agk_perspective_clip_distance {8096.0f * 8096.0f};
 
 class world : public feature {
 protected:
@@ -58,13 +58,11 @@ public:
     value<int32_t> config_chunk_octaves {};
     value<float> config_delta {};
 
-    glm::vec4 chunking_global_uv {};
-
     paralleling parallel_chunk {};
     texturing texture_chunk {};
-    
+
+    std::vector<glm::vec3> near_chunk_global_uv {};
     std::queue<chunk*> queue_chunking {};
-    std::queue<uint32_t> queue_texture_trash {};
 
     chunk *find_chunk_wf(int32_t wf_id);
     chunk *find_chunk_wf(const std::string &grid_pos);

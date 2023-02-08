@@ -42,11 +42,12 @@ For rendering all terrain AGK come with a chunking system.
 The GUI is powered by VokeGpu [ekg ui library](https://github.com/vokegpu/ekg-ui-library) a high-performance library made in OpenGL for SDL2 written in C++.
 All detailed process are include in the article writen for this project, called Real-Time Terrain Generator by Rina.
 
-![Alt text](/splash/splash-terrain-6.png)
-![Alt text](/splash/splash-terrain-rochoso.png)
-![Alt text](/splash/splash-terrain-arenoso.png)
+![Alt text](/splash/terrain-hmap-connect-fixed-2.png)
+![img.png](/splash/terrain-1.png)
+![img.png](/splash/terrain-2.png)
+![img.png](/splash/terrain-3.png)
 
 # License & credits
 The project is under license MIT.  
-Thank you specially to author(s) of Learn Opengl, GPU Zen 2, Real-Time Rendering techniques, GPU Gems 3, Physically Based Rendering: From Theory to Implementation, GLSL 4: Cookbook.  
+Thank you specially to author(s) of Learn OpenGL, GPU Zen 2, Real-Time Rendering Techniques, GPU Gems 3, Physically Based Rendering: From Theory to Implementation, GLSL 4: Cookbook.  
 Without these books I could not learn. Learning is a process that do not have an end.

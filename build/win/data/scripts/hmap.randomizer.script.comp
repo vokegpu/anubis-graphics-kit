@@ -1,9 +1,10 @@
 #version 450
 
 layout (local_size_x = 16, local_size_y = 16) in;
-layout (rgba32f, binding = 0) uniform image2D uTexture;
+layout (rgba32f, binding = 0) uniform writeonly image2D uTexture;
 
-uniform float uDelta;
+#define PI 3.1415926535897932384626433832795
+
 uniform float uFrequency;
 uniform float uAmplitude;
 uniform float uPersistence;
@@ -11,11 +12,13 @@ uniform float uLacunarity;
 uniform int uOctaves;
 uniform vec2 uGlobalUV;
 
-#define LEFT 1
-#define RIGHT 5
-#define TOP 5
-#define BOTTOM 5
-#define PI 3.14159265358979323846
+uniform struct {
+    vec3 uGlobalUV;
+    vec4 uSeedf;
+    int uSeedi;
+} uChunkMetadata[4];
+
+uniform bool uCheckNearest;
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -116,15 +119,30 @@ float snoise(vec2 v)  {
     return n;
 }
 
-float fbm(vec3 x) {
+float fbmNearest(vec3 x, int index) {
+    float v = 0.0f;
+    float a = uChunkMetadata[index].uSeedf.y;
+    vec3 shift = vec3(100);
+    for (int it = 0; it < uChunkMetadata[index].uSeedi; ++it) {
+        v += a * noise(x.xy);
+        x = x * (2.0f + uChunkMetadata[index].uSeedf.w) + shift;
+        a *= uChunkMetadata[index].uSeedf.z;
+    }
+    return v;
+}
+
+float fbm(vec3 i) {
     float v = 0.0f;
     float a = uAmplitude;
-    vec3 shift = vec3(100);
-    for (int i = 0; i < uOctaves; ++i) {
-        v += a * noise(x.xy);
-        x = x * (2.0f + uLacunarity) + shift;
+    vec3 shift = vec3(100.0f);
+    float lacunarity = 2.0f + uLacunarity;
+
+    for (int it = 0; it < uOctaves; ++it) {
+        v += a * noise(i.xy);
+        i = i * (lacunarity) + shift;
         a *= uPersistence;
     }
+
     return v;
 }
 
@@ -132,10 +150,63 @@ void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 size = imageSize(uTexture);
     vec2 uv = (texelCoord / size);
+    vec2 newTexelCoord = texelCoord;
+
+    if (texelCoord.x == size.x - 1) {
+        newTexelCoord.x += 1;
+    }
+
+    if (texelCoord.y == size.y - 1) {
+        newTexelCoord.y += 1;
+    }
+
+    vec2 uvUnscaled = uv;
+    vec2 uvNoised = uGlobalUV;
+
     uv += uGlobalUV;
+    uvNoised += (newTexelCoord / size);
+    float yLevel = fbm(vec3(uvNoised * uFrequency, PI));
+    size -= 1; // Indexing start at 0 not 1.
 
-    float yLevel = fbm(vec3(uv * uFrequency, PI));
+    /* Read near chunk metada and runs yLevel to improve realism of terrain. */
+    if (uCheckNearest) {
+        vec2 uvNearest = uv;
+        float predict = 0.0f;
+        bool interpolate = false;
+
+        for (int it = 0; it < 4; it++) {
+            if (uChunkMetadata[it].uGlobalUV.z != -1) {
+                uvNearest = uChunkMetadata[it].uGlobalUV.xy;
+                predict = fbmNearest(vec3(uvNoised * uChunkMetadata[it].uSeedf.x, PI), it);
+                interpolate = true;
+
+                if (uvNearest.x < uGlobalUV.x && uvNearest.y == uGlobalUV.y && texelCoord.x == 0) {
+                    yLevel = predict;
+                    interpolate = false;
+                }
+
+                if (uvNearest.x > uGlobalUV.x && uvNearest.y == uGlobalUV.y && texelCoord.x == size.x) {
+                    yLevel = predict;
+                    interpolate = false;
+                }
+
+                if (uvNearest.x == uGlobalUV.x && uvNearest.y < uGlobalUV.y && texelCoord.y == 0) {
+                    yLevel = predict;
+                    interpolate = false;
+                }
+
+                if (uvNearest.x == uGlobalUV.x && uvNearest.y > uGlobalUV.y && texelCoord.y == size.y) {
+                    yLevel = predict;
+                    interpolate = false;
+                }
+
+                if (interpolate && (texelCoord.x != 0 && texelCoord.y != 0 && texelCoord.x != size.x && texelCoord.y != size.y)) {
+                    yLevel = predict;
+                }
+            }
+        }
+    }
+
     yLevel = clamp(yLevel, 0.0f, 1.0f);
-
     imageStore(uTexture, texelCoord, vec4(yLevel, yLevel, yLevel, 1));
 }

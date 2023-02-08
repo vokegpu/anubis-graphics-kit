@@ -52,7 +52,7 @@ void client::scenes::starter::on_create() {
     this->p_slider_range->set_value(3);
 
     ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_slider_fog_dist = ekg::slider("FogDist", 1024.0f, 0.0f, 1024.0f * 4, ekg::dock::top | ekg::dock::left);
+    this->p_slider_fog_dist = ekg::slider("FogDist", 1024.0f, 0.0f, 1024.0f * 8, ekg::dock::top | ekg::dock::left);
     this->p_slider_fog_dist->set_precision(2);
     this->p_slider_fog_dist->set_value(2048.0f);
 
@@ -63,7 +63,7 @@ void client::scenes::starter::on_create() {
 
     ekg::label("Chunking Amplitude:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_amplitude = ekg::slider("Amplitude", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
-    this->p_amplitude->set_value(0.35206f);
+    this->p_amplitude->set_value(0.05206f);
     this->p_amplitude->set_precision(3);
 
     ekg::label("Chunking Persistence:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
@@ -100,8 +100,8 @@ void client::scenes::starter::on_create() {
         starter->p_object_dino->rotation = p->rotation;
     }});
 
-    SDL_SetWindowSize(api::app.p_sdl_window, 1920, 1080);
-    SDL_SetWindowFullscreen(api::app.p_sdl_window, true);
+    SDL_SetWindowSize(api::app.p_sdl_window, 1280, 720);
+    SDL_SetWindowFullscreen(api::app.p_sdl_window, false);
 }
 
 void client::scenes::starter::on_destroy() {

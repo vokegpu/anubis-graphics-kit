@@ -11,6 +11,7 @@ void world::on_create() {
     this->config_chunk_gen_dist.set_value(3);
     this->config_chunk_gen_interval.set_value(1000);
     this->config_chunk_size.set_value(128 * 4);
+    this->near_chunk_global_uv.reserve(4);
 
     shading::program *p_program_hmap_randomizer {new shading::program {}};
     api::shading::create_program("hmap.randomizer.script", p_program_hmap_randomizer, {
@@ -84,23 +85,69 @@ void world::on_update() {
         /* Use grid position as global UV for height map connection. */
         glm::vec2 global_uv {};
         glm::ivec2 grid_pos {};
+        glm::ivec2 global_uv_grid {};
 
         int32_t chunk_size {this->config_chunk_size.get_value()};
         util::to_grid_pos(grid_pos, p_chunk->position, {chunk_size, chunk_size});
-
         global_uv = grid_pos;
 
         /* Invoke parallel computation to randomize map. */
         this->parallel_chunk.invoke();
         this->parallel_chunk.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 
-        this->parallel_chunk.p_program_parallel->set_uniform_float("uDelta", static_cast<float>(SDL_GetTicks())  / 1000);
-        this->parallel_chunk.p_program_parallel->set_uniform_float("uFrequency", this->config_chunk_frequency.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("uAmplitude", this->config_chunk_amplitude.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("uPersistence", this->config_chunk_persistence.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_float("uLacunarity", this->config_chunk_lacunarity.get_value());
-        this->parallel_chunk.p_program_parallel->set_uniform_int("uOctaves", this->config_chunk_octaves.get_value());
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uFrequency", p_chunk->metadata.frequency);
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uAmplitude", p_chunk->metadata.amplitude);
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uPersistence", p_chunk->metadata.persistence);
+        this->parallel_chunk.p_program_parallel->set_uniform_float("uLacunarity", p_chunk->metadata.lacunarity);
+        this->parallel_chunk.p_program_parallel->set_uniform_int("uOctaves", p_chunk->metadata.octaves);
         this->parallel_chunk.p_program_parallel->set_uniform_vec2("uGlobalUV", &global_uv[0]);
+
+        /* Read nearest chunk metadata. */
+        int32_t near_chunks {};
+        int32_t tick {};
+
+        bool should_check_into_shader {};
+        float chunk_seedf[4] {};
+
+        for (int32_t it {}; it < 4; it++) {
+            global_uv_grid.x = (grid_pos.x + util::SURROUND[near_chunks++]);
+            global_uv_grid.y = (grid_pos.y + util::SURROUND[near_chunks++]);
+
+            std::string chunk_tag {std::to_string(global_uv_grid.x)};
+            chunk_tag += 'x';
+            chunk_tag += std::to_string(global_uv_grid.y);
+
+            glm::vec3 &near {this->near_chunk_global_uv[it]};
+            near.x = static_cast<float>(global_uv_grid.x);
+            near.y = static_cast<float>(global_uv_grid.y);
+            near.z = -1;
+
+            /* Check if the metadata is different to infuse together. */
+            auto &p_near_chunk {this->chunk_map[chunk_tag]};
+            if (p_near_chunk != nullptr && p_chunk->is_processed()) {
+                chunk_seedf[0] = p_near_chunk->metadata.frequency;
+                chunk_seedf[1] = p_near_chunk->metadata.amplitude;
+                chunk_seedf[2] = p_near_chunk->metadata.persistence;
+                chunk_seedf[3] = p_near_chunk->metadata.lacunarity;
+                near.z = 1;
+
+                chunk_tag = "uChunkMetadata[";
+                chunk_tag += std::to_string(tick);
+                chunk_tag += ']';
+
+                this->parallel_chunk.p_program_parallel->set_uniform_vec4(chunk_tag + ".uSeedf", chunk_seedf);
+                this->parallel_chunk.p_program_parallel->set_uniform_int(chunk_tag + ".uSeedi", p_near_chunk->metadata.octaves);
+                if (!should_check_into_shader) should_check_into_shader = p_near_chunk->metadata != p_chunk->metadata;
+            }
+
+            chunk_tag = "uChunkMetadata[";
+            chunk_tag += std::to_string(tick);
+            chunk_tag += ']';
+            this->parallel_chunk.p_program_parallel->set_uniform_vec3(chunk_tag + ".uGlobalUV", &near[0]);
+            tick++;
+        }
+
+        this->parallel_chunk.p_program_parallel->set_uniform_bool("uCheckNearest", should_check_into_shader);
 
         this->parallel_chunk.dimension[0] = chunk_size;
         this->parallel_chunk.dimension[1] = chunk_size;
@@ -109,17 +156,16 @@ void world::on_update() {
 
         uint32_t texture_key {static_cast<uint32_t>(p_chunk->id)};
         this->texture_chunk.invoke(texture_key, {GL_TEXTURE_2D, GL_FLOAT});
-        this->texture_chunk.send<float>({chunk_size, chunk_size, 0}, nullptr, {GL_RGBA32F, GL_RGBA});
+        this->texture_chunk.send<float>({128, 128, 0}, nullptr, {GL_RGBA32F, GL_RGBA});
         this->parallel_chunk.attach(0, this->texture_chunk[p_chunk->id], GL_WRITE_ONLY);
         this->parallel_chunk.dispatch();
 
-        p_chunk->texture_key = texture_key;
         p_chunk->texture = this->texture_chunk[texture_key].id;
 
         this->loaded_chunk_list.push_back(p_chunk);
         this->config_delta.set_value(this->config_delta.get_value() + 1.0f);
         api::world::renderer()->add(p_chunk);
-        
+
         this->queue_chunking.pop();
         this->parallel_chunk.revoke();
     }
@@ -178,22 +224,28 @@ void world::do_update_chunk() {
 
     glm::ivec2 grid_pos {};
     glm::ivec2 vec_chunk_size {chunk_size, chunk_size};
+
+    glm::ivec2 player_grid {};
+    player_grid.x = static_cast<int32_t>(p_player->position.x);
+    player_grid.y = static_cast<int32_t>(p_player->position.z);
+    util::to_grid_pos(player_grid, p_player->position, vec_chunk_size);
+
     float div {static_cast<float>(chunk_size) / 2};
-    float distance_toward_generator {static_cast<float>(chunk_gen_dist + chunk_gen_dist / 2) * static_cast<float>(chunk_size)};
+    float distance_toward_generator {(static_cast<float>(chunk_gen_dist * 2) * static_cast<float>(chunk_size))};
+    glm::vec3 player_scaled_pos {static_cast<float>(player_grid.x * chunk_size) + div, 0.0f, static_cast<float>(player_grid.y * chunk_size) + div};
 
     for (chunk *&p_chunks : this->loaded_chunk_list) {
-        sub = p_chunks->position + div;
-        sub = p_player->position - sub;
-        sub.y = 0;
-
         util::to_grid_pos(grid_pos, p_chunks->position, vec_chunk_size);
         std::string chunk_tag {std::to_string(grid_pos.x)};
         chunk_tag += 'x';
         chunk_tag += std::to_string(grid_pos.y);
 
+        sub = player_scaled_pos - (p_chunks->position + div);
+        sub.y = 0.0f;
+
         if (glm::length(sub) > distance_toward_generator) {
             api::world::renderer()->refresh();
-            this->texture_chunk.delete_buffer(p_chunks->texture_key);
+            this->texture_chunk.delete_buffer(static_cast<uint32_t>(p_chunks->id));
             p_chunks->on_destroy();
             delete p_chunks;
             p_chunks = nullptr;
@@ -206,17 +258,12 @@ void world::do_update_chunk() {
     }
 
     this->loaded_chunk_list = current_loaded_chunk;
-
     float scale_factor {static_cast<float>(this->config_chunk_size.get_value()) / 128};
-    glm::ivec2 player_grid {};
-    glm::vec3 chunk_scale {6.4f * scale_factor, 1.0f, 6.4f * scale_factor};
+    scale_factor *= 6.4f;
+    glm::vec3 chunk_scale {scale_factor, scale_factor, scale_factor};
 
-    player_grid.x = static_cast<int32_t>(p_player->position.x);
-    player_grid.y = static_cast<int32_t>(p_player->position.z);
-    util::to_grid_pos(player_grid, p_player->position, glm::ivec2(chunk_size));
-
-    for (int32_t z {-chunk_gen_dist}; z < chunk_gen_dist; ++z) {
-        for (int32_t x {-chunk_gen_dist}; x < chunk_gen_dist; ++x) {
+    for (int32_t z {-chunk_gen_dist}; z != chunk_gen_dist; z++) {
+        for (int32_t x {-chunk_gen_dist}; x != chunk_gen_dist; x++) {
             grid_pos.x = player_grid.x + x;
             grid_pos.y = player_grid.y + z;
 
@@ -230,10 +277,19 @@ void world::do_update_chunk() {
 
             chunk *p_chunk {new chunk {}};
             p_chunk->on_create();
-            p_chunk->position.x = grid_pos.x * chunk_size;
-            p_chunk->position.z = grid_pos.y * chunk_size;
+            p_chunk->position.x = static_cast<float>(grid_pos.x * chunk_size);
+            p_chunk->position.z = static_cast<float>(grid_pos.y * chunk_size);
             p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
             p_chunk->scale = chunk_scale;
+
+            /* Generate a metadata seed to this chunk. */
+            p_chunk->metadata = {
+                    this->config_chunk_frequency.get_value(),
+                    this->config_chunk_amplitude.get_value(),
+                    this->config_chunk_persistence.get_value(),
+                    this->config_chunk_lacunarity.get_value(),
+                    this->config_chunk_octaves.get_value()
+            };
 
             this->queue_chunking.push(p_chunk);
             this->chunk_map[chunk_tag] = p_chunk;
