@@ -87,7 +87,7 @@ void main() {
     float dist = length(vPos);
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
 
-    float g = vHeight / 20.0f;
+    float g = vHeight / 64.0f;
     mCurrentMaterialRGB = texture(uTextureStone, vTessCoord).rgb;
     vec3 sum = mCurrentMaterialRGB * g;
 

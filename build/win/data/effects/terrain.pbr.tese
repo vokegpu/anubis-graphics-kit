@@ -27,7 +27,7 @@ void main() {
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
 
-    vHeight = texture(uTextureHeightMap, texCoord).r * 20.0f;
+    vHeight = texture(uTextureHeightMap, texCoord).r * 256.0f;
     vTessCoord = gl_TessCoord.xy;
 
     vec4 p00 = gl_in[0].gl_Position;

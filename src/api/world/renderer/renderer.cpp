@@ -220,17 +220,18 @@ void renderer::process_environment() {
 void renderer::process_post_processing() {
     /* Invoke framebuffer and start collect screen buffers. */
     this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    api::viewport();
 
     this->process_terrain();
     this->process_environment();
 
     /* Revoke all buffers from frame. */
-    this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT);
 
     /* Draw the current frame buffer. */
     float ave_lum {};
 
-    if (this->config_hdr.get_value()) {
+    if (this->config_hdr.get_value() && util::reset_when(this->timing_hdr_cycle, 16)) {
         int32_t size {api::app.screen_width * api::app.screen_height};
 
         this->parallel_post_processing.dispatch_groups[0] = 32;
@@ -270,13 +271,21 @@ void renderer::process_post_processing() {
 
     this->mat4x4_inverse = glm::inverse(this->mat4x4_mvp);
     this->immshape_post_processing.p_program->set_uniform_mat4("uInverseMVP", &this->mat4x4_inverse[0][0]);
-    this->immshape_post_processing.p_program->set_uniform_mat4("uMVP", &this->mat4x4_mvp[0][0]);
+    this->immshape_post_processing.p_program->set_uniform_mat4("uMVP", &this->mat4x4_previous_mvp[0][0]);
+    this->mat4x4_previous_mvp = this->mat4x4_mvp;
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_texture);
 
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_depth);
+    auto p_camera {api::app.p_current_camera};
+    float yaw {p_camera->rotation.x};
+    float pitch {p_camera->rotation.y};
+
+    this->camera_motion_delta.x = yaw - this->camera_motion_delta.x;
+    this->camera_motion_delta.y = pitch - this->camera_motion_delta.y;
+    this->immshape_post_processing.p_program->set_uniform_vec2("uVelocity", &this->camera_motion_delta[0]);
+    this->camera_motion_delta.x = yaw;
+    this->camera_motion_delta.y = pitch;
 
     this->immshape_post_processing.draw({0, 0, api::app.screen_width, api::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
     this->immshape_post_processing.revoke();
@@ -554,7 +563,7 @@ void renderer::refresh() {
 
 void renderer::process_framebuffer(int32_t w, int32_t h) {
     this->framebuffer_post_processing.invoke(0);
-    api::viewport(); // update viewport
+    glViewport(0, 0, w, h);
     this->framebuffer_post_processing.send_depth({w, h, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
     this->framebuffer_post_processing.revoke();
 }

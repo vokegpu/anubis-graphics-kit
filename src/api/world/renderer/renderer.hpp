@@ -19,22 +19,27 @@ protected:
 
     glm::mat4 mat4x4_mvp {};
     glm::mat4 mat4x4_inverse {};
+    glm::mat4 mat4x4_previous_mvp {};
     glm::mat4 mat4x4_view {};
     glm::mat4 mat4x4_perspective {};
 
     int32_t loaded_light_size {};
     bool update_disabled_chunks {};
-    util::timing motion_blur_timing {};
 
+    /* Chunking. */
     buffering buffer_chunk {};
     texturing texture_chunk {};
 
+    /* Post-processing. */
     buffering buffer_post_processing {};
     immshape immshape_post_processing {};
     paralleling parallel_post_processing {};
     texturing texture_post_processing {};
     framebuffering framebuffer_post_processing {};
+    util::timing timing_hdr_cycle {};
+    glm::vec2 camera_motion_delta {};
 
+    /* Debug. */
     buffering buffer_coordinate_debug {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);

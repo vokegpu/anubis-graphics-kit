@@ -153,13 +153,20 @@ public:
             return;
         }
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(GL_FRAMEBUFFER, &framebuffer.id_fbo);
+
+        glGenFramebuffers(1, &framebuffer.id_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.id_fbo);
+
         framebuffer.w = in_dimension.x;
         framebuffer.h = in_dimension.y;
         framebuffer.z = in_dimension.z;
         framebuffer.format = in_format.y;
         framebuffer.type = in_format.x;
 
-        if (framebuffer.id_texture == 0) glGenTextures(1, &framebuffer.id_texture);
+        glDeleteTextures(1, &framebuffer.id_texture);
+        glGenTextures(1, &framebuffer.id_texture);
         glBindTexture(framebuffer.type, framebuffer.id_texture);
 
         glTexParameteri(framebuffer.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

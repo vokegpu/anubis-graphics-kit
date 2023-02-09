@@ -2,10 +2,10 @@
 
 layout (location = 0) out vec4 vFragColor;
 layout (binding = 0) uniform sampler2D uTexture;
-layout (binding = 1) uniform sampler2D uDepthSampler;
 
 in vec4 vRect;
 uniform vec4 uColor;
+uniform vec2 uVelocity;
 
 const mat3 RGBtoXYZ = mat3(
     0.4124564f, 0.2126729f, 0.0193339f,
@@ -30,12 +30,10 @@ uniform struct {
 } uHDR;
 
 void main() {
-    vec2 fragCoord = gl_FragCoord.xy / textureSize(uTexture, 0);
-    vec4 framebufferColor = texture(uTexture, fragCoord);
-    vec4 framebufferDepth = texture(uDepthSampler, fragCoord);
+    vec2 size = textureSize(uTexture, 0);
+    vec2 fragCoord = gl_FragCoord.xy / size;
 
-    float dep = framebufferDepth.r;
-    vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, dep, 1.0f);
+    vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, 0.0f, 1.0f);
     vec4 d = uInverseMVP * h;
     vec4 w = d / d.w;
 
@@ -43,20 +41,27 @@ void main() {
     vec4 prevPos = uMVP * w;
     prevPos = prevPos / prevPos.w;
 
-    vec2 velocity = (currPos.xy - prevPos.xy);
-    vec2 texCoord = fragCoord + velocity;
-    int numSamples = 1;
-    if (velocity.x == 0 && velocity.y == 0) {
-        numSamples = 1;
+    vec2 velocity = currPos.xy - prevPos.xy;
+    vec2 dir = normalize(velocity);
+    float numSamples = 20;
+
+    float p = gl_FragCoord.x - (size.x / 2);
+    float distToCenter = p / (size.x / 2);
+    float aspectRatio = size.x / size.y;
+
+    vec4 sum = vec4(0.0f);
+    float l = clamp((length(velocity) * 0.1) * (distToCenter), 0.0f, 1.0f);
+
+    for (float index = 0; index < numSamples; index++) {
+        vec2 nearestUv = fragCoord + (vec2(((index / (numSamples - 1)) - 0.5f) * l * aspectRatio, 0) * dir);
+        sum += texture(uTexture, nearestUv);
     }
 
-    for (int i = 1; i < numSamples; ++i) {
-        texCoord += velocity;
-        vec4 currColor = texture(uTexture, texCoord);
-        framebufferColor += currColor;
+    if (uVelocity.x * uVelocity.x + uVelocity.y * uVelocity.y != 0.0f) {
+        sum = sum / numSamples;
+    } else {
+        sum = texture(uTexture, fragCoord);
     }
-
-    vec4 sum = framebufferColor / numSamples;
 
     if (uHDR.uEnabled) {
         float white = 0.928f;
