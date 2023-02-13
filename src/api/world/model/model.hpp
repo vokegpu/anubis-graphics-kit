@@ -6,8 +6,8 @@
 
 class model : public world_feature {
 public:
-    glm::vec4 matrix_model {};
     buffering buffer {};
+    int32_t instanced_id {};
 
     void on_create() override;
     void on_destroy() override;

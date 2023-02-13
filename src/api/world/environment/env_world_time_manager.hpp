@@ -22,6 +22,7 @@ public:
     float nightmare_ambient_light {};
     float ambient_light {};
     float ambient_next_light {};
+    float ambient_luminance {};
 
     void on_create() override;
     void on_destroy() override;

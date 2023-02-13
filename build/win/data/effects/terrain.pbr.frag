@@ -14,6 +14,7 @@ in vec3 vPosModel;
 
 uniform vec3 uCameraPos;
 uniform float uAmbientColor;
+uniform float uAmbientLuminance;
 uniform int uLightAmount;
 
 uniform struct {
@@ -89,7 +90,7 @@ void main() {
 
     float g = vHeight / 64.0f;
     mCurrentMaterialRGB = texture(uTextureStone, vTessCoord).rgb;
-    vec3 sum = mCurrentMaterialRGB * g;
+    vec3 sum = (mCurrentMaterialRGB * g) * (uAmbientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
     vec3 v = normalize(uCameraPos - vPosModel);

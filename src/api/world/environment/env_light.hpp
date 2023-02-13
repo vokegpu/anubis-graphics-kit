@@ -9,7 +9,7 @@ protected:
     bool low_update_ticking {};
 public:
     model *p_model {};
-    int32_t index_light {};
+    int32_t index {};
 
     glm::vec3 intensity {1.0f, 1.0f, 1.0f};
     bool directional {};

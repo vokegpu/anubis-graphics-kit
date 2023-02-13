@@ -21,7 +21,7 @@ void light::on_low_update() {
     api::shading::find("m.brdf.pbr", p_program_material_pbr);
 
     std::string light_index_tag {"uLight["};
-    light_index_tag += std::to_string(this->index_light);
+    light_index_tag += std::to_string(this->index);
     light_index_tag += ']';
 
     glUseProgram(p_program_material_pbr->id);
@@ -31,9 +31,8 @@ void light::on_low_update() {
     glUseProgram(0);
 
     api::shading::find("terrain.pbr", p_program_material_pbr);
-
     light_index_tag = "uLight[";
-    light_index_tag += std::to_string(this->index_light);
+    light_index_tag += std::to_string(this->index);
     light_index_tag += ']';
 
     glUseProgram(p_program_material_pbr->id);

@@ -37,6 +37,7 @@ void api::mainloop(feature *p_scene_initial) {
     SDL_FreeSurface(p_surf);
 
     util::timing reduce_cpu_ticks_timing {};
+    api::app.setting.init();
 
     uint64_t cpu_ticks_interval {1000 / api::app.fps}, cpu_ticks_now {SDL_GetPerformanceCounter()}, cpu_ticks_last {};
     uint64_t fps_interval {1000};
@@ -47,11 +48,11 @@ void api::mainloop(feature *p_scene_initial) {
     glm::vec3 previous_camera_rotation {2, 2, 2};
 
     api::app.p_world_client = new ::world {};
-    api::gc::create(api::app.p_world_client);
+    api::task::synchronize(api::app.p_world_client);
     util::log("World client created.");
 
     api::app.p_world_renderer = new renderer {};
-    api::gc::create(api::app.p_world_renderer);
+    api::task::synchronize(api::app.p_world_renderer);
     util::log("World renderer created.");
 
     api::app.p_current_camera = new camera {};
@@ -61,19 +62,23 @@ void api::mainloop(feature *p_scene_initial) {
     api::app.p_current_player = new entity {};
     api::world::create(api::app.p_current_player);
     util::log("Main world player created.");
-    
+
+    api::app.p_world_dynamic_geometry_renderer = new dynamic_geometry_instanced_renderer {};
+    api::task::synchronize(api::app.p_world_dynamic_geometry_renderer);
+    util::log("Dynamic geometry renderer created.");
+
     api::app.p_world_time_manager = new world_time_manager {};
-    api::gc::create(api::app.p_world_time_manager);
+    api::task::synchronize(api::app.p_world_time_manager);
     util::log("World time manager created.");
 
-    api::scene::load(p_scene_initial);
-    util::log("Loading initial scene!");
-
     /* Flush all object. */
-    api::app.garbage_collector.do_update();
+    api::task::populate();
     api::app.p_current_camera->process_perspective(api::app.screen_width, api::app.screen_height);
     api::app.p_world_renderer->process_framebuffer(api::app.screen_width, api::app.screen_height);
     util::log("All feature objects were synchronized.");
+
+    api::scene::load(p_scene_initial);
+    util::log("Loading initial scene!");
 
     api::app.mainloop = true;
     util::log("Anubis Graphics Kit initialised successfully!");
@@ -127,7 +132,7 @@ void api::mainloop(feature *p_scene_initial) {
         api::app.p_world_time_manager->on_update();
         api::app.p_world_client->on_update();
         api::app.input_manager.on_update();
-        api::app.garbage_collector.do_update();
+        api::task::populate();
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -155,45 +160,38 @@ void api::viewport() {
     glViewport(0, 0, api::app.screen_width, api::app.screen_height);
 }
 
-void api::scene::load(feature* scene) {
+void api::scene::load(feature *scene) {
     auto &current_scene {api::scene::current()};
 
-    // if you think it is bad, you should code more.
-
     if (scene == nullptr && current_scene != nullptr) {
-        api::gc::destroy(current_scene);
+        current_scene->on_destroy();
+        delete current_scene;
         api::app.p_current_scene = nullptr;
         return;
     }
 
     if (scene != nullptr && current_scene != nullptr && current_scene == scene) {
-        api::gc::destroy(scene);
+        current_scene->on_destroy();
+        delete current_scene;
         return;
     }
 
     if (scene != nullptr && current_scene != nullptr && current_scene != scene) {
-        api::gc::destroy(current_scene);
-        api::gc::create(scene);
+        current_scene->on_destroy();
+        delete current_scene;
+        scene->on_create();
         api::app.p_current_scene = scene;
         return;
     }
 
     if (scene != nullptr && current_scene == nullptr) {
-        api::gc::create(scene);
+        scene->on_create();
         api::app.p_current_scene = scene;
     }
 }
 
 feature *&api::scene::current() {
     return api::app.p_current_scene;
-}
-
-void api::gc::destroy(feature *p_target) {
-    api::app.garbage_collector.destroy(p_target);
-}
-
-void api::gc::create(feature *p_target) {
-    api::app.garbage_collector.create(p_target);
 }
 
 bool api::shading::create_program(std::string_view tag, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list) {
@@ -257,6 +255,7 @@ bool api::shading::create_program(std::string_view tag, ::shading::program *p_pr
         } else {
             util::log(std::string(tag.data()) + " shading program successfully linked");
             api::shading::registry(tag, p_program);
+            p_program->send();
         }
 
         return status;
@@ -328,14 +327,31 @@ bool api::input::pressed(std::string_view input_tag) {
     return api::app.input_manager.input_map[input_tag.data()];
 }
 
-void api::service::registry(feature *p_feature) {
+void api::task::registry(feature *p_feature) {
     if (p_feature == nullptr) {
         return;
     }
 
-    api::gc::create(p_feature);
+    api::task::synchronize(p_feature);
     api::app.loaded_service_list.push_back(p_feature);
 
     p_feature->id = (int32_t) api::app.loaded_service_list.size();
     util::log("Registered internal service ID (" + std::to_string(p_feature->id) + ")");
+}
+
+void api::task::populate() {
+    while (!api::app.task_queue.empty()) {
+        auto &p_feature {api::app.task_queue.front()};
+        if (p_feature != nullptr && p_feature->is_dead) {
+            p_feature->on_destroy();
+        } else if (p_feature != nullptr) {
+            p_feature->on_create();
+        }
+
+        api::app.task_queue.pop();
+    }
+}
+
+void api::task::synchronize(feature *p_feature) {
+    api::app.task_queue.push(p_feature);
 }

@@ -9,7 +9,6 @@ public:
     ~feature();
 
     static int32_t token;
-
     bool is_enable {true};
     bool is_dead {};
     int32_t id {};

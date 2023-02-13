@@ -17,18 +17,22 @@ namespace client::scenes {
         client::services::camera_manager *p_camera_manager {};
         uint64_t last_display_fps {};
 
-        ekg::ui::slider *p_slider_light_intensity {};
-        ekg::ui::slider *p_slider_range {};
-        ekg::ui::slider *p_slider_fog_dist {};
-        ekg::ui::checkbox *p_checkbox_post_processing {};
-        ekg::ui::checkbox *p_check_box_hdr {};
-        ekg::ui::slider *p_slider_hdr_exposure {};
+        ekg::ui::slider *p_light_intensity {};
+        ekg::ui::slider *p_chunk_range {};
+        ekg::ui::slider *p_fog_distance {};
 
-        ekg::ui::slider *p_frequency;
-        ekg::ui::slider *p_amplitude;
-        ekg::ui::slider *p_persistence;
-        ekg::ui::slider *p_lacunarity;
-        ekg::ui::slider *p_octaves;
+        ekg::ui::slider *p_frequency {};
+        ekg::ui::slider *p_amplitude {};
+        ekg::ui::slider *p_persistence {};
+        ekg::ui::slider *p_lacunarity {};
+        ekg::ui::slider *p_octaves {};
+
+        ekg::ui::checkbox *p_enable_post_processing {};
+        ekg::ui::checkbox *p_enable_hdr {};
+        ekg::ui::slider *p_hdr_exposure {};
+        ekg::ui::checkbox *p_enable_motion_blur {};
+        ekg::ui::slider *p_motion_blur_intensity {};
+
 
         void on_create() override;
         void on_destroy() override;

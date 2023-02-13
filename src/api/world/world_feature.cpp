@@ -40,5 +40,5 @@ void world_feature::set_priority(enums::priority enum_priority, bool dispatch_ev
 }
 
 enums::priority world_feature::get_priority() {
-    return enums::priority::low;
+    return this->priority;
 }

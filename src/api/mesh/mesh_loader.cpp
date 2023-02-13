@@ -175,15 +175,15 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
                 /* send geometry indices to be used later in rendering */
 
                 if (v_contains) {
-                    data.append(mesh::type::vertex, static_cast<uint32_t>(std::stoi(split_first[0])) - 1);
+                    data.append(mesh::type::vertex, static_cast<uint32_t>(abs(std::stoi(split_first[0]))) - 1);
                 }
 
                 if (t_contains) {
-                    data.append(mesh::type::textcoord, static_cast<uint32_t>(std::stoi(split_first[1])) - 1);
+                    data.append(mesh::type::textcoord, static_cast<uint32_t>(abs(std::stoi(split_first[1]))) - 1);
                 }
 
                 if (n_contains) {
-                    data.append(mesh::type::normal, static_cast<uint32_t>(std::stoi(split_first[2 - (!t_contains)])) - 1);
+                    data.append(mesh::type::normal, static_cast<uint32_t>(abs(std::stoi(split_first[2 - (!t_contains)]))) - 1);
                 }
             }
         }

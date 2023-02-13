@@ -9,17 +9,14 @@
 #include <vector>
 #include <map>
 
-#define HDR_FRAMEBUFFER_TEXTURE 0
-#define HDR_LUMINANCE_TEXTURE 1
-
 class renderer : public feature {
 protected:
     std::vector<model*> loaded_model_list {};
     std::map<std::string, int32_t> model_register_map {};
 
-    glm::mat4 mat4x4_mvp {};
-    glm::mat4 mat4x4_inverse {};
-    glm::mat4 mat4x4_previous_mvp {};
+    glm::mat4 mat4x4_perspective_view {};
+    glm::mat4 mat4x4_inverse_perspective_view {};
+    glm::mat4 mat4x4_previous_perspective_view {};
     glm::mat4 mat4x4_view {};
     glm::mat4 mat4x4_perspective {};
 
@@ -48,12 +45,6 @@ public:
     std::vector<world_feature*> wf_env_draw_list {};
     std::vector<chunk*> wf_chunk_draw_list {};
 
-    value<glm::vec2> config_fog_distance {};
-    value<glm::vec3> config_fog_color {};
-    value<bool> config_post_processing {};
-    value<bool> config_hdr {};
-    value<float> config_hdr_exposure {};
-
     model *add(std::string_view tag, mesh::data &mesh_data);
     void add(chunk *p_chunk);
 
@@ -65,6 +56,7 @@ public:
     void process_environment();
     void process_post_processing();
     void process_editor();
+    void process_sky();
     void process_framebuffer(int32_t w, int32_t h);
 
     void on_create() override;

@@ -11,18 +11,15 @@ namespace api {
     void path(const char*);
     void viewport();
 
-    namespace service {
+    namespace task {
         void registry(feature *p_feature);
+        void synchronize(feature *p_feature);
+        void populate();
     };
     
     namespace scene {
         void load(feature *p_feature);
         feature *&current();
-    }
-
-    namespace gc {
-        void destroy(feature *p_feature);
-        void create(feature *p_feature);
     }
 
     namespace shading {

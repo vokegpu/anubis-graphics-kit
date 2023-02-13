@@ -8,7 +8,7 @@ int32_t main(int32_t argv, char** argc) {
     p_scene->p_camera_manager = new client::services::camera_manager();
 
     api::path(argc[0]);
-    api::service::registry(p_scene->p_camera_manager);
+    api::task::registry(p_scene->p_camera_manager);
     api::mainloop(p_scene);
     return 0;
 }

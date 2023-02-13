@@ -10,11 +10,11 @@ void world_time_manager::on_create() {
     this->color_nightmare = {0.0f, 0.0f, 0.08117647058827604f};
 
     // The start hour is 6am.
-    this->delta_si_real_elapsed = 60 * 7;
-    this->color_from_sky = this->color_day;
+    this->delta_si_real_elapsed = 60 * 6;
+    this->color_from_sky = this->color_nightmare;
     this->day_ambient_light = 0.4f;
     this->nightmare_ambient_light = 0.0f;
-    this->ambient_light = this->day_ambient_light;
+    this->ambient_light = this->nightmare_ambient_light;
     this->ambient_next_light = this->ambient_light;
 }
 
@@ -49,6 +49,7 @@ void world_time_manager::on_update() {
     switch (this->delta_hour_virtual) {
         case 6: {
             this->is_night = false;
+            this->ambient_luminance = this->day_ambient_light;
 
             uint64_t delta_si_h {this->delta_hour_virtual * 60};
             uint64_t delta_i {this->delta_min_virtual - delta_si_h};
@@ -63,6 +64,7 @@ void world_time_manager::on_update() {
 
         case 18: {
             this->is_night = true;
+            this->ambient_luminance = this->day_ambient_light;
 
             /* Here is the same code except the part to set the new sky color. */
             uint64_t delta_si_h = {this->delta_hour_virtual * 60};
@@ -93,9 +95,7 @@ void world_time_manager::on_update() {
 
     /* The ambient light is a high-precision float, it is cool to have a smooth degree. */
     this->ambient_light = this->ambient_light + (this->ambient_next_light - this->ambient_light) * api::dt;
-
-    auto &p_world_renderer {api::world::renderer()};
-    p_world_renderer->config_fog_color.set_value(this->color_from_sky);
+    api::app.setting.fog_color.set_value(this->color_from_sky);
 }
 
 void world_time_manager::on_render() {

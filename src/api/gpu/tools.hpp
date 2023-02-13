@@ -78,10 +78,10 @@ protected:
 public:
     uint32_t memory_barrier {GL_ALL_BARRIER_BITS};
     uint32_t dispatch_groups[3] {1, 1, 1};
-    uint32_t dimension[3] {};
+    uint32_t dimension[3] {1, 1, 1};
     uint32_t map_buffer_type[2] {};
 
-    shading::program *p_program_parallel {};
+    shading::program *p_program {};
 
     explicit paralleling() = default;
     ~paralleling() {
@@ -113,12 +113,12 @@ public:
     }
 
     void invoke() const {
-        glUseProgram(this->p_program_parallel->id);
+        glUseProgram(this->p_program->id);
     }
 
     void dispatch() const {
         /* Pipeline "draw call", but for target texture. */
-        glDispatchCompute(this->dimension[0] / this->dispatch_groups[0], this->dimension[1] / this->dispatch_groups[1], 1 / this->dispatch_groups[2]);
+        glDispatchCompute(this->dimension[0] / this->dispatch_groups[0], this->dimension[1] / this->dispatch_groups[1], this->dimension[2] / this->dispatch_groups[2]);
 
         /* Do pipeline wait for process. */
         glMemoryBarrier(memory_barrier);
@@ -367,6 +367,13 @@ public:
     }
 
     template<typename t>
+    t *get(t *p_data) {
+        gpu::texture &texture {this->texture_map[texturing::current_texture_info[0]]};
+        glGetTexImage(texture.type, 0, texture.channel, texture.primitive, p_data);
+        return p_data;
+    }
+
+    template<typename t>
     std::vector<t> &get(std::vector<t> &data) {
         uint32_t channel {1};
         gpu::texture &texture {this->texture_map[texturing::current_texture_info[0]]};
@@ -389,7 +396,11 @@ public:
         }
 
         /* Get the new texture data from GPU. */
-        data.resize(texture.w * texture.h * channel);
+        int64_t size {texture.w * texture.h * texture.z * channel};
+        if (data.size() != size) {
+            data.resize(size);
+        }
+
         glGetTexImage(texture.type, 0, texture.channel, texture.primitive, data.data());
         return data;
     }

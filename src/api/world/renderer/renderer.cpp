@@ -4,6 +4,7 @@
 #include "api/world/environment/env_object.hpp"
 #include "api/api.hpp"
 #include "api/event/event.hpp"
+#include "api/world/environment/env_light.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
@@ -25,7 +26,6 @@ model *renderer::add(std::string_view tag, mesh::data &mesh_data) {
     auto &buffer = p_model->buffer;
     buffer.invoke();
     buffer.stride[0] = 0;
-    buffer.primitive = GL_TRIANGLES;
 
     if (mesh_data.contains(mesh::type::vertex)) {
         f_list = mesh_data.get_float_list(mesh::type::vertex);
@@ -81,17 +81,20 @@ void renderer::process_terrain() {
     glm::mat3 mat3x3_inverse_transpose {};
     glm::vec3 color {1.0f, 1.0f, 1.0f};
 
+    auto p_time_manager {api::world::time_manager()};
     shading::program *p_program_pbr {};
     api::shading::find("terrain.pbr", p_program_pbr);
 
     p_program_pbr->invoke();
-    p_program_pbr->set_uniform_vec2("uFog.uDistance", &this->config_fog_distance.get_value()[0]);
-    p_program_pbr->set_uniform_vec3("uFog.uColor", &this->config_fog_color.get_value()[0]);
+    p_program_pbr->set_uniform_vec2("uFog.uDistance", &api::app.setting.fog_bounding.get_value()[0]);
+    p_program_pbr->set_uniform_vec3("uFog.uColor", &api::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uMaterial.uColor", &color[0]);
     p_program_pbr->set_uniform_bool("uMaterial.uMetal", false);
     p_program_pbr->set_uniform_float("uMaterial.uRough", 0.93f);
     p_program_pbr->set_uniform_vec3("uCameraPos", &api::world::current_camera()->position[0]);
-    p_program_pbr->set_uniform_float("uAmbientColor", api::world::time_manager()->ambient_light);
+    p_program_pbr->set_uniform_float("uAmbientColor", p_time_manager->ambient_light);
+    p_program_pbr->set_uniform_float("uAmbientLuminance", p_time_manager->ambient_luminance);
+    p_program_pbr->set_uniform_int("uTerrainHeight", api::app.setting.chunk_terrain_height.get_value());
 
     glCullFace(GL_FRONT);
     this->buffer_chunk.invoke();
@@ -103,7 +106,7 @@ void renderer::process_terrain() {
     /* Height map texture. */
 
     for (chunk *&p_chunks : this->wf_chunk_draw_list) {
-        if (p_chunks == nullptr || !p_chunks->is_processed()) {
+        if (p_chunks == nullptr || !p_chunks->is_processed() || p_chunks->is_dead) {
             continue;
         }
 
@@ -117,7 +120,7 @@ void renderer::process_terrain() {
         p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse_transpose[0][0]);
         p_program_pbr->set_uniform_mat4("uMatrixModel", &mat4x4_model[0][0]);
 
-        mat4x4_model = this->mat4x4_mvp * mat4x4_model;
+        mat4x4_model = this->mat4x4_perspective_view * mat4x4_model;
         p_program_pbr->set_uniform_mat4("uMVP_TescStage", &mat4x4_model[0][0]);
         p_program_pbr->set_uniform_mat4("uMVP_TeseStage", &mat4x4_model[0][0]);
 
@@ -132,8 +135,6 @@ void renderer::process_terrain() {
 }
 
 void renderer::process_environment() {
-    auto camera {api::world::current_camera()};
-
     glm::mat4 mat4x4_model {};
     glm::mat3 mat3x3_inverse {};
     glm::mat4 mat4x4_model_view {};
@@ -142,21 +143,23 @@ void renderer::process_environment() {
     api::shading::find("m.brdf.pbr", p_program_pbr);
 
     glUseProgram(p_program_pbr->id);
-    p_program_pbr->set_uniform_vec2("uFog.uDistance", &this->config_fog_distance.get_value()[0]);
-    p_program_pbr->set_uniform_vec3("uFog.uColor", &this->config_fog_color.get_value()[0]);
+    p_program_pbr->set_uniform_vec2("uFog.uDistance", &api::app.setting.fog_bounding.get_value()[0]);
+    p_program_pbr->set_uniform_vec3("uFog.uColor", &api::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", api::world::time_manager()->ambient_light);
     p_program_pbr->set_uniform_vec3("uCameraPos", &api::world::current_camera()->position[0]);
+    p_program_pbr->set_uniform_mat4("uPerspectiveView", &this->mat4x4_perspective_view[0][0]);
 
     entity *p_entity {};
     model *p_model {};
     object *p_object {};
+    light *p_light {};
 
     enums::material material_type {};
-    int32_t current_light_loaded {};
+    int32_t light_amount {};
     std::string light_index_tag {};
 
     for (world_feature *&p_world_feature : this->wf_env_draw_list) {
-        if (p_world_feature == nullptr) {
+        if (p_world_feature == nullptr || p_world_feature->is_dead) {
             continue;
         }
 
@@ -173,12 +176,19 @@ void renderer::process_environment() {
                 break;
             }
 
+            case enums::type::light: {
+                p_light = (light*) p_world_feature;
+                p_light->index = light_amount++;
+                p_model = p_light->p_model;
+                break;
+            }
+
             default: {
                 break;
             }
         }
 
-        if (p_model == nullptr || p_object->p_material == nullptr) {
+        if (p_model == nullptr || p_object->p_material == nullptr || glm::distance(api::app.p_current_camera->position, p_object->position) > api::app.setting.fog_bounding.get_value().y) {
             continue;
         }
 
@@ -193,7 +203,7 @@ void renderer::process_environment() {
         p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse[0][0]);
         p_program_pbr->set_uniform_mat4("uModelMatrix", &mat4x4_model[0][0]);
 
-        mat4x4_model = this->mat4x4_mvp * mat4x4_model;
+        mat4x4_model = this->mat4x4_perspective_view * mat4x4_model;
         p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_model[0][0]);
 
         material_type = p_object->p_material->get_type();
@@ -206,12 +216,12 @@ void renderer::process_environment() {
         p_model->buffer.revoke();
     }
 
-    if (this->loaded_light_size != current_light_loaded) {
-        this->loaded_light_size = current_light_loaded;
-        p_program_pbr->set_uniform_int("uLightAmount", current_light_loaded);
+    if (this->loaded_light_size != light_amount) {
+        this->loaded_light_size = light_amount;
+        p_program_pbr->set_uniform_int("uLightAmount", light_amount);
         api::shading::find("terrain.pbr", p_program_pbr);
         p_program_pbr->invoke();
-        p_program_pbr->set_uniform_int("uLightAmount", current_light_loaded);
+        p_program_pbr->set_uniform_int("uLightAmount", light_amount);
     };
 
     glUseProgram(0);
@@ -220,10 +230,10 @@ void renderer::process_environment() {
 void renderer::process_post_processing() {
     /* Invoke framebuffer and start collect screen buffers. */
     this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    api::viewport();
 
     this->process_terrain();
     this->process_environment();
+    this->process_sky();
 
     /* Revoke all buffers from frame. */
     this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT);
@@ -231,61 +241,73 @@ void renderer::process_post_processing() {
     /* Draw the current frame buffer. */
     float ave_lum {};
 
-    if (this->config_hdr.get_value() && util::reset_when(this->timing_hdr_cycle, 16)) {
+    if (api::app.setting.enable_hdr.get_value() && util::reset_when(this->timing_hdr_cycle, 16)) {
         int32_t size {api::app.screen_width * api::app.screen_height};
 
+        this->parallel_post_processing.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
         this->parallel_post_processing.dispatch_groups[0] = 32;
-        this->parallel_post_processing.dispatch_groups[0] = 32;
+        this->parallel_post_processing.dispatch_groups[1] = 32;
         this->parallel_post_processing.dimension[0] = api::app.screen_width;
         this->parallel_post_processing.dimension[1] = api::app.screen_height;
 
         /* Pass current framebuffer to HDR luminance texture.  */
         this->parallel_post_processing.invoke();
         this->texture_post_processing.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
-        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].id = this->framebuffer_post_processing[0].id_texture;
-        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].w = api::app.screen_width;
-        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].h = api::app.screen_height;
-        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].channel = GL_RGBA;
-        this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE].format = GL_RGBA32F;
-        this->parallel_post_processing.attach(0, this->texture_post_processing[HDR_FRAMEBUFFER_TEXTURE], GL_READ_ONLY);
+        this->texture_post_processing[0].id = this->framebuffer_post_processing[0].id_texture;
+        this->texture_post_processing[0].w = api::app.screen_width;
+        this->texture_post_processing[0].h = api::app.screen_height;
+        this->texture_post_processing[0].channel = GL_RGBA;
+        this->texture_post_processing[0].format = GL_RGBA32F;
+        this->parallel_post_processing.attach(0, this->texture_post_processing[0], GL_READ_ONLY);
 
-        this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
-        this->texture_post_processing.send<float>({1, 1, 0}, nullptr, {GL_R32F, GL_RED});
-        this->parallel_post_processing.attach(1, this->texture_post_processing[HDR_LUMINANCE_TEXTURE], GL_READ_WRITE);
+        this->texture_post_processing.invoke(1, {GL_TEXTURE_2D, GL_FLOAT});
+        this->texture_post_processing.send<float>({1, 1, 1}, nullptr, {GL_R32F, GL_RED});
+        this->parallel_post_processing.attach(1, this->texture_post_processing[1], GL_WRITE_ONLY);
         this->parallel_post_processing.dispatch();
 
-        /* Read luminance texture for get the sum of all pixels log(Lum + 0.0001f) */
-        this->texture_post_processing.invoke(HDR_LUMINANCE_TEXTURE, {GL_TEXTURE_2D, GL_FLOAT});
-        std::vector<float> luminance_image_list {};
-        this->texture_post_processing.get<float>(luminance_image_list);
-        ave_lum = expf(luminance_image_list[0] / static_cast<float>(size));
+        /* Read the HDR parallel script with the luminosity average calculated. */
+        this->texture_post_processing.invoke(1, {GL_TEXTURE_2D, GL_FLOAT});
+
+        float luminance {};
+        this->texture_post_processing.get<float>(&luminance);
+        ave_lum = expf(luminance / static_cast<float>(size));
+
+        this->texture_post_processing.revoke();
         this->parallel_post_processing.revoke();
     }
 
     glCullFace(GL_FRONT);
 
-    this->immshape_post_processing.invoke();
-    this->immshape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
-    this->immshape_post_processing.p_program->set_uniform_float("uHDR.uExposure", this->config_hdr_exposure.get_value());
-    this->immshape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", this->config_hdr.get_value());
-
-    this->mat4x4_inverse = glm::inverse(this->mat4x4_mvp);
-    this->immshape_post_processing.p_program->set_uniform_mat4("uInverseMVP", &this->mat4x4_inverse[0][0]);
-    this->immshape_post_processing.p_program->set_uniform_mat4("uMVP", &this->mat4x4_previous_mvp[0][0]);
-    this->mat4x4_previous_mvp = this->mat4x4_mvp;
-
+    /* Bind the global texture framebuffer (first pass after scene rendering) to apply the post-processing filters. */
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_texture);
 
-    auto p_camera {api::app.p_current_camera};
-    float yaw {p_camera->rotation.x};
-    float pitch {p_camera->rotation.y};
+    this->immshape_post_processing.invoke();
+    this->immshape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
+    this->immshape_post_processing.p_program->set_uniform_float("uHDR.uExposure", api::app.setting.hdr_exposure.get_value());
+    this->immshape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", api::app.setting.enable_hdr.get_value());
 
-    this->camera_motion_delta.x = yaw - this->camera_motion_delta.x;
-    this->camera_motion_delta.y = pitch - this->camera_motion_delta.y;
-    this->immshape_post_processing.p_program->set_uniform_vec2("uVelocity", &this->camera_motion_delta[0]);
-    this->camera_motion_delta.x = yaw;
-    this->camera_motion_delta.y = pitch;
+    this->immshape_post_processing.p_program->set_uniform_bool("uMotionBlur.uEnabled", api::app.setting.enable_motion_blur.get_value());
+    if (api::app.setting.enable_motion_blur.get_value()) {
+        this->mat4x4_inverse_perspective_view = glm::inverse(this->mat4x4_perspective_view);
+        this->immshape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uInversePerspectiveView", &this->mat4x4_inverse_perspective_view[0][0]);
+        this->immshape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);
+        this->mat4x4_previous_perspective_view = this->mat4x4_perspective_view;
+
+        auto p_camera {api::app.p_current_camera};
+        float yaw {p_camera->rotation.x};
+        float pitch {p_camera->rotation.y};
+
+        /* Check if there is no movement in camera. */
+        this->camera_motion_delta.x = yaw - this->camera_motion_delta.x;
+        this->camera_motion_delta.y = pitch - this->camera_motion_delta.y;
+        float acc {(this->camera_motion_delta.x * this->camera_motion_delta.x + this->camera_motion_delta.y * this->camera_motion_delta.y)};
+        this->immshape_post_processing.p_program->set_uniform_bool("uMotionBlur.uCameraRotated", acc != 0.0f);
+        this->camera_motion_delta.x = yaw;
+        this->camera_motion_delta.y = pitch;
+
+        this->immshape_post_processing.p_program->set_uniform_float("uMotionBlur.uIntensity", api::app.setting.motion_blur_intensity.get_value());
+    }
 
     this->immshape_post_processing.draw({0, 0, api::app.screen_width, api::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
     this->immshape_post_processing.revoke();
@@ -299,7 +321,7 @@ void renderer::process_editor() {
 
     glm::mat4 mat4x4_model {1.0f};
     mat4x4_model = glm::scale(mat4x4_model, {20, 20, 20});
-    mat4x4_model = this->mat4x4_mvp * mat4x4_model;
+    mat4x4_model = this->mat4x4_perspective_view * mat4x4_model;
 
     p_debug_program->invoke();
     p_debug_program->set_uniform_mat4("uMVP", &mat4x4_model[0][0]);
@@ -311,7 +333,6 @@ void renderer::process_editor() {
 
     this->buffer_coordinate_debug.revoke();
     p_debug_program->revoke();
-
 }
 
 void renderer::on_create() {
@@ -345,9 +366,6 @@ void renderer::on_create() {
             {"./data/effects/coordinate.debug.frag", ::shading::stage::fragment}
     });
 
-    this->config_fog_distance.set_value({0.0f, 512.0f});
-    this->config_fog_color.set_value({0.0f, 0.0f, 0.0f});
-
     auto *&p_camera {api::world::current_camera()};
     float mesh[] {
             0.0f, 0.0f,
@@ -370,7 +388,7 @@ void renderer::on_create() {
     /* Link to immediate shape. */
     this->immshape_post_processing.link(&this->buffer_post_processing, p_program_post_processing);
 
-    this->parallel_post_processing.p_program_parallel = p_program_hd_luminance;
+    this->parallel_post_processing.p_program = p_program_hd_luminance;
     this->parallel_post_processing.dispatch_groups[0] = 32;
     this->parallel_post_processing.dispatch_groups[1] = 32;
 
@@ -451,23 +469,17 @@ void renderer::on_render() {
 
     if (this->update_disabled_chunks) {
         this->update_disabled_chunks = false;
-        this->wf_chunk_draw_list.clear();
-
-        for (chunk *&p_chunks : api::world::get()->loaded_chunk_list) {
-            if (p_chunks != nullptr && p_chunks->is_processed()) {
-                this->wf_chunk_draw_list.push_back(p_chunks);
-            }
-        }
+        this->wf_chunk_draw_list = api::world::get()->loaded_chunk_list;
     }
 
     /* Prepare matrices to render the world. */
     auto &p_camera {api::world::current_camera()};
     this->mat4x4_perspective = p_camera->get_perspective();
     this->mat4x4_view = p_camera->get_view();
-    this->mat4x4_mvp = this->mat4x4_perspective * this->mat4x4_view;
+    this->mat4x4_perspective_view = this->mat4x4_perspective * this->mat4x4_view;
 
     /* Yes? */
-    switch (this->config_post_processing.get_value()) {
+    switch (api::app.setting.enable_post_processing.get_value()) {
         case true: {
             this->process_post_processing();
             this->process_editor();
@@ -478,6 +490,7 @@ void renderer::on_render() {
             this->process_terrain();
             this->process_environment();
             this->process_editor();
+            this->process_sky();
             break;
         }
     }
@@ -518,7 +531,7 @@ void renderer::on_event_refresh_environment(SDL_Event &sdl_event) {
     auto *p_to_remove {static_cast<bool*>(sdl_event.user.data1)};
     auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
 
-    world_feature *p_world_feature {world->find_env_wf(*p_wf_id)};
+    world_feature *&p_world_feature {world->find_env_wf(*p_wf_id)};
     if (*p_to_remove) {
         this->wf_env_draw_list.clear();
         if (p_world_feature != nullptr) p_world_feature->set_visible(enums::state::disable, false);
@@ -563,7 +576,10 @@ void renderer::refresh() {
 
 void renderer::process_framebuffer(int32_t w, int32_t h) {
     this->framebuffer_post_processing.invoke(0);
-    glViewport(0, 0, w, h);
     this->framebuffer_post_processing.send_depth({w, h, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
     this->framebuffer_post_processing.revoke();
+}
+
+void renderer::process_sky() {
+    // @TODO skybox rendering.
 }

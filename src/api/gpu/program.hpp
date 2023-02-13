@@ -17,6 +17,8 @@ namespace shading {
     };
 
     struct program {
+    protected:
+        std::map<std::string, int32_t> uniform_map {};
     public:
         GLuint id {};
 
@@ -24,6 +26,7 @@ namespace shading {
         ~program();
 
         void invoke() const;
+        void send();
         void revoke() const;
 
         void set_uniform_vec4(std::string_view, const float*);

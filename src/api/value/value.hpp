@@ -39,6 +39,36 @@ public:
 #define AGK_API_VALUE_GLOBAL_H
 
 class value_global {
+public:
+    /* Post-processing. */
+    value<bool> enable_post_processing {};
+    value<bool> enable_hdr {};
+    value<float> hdr_exposure {};
+
+    value<bool> enable_motion_blur {};
+    value<float> motion_blur_intensity {};
+
+    /* World rendering. */
+    value<glm::vec2> fog_bounding {};
+    value<glm::vec3> fog_color {};
+
+    /* World update. */
+    value<int32_t> chunk_generation_interval {};
+    value<int32_t> chunk_dimension {};
+    value<int32_t> chunk_generation_distance {};
+    value<int32_t> chunk_terrain_height {};
+
+    value<float> chunk_fbm_frequency {};
+    value<float> chunk_fbm_amplitude {};
+    value<float> chunk_fbm_persistence {};
+    value<float> chunk_fbm_lacunarity {};
+    value<int32_t> chunk_fbm_octaves {};
+
+    void init() {
+        this->fog_bounding.set_value({0.0f, 512.0f});
+        this->fog_color.set_value({0.0f, 0.0f, 0.0f});
+        this->chunk_terrain_height.set_value(256);
+    }
 };
 
 #endif
