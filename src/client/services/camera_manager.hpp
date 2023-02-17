@@ -4,7 +4,7 @@
 #include "api/feature/feature.hpp"
 #include "api/world/camera/camera.hpp"
 #include "api/value/value.hpp"
-#include "api/world/environment/env_entity.hpp"
+#include "api/world/environment/entity.hpp"
 #include <iostream>
 
 namespace client::services {

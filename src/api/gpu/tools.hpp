@@ -37,34 +37,122 @@ namespace gpu {
 
 class buffering {
 protected:
-    static uint32_t current_type_bind[2];
-
-    std::vector<uint32_t> buffer_list {};
-    std::map<std::string, uint32_t> buffer_map {};
-
-    uint32_t buffer_vao {}, buffer_ebo {};
-    uint32_t buffer_list_size {};
+    uint32_t current_buffer_info[2] {};
+    std::map<uint32_t, uint32_t> buffer_map {};
+    uint32_t buffer_vao {};
 public:
-    enum class type {
-        direct, instanced    
-    };
+    int32_t primitive[2] {GL_TRIANGLES, GL_UNSIGNED_INT};
+    int32_t stride[3] {0, 0, 0};
 
-    buffering::type type {};
-    uint32_t primitive {GL_TRIANGLES};
-    int32_t stride[3] {};
+    bool instancing_rendering {};
+    bool indexing_rendering {};
 
-    explicit buffering() = default;
-    ~buffering();
+    void tessellation(int32_t patches) {
+        glPatchParameteri(GL_PATCH_VERTICES, patches);
+        this->primitive[0] = GL_PATCHES;
+    }
 
-    void tessellation(int32_t patches);
-    void bind(const glm::ivec2 &buffer_type);
-    void send(int64_t size, void *p_data, uint32_t gl_driver_read_mode);
-    void attach(int32_t location, int32_t vec, const glm::ivec2 &array_stride = {0, 0});
-    
-    void invoke();
-    void revoke();
-    void draw();
-    void free_buffers();
+    void bind(uint32_t key, const glm::ivec2 &buffer_type) {
+        auto &buffer {this->buffer_map[key]};
+        if (buffer == 0) {
+            glGenBuffers(1, &buffer);
+        }
+
+        switch (buffer_type.x) {
+            case GL_ELEMENT_ARRAY_BUFFER: {
+                this->indexing_rendering = true;
+                break;
+            }
+        }
+
+        glBindBuffer(buffer_type.x, buffer);
+        this->current_buffer_info[0] = buffer_type.x;
+        this->current_buffer_info[1] = buffer_type.y;
+    }
+
+    template<typename t>
+    void send(uint32_t size, const t *p_data, GLenum gl_driver_read_mode) {
+        glBufferData(this->current_buffer_info[0], size, p_data, gl_driver_read_mode);
+    }
+
+    template<typename t>
+    void edit(uint32_t offset, int64_t size, const t *p_data) {
+        glBufferSubData(this->current_buffer_info[0], offset, size, p_data);
+    }
+
+    void attach(uint32_t location, int32_t vec, const glm::ivec2 attrib_stride = {0, 0}) {
+        const void *p_hack {(void*) (uint64_t) attrib_stride.y};
+        glEnableVertexAttribArray(location);
+        glVertexAttribPointer(location, vec, this->current_buffer_info[1], GL_FALSE, attrib_stride.x, p_hack);
+    }
+
+    void divisor(int32_t location, int32_t divisor) const {
+        glVertexAttribDivisor(location, divisor);
+    }
+
+    void unbind() {
+        glBindBuffer(this->current_buffer_info[0], 0);
+        this->current_buffer_info[0] = this->current_buffer_info[1] = 0;
+    }
+
+    void invoke() {
+        if (this->buffer_vao == 0) {
+            glGenVertexArrays(1, &this->buffer_vao);
+        }
+
+        glBindVertexArray(this->buffer_vao);
+    }
+
+    void revoke() {
+        glBindVertexArray(0);
+    }
+
+    void draw() {
+        switch (this->instancing_rendering) {
+            case true: {
+                if (this->indexing_rendering) {
+                    const void *p_hack {(void*) (uint64_t) this->stride[1]};
+                    glDrawElementsInstanced(this->primitive[0], this->stride[0], this->primitive[1], p_hack, this->stride[2]);
+                } else {
+                    glDrawArraysInstanced(this->primitive[0], this->stride[0], this->stride[1], this->stride[2]);
+                }
+                break;
+            }
+
+            case false: {
+                if (this->indexing_rendering) {
+                    const void *p_hack {(void*) (uint64_t) this->stride[1]};
+                    glDrawElements(this->primitive[0], this->stride[0], this->primitive[1], p_hack);
+                } else {
+                    glDrawArrays(this->primitive[0], this->stride[0],this->stride[1]);
+                }
+                break;
+            }
+        }
+    }
+
+    void free_buffers() {
+        for (auto &[key, value] : this->buffer_map) {
+            if (value != 0) {
+                glDeleteBuffers(1, &value);
+            }
+        }
+
+        this->buffer_map.clear();
+    }
+
+    void delete_buffer(uint32_t key) {
+        if (!this->buffer_map.count(key)) {
+            return;
+        }
+
+        auto &buffer {this->buffer_map[key]};
+        if (buffer != 0) {
+            glDeleteBuffers(1, &buffer);
+        }
+
+        this->buffer_map.erase(key);
+    }
 };
 
 #endif
@@ -138,7 +226,7 @@ class framebuffering {
 public:
     std::map<uint32_t, gpu::frame> frame_map {};
 public:
-    static uint32_t current_frame_info;
+    uint32_t current_frame_info {};
 
     explicit framebuffering() = default;
     ~framebuffering() {}
@@ -148,13 +236,15 @@ public:
     }
 
     void send_depth(const glm::ivec3 &in_dimension, const glm::ivec2 &in_format, bool attach_unique = false) {
-        gpu::frame &framebuffer {this->frame_map[framebuffering::current_frame_info]};
+        gpu::frame &framebuffer {this->frame_map[this->current_frame_info]};
         if (framebuffer.w == in_dimension.x && framebuffer.h == in_dimension.y && framebuffer.z == in_dimension.z) {
             return;
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(GL_FRAMEBUFFER, &framebuffer.id_fbo);
+        if (framebuffer.id_fbo != 0) {
+            glDeleteFramebuffers(1, &framebuffer.id_fbo);
+        }
 
         glGenFramebuffers(1, &framebuffer.id_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.id_fbo);
@@ -238,7 +328,7 @@ public:
         /* Gen framebuffer is necessary. */
         gpu::frame &framebuffer {this->frame_map[key]};
         if (framebuffer.id_fbo == 0) glGenFramebuffers(1, &framebuffer.id_fbo);
-        framebuffering::current_frame_info = key;
+        this->current_frame_info = key;
 
         /* Bind the current framebuffer and clear previous screen buffers. */
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.id_fbo);
@@ -249,7 +339,7 @@ public:
         /* Unbind framebuffer and clean previous screen buffers. */
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (flags != 0) glClear(flags);
-        framebuffering::current_frame_info = 0;
+        this->current_frame_info = 0;
     }
 
     void delete_buffer(uint32_t key) {
@@ -284,7 +374,7 @@ class texturing {
 protected:
     std::map<uint32_t, gpu::texture> texture_map {};
 public:
-    static uint32_t current_texture_info[2];
+    uint32_t current_texture_info[2] {};
 
     explicit texturing() = default;
     ~texturing() {};
@@ -298,8 +388,8 @@ public:
     }
 
     void invoke(uint32_t key, const glm::ivec2 &texture_info) {
-        texturing::current_texture_info[0] = key;
-        texturing::current_texture_info[1] = texture_info.x;
+        this->current_texture_info[0] = key;
+        this->current_texture_info[1] = texture_info.x;
 
         gpu::texture &texture {this->texture_map[key]};
         texture.type = texture_info.x;
@@ -312,9 +402,9 @@ public:
 
     void revoke() {
         /* Unbind all textures. */
-        glBindTexture(texturing::current_texture_info[1], 0);
-        texturing::current_texture_info[0] = 0;
-        texturing::current_texture_info[1] = 0;
+        glBindTexture(this->current_texture_info[1], 0);
+        this->current_texture_info[0] = 0;
+        this->current_texture_info[1] = 0;
     }
 
     void delete_buffers() {
@@ -337,7 +427,7 @@ public:
 
     template<typename t>
     void send(const glm::ivec3 &in_dimension, const t *p_data, const glm::ivec2 &in_format, const glm::ivec3 &in_filter = {GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE}) {
-        gpu::texture &texture {this->texture_map[texturing::current_texture_info[0]]};
+        gpu::texture &texture {this->texture_map[this->current_texture_info[0]]};
 
         texture.w = in_dimension.x;
         texture.h = in_dimension.y;
@@ -363,12 +453,12 @@ public:
     }
 
     void generate_mipmap() {
-        glGenerateMipmap(texturing::current_texture_info[1]);
+        glGenerateMipmap(this->current_texture_info[1]);
     }
 
     template<typename t>
     t *get(t *p_data) {
-        gpu::texture &texture {this->texture_map[texturing::current_texture_info[0]]};
+        gpu::texture &texture {this->texture_map[this->current_texture_info[0]]};
         glGetTexImage(texture.type, 0, texture.channel, texture.primitive, p_data);
         return p_data;
     }
@@ -376,7 +466,7 @@ public:
     template<typename t>
     std::vector<t> &get(std::vector<t> &data) {
         uint32_t channel {1};
-        gpu::texture &texture {this->texture_map[texturing::current_texture_info[0]]};
+        gpu::texture &texture {this->texture_map[this->current_texture_info[0]]};
 
         switch (texture.channel) {
             case GL_RG: {
@@ -406,7 +496,7 @@ public:
     }
 
     int64_t size() {
-        return this->texture_map.size();
+        return (int64_t) this->texture_map.size();
     }
 };
 

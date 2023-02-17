@@ -7,7 +7,7 @@
 #include "api/util/math.hpp"
 #include "api/util/file.hpp"
 #include "api/util/gpu.hpp"
-#include "api/world/environment/env_object.hpp"
+#include "api/world/environment/object.hpp"
 
 void world::on_create() {
     api::app.setting.chunk_generation_interval.set_value(1000);
@@ -21,17 +21,15 @@ void world::on_create() {
             {"./data/scripts/cloud.generator.script.comp", shading::stage::compute}
     });
 
-    util::read_image("./data/textures/iceland_heightmap.png", this->chunk_heightmap_texture);
     api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
-
-    this->p_tree_model = api::world::create("tree-simple", "./data/models/tree-simple.obj", ::mesh::format::obj);
-    auto &buffer {this->p_tree_model->buffer};
-    buffer.primitive = GL_TRIANGLE_STRIP;
-    api::app.p_world_dynamic_geometry_renderer->registry(this->p_tree_model->id) = buffer;
-
     this->vegetation_memory_list.reserve(100 * 4);
+
+    this->p_tree_model = api::world::create("tree-simple", "./data/models/Coconut Tree.obj", ::mesh::format::obj);
+    this->p_tree_model->buffer.primitive[0] = GL_TRIANGLE_STRIP;
     this->p_material_tree = new material {enums::material::dialetric};
     this->p_material_tree->set_color({0.2, 0.0f, 0.2f});
+
+    util::log("Tree simple assets created.");
 
     /* Generate texture for parallel vegetation spawn. */
     this->texture_vegetation.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
@@ -75,8 +73,6 @@ void world::on_event(SDL_Event &sdl_event) {
 }
 
 void world::on_update() {
-    util::log(std::to_string(this->wf_list.size()));
-
     /* World feature environment statement. */
     if (this->poll_low_priority_queue) {
         for (;!this->wf_low_priority_queue.empty();) {
@@ -131,8 +127,8 @@ void world::on_update() {
                 should_refresh_renderer = true;
 
                 for (int32_t &id : p_chunks->vegetation) {
-                    world_feature *&p_world_feature {this->find_env_wf(id)};
-                    this->unregister_wf(p_world_feature);
+                    this->unregister_wf(this->registered_wf_map[id]);
+                    this->registered_wf_map.erase(id);
                     free_memory_counter++;
                 }
 
@@ -289,21 +285,22 @@ void world::on_update() {
         glm::vec3 scale_factor {6.4F, 6.4F, 6.4F};
         glm::vec4 vegetation_pos {};
         glm::mat4 mat4x4_vegetation_model = glm::scale(glm::mat4(1.0f), p_chunk->scale);
+        glm::mat4 mat4x4_model {};
 
         for (int32_t it {}; it < index_length; it++) {
             float *p_vec {&(this->vegetation_memory_list[it * 4])};
-            object *p_tree {new object {this->p_tree_model}};
-            p_tree->p_material = this->p_material_tree;
-
             vegetation_pos.y = p_vec[2] * static_cast<float>(api::app.setting.chunk_terrain_height.get_value());
             vegetation_pos = mat4x4_vegetation_model * vegetation_pos;
 
             vegetation_pos.x = p_vec[1] * (float) chunk_size;
             vegetation_pos.z = p_vec[3] * (float) chunk_size;
 
+            object *p_tree {new object {this->p_tree_model}};
+            p_tree->p_material = this->p_material_tree;
             p_tree->position = vegetation_pos;
             p_tree->scale = scale_factor;
 
+            // Install an instance mesh to this vegetation.
             p_chunk->vegetation.push_back(p_tree->id);
             this->registry_wf(p_tree);
         }

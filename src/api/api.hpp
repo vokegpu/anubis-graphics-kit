@@ -37,6 +37,8 @@ namespace api {
         world_time_manager *&time_manager();
 
         model *create(std::string_view tag, std::string_view path, ::mesh::format format);
+        model *create(std::string_view tag, std::string_view path, ::mesh::data &mesh);
+
         void create(world_feature *p_world_feature);
         void destroy(world_feature *p_world_feature);
     };

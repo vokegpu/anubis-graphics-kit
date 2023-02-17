@@ -9,6 +9,7 @@
 #include "api/util/env.hpp"
 #include "api/util/file.hpp"
 #include "api/world/model/model.hpp"
+#include "api/world/environment/object.hpp"
 #include <vector>
 #include <queue>
 #include <map>
@@ -49,7 +50,6 @@ public:
     std::map<std::string, chunk*> chunk_map {};
     std::vector<chunk*> loaded_chunk_list {};
 
-    util::image chunk_heightmap_texture {};
     util::timing chunk_checker_timing {};
     util::timing chunk_poll_chunking {};
     mesh::data chunk_mesh_data {};

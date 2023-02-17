@@ -11,8 +11,13 @@ namespace mesh {
     };
 
     enum class type {
-        vertex, textcoord, normal, color
+        vertex, textcoord, normal, color, instance
     };
+
+    typedef struct instance {
+        glm::mat4 mat4x4 {};
+        int32_t id {};
+    } instance;
 
     struct data {
     protected:
@@ -20,6 +25,7 @@ namespace mesh {
         std::vector<float> t_list {};
         std::vector<float> n_list {};
         std::vector<float> c_list {};
+        std::vector<mesh::instance> instance_list {};
 
         std::vector<uint32_t> iv_list {};
         std::vector<uint32_t> it_list {};
@@ -29,9 +35,12 @@ namespace mesh {
         uint8_t v_len {3};
         uint8_t t_len {2};
         uint8_t n_len {3};
+        int32_t instance_token {1};
+        int32_t remove_token {};
     public:
         mesh::format format {mesh::format::unknown};
         int32_t faces {};
+        bool instanced {};
 
         explicit inline data() = default;
         explicit inline data(mesh::format _format) {
@@ -44,8 +53,12 @@ namespace mesh {
         void append(mesh::type type, float value);
         void append(mesh::type type, uint32_t index);
 
+        void remove_instance(int32_t instance);
+        int32_t append_instanced(const glm::mat4 &mat);
+
         std::vector<uint32_t> &get_uint_list(mesh::type type);
         std::vector<float> &get_float_list(mesh::type type);
+        std::vector<mesh::instance> &get_instance_list();
         bool contains(mesh::type type, bool indexing = false);
     };
 }

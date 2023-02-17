@@ -4,8 +4,8 @@
 #include "api/feature/feature.hpp"
 #include "api/gpu/tools.hpp"
 #include "client/services/camera_manager.hpp"
-#include "api/world/environment/env_light.hpp"
-#include "api/world/environment/env_object.hpp"
+#include "api/world/environment/light.hpp"
+#include "api/world/environment/object.hpp"
 #include <ekg/ekg.hpp>
 
 namespace client::scenes {

@@ -8,9 +8,8 @@
 #include "api/mesh/mesh_loader.hpp"
 #include "api/input/input.hpp"
 #include "api/world/renderer/renderer.hpp"
-#include "api/world/environment/env_entity.hpp"
-#include "api/world/renderer/dynamic_renderer.hpp"
-#include "api/world/environment/env_world_time_manager.hpp"
+#include "api/world/environment/entity.hpp"
+#include "api/world/environment/world_time_manager.hpp"
 
 class profile {
 public:
@@ -29,7 +28,6 @@ public:
     world *p_world_client {};
     renderer *p_world_renderer {};
     world_time_manager *p_world_time_manager {};
-    dynamic_geometry_instanced_renderer *p_world_dynamic_geometry_renderer {};
 
     mesh_loader mesher_loader {};
     input input_manager {};

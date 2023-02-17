@@ -29,3 +29,14 @@ float util::luminance(float r, float g, float b) {
 float util::lerp(float a, float b, float delta) {
     return a + (b - a) * delta;
 }
+
+bool util::check_is_on_forward_plane(const util::aabb &axis_aligned_bounding_box, const util::plane &plane) {
+    const float r {
+            axis_aligned_bounding_box.extents.x * glm::abs(plane.n.x) +
+            axis_aligned_bounding_box.extents.y * glm::abs(plane.n.y) +
+            axis_aligned_bounding_box.extents.z * glm::abs(plane.n.z)
+    };
+
+    /* Known as signed distance to plane. */
+    return -r <= glm::dot(plane.n, axis_aligned_bounding_box.center) - plane.distance;
+}

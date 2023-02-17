@@ -63,10 +63,6 @@ void api::mainloop(feature *p_scene_initial) {
     api::world::create(api::app.p_current_player);
     util::log("Main world player created.");
 
-    api::app.p_world_dynamic_geometry_renderer = new dynamic_geometry_instanced_renderer {};
-    api::task::synchronize(api::app.p_world_dynamic_geometry_renderer);
-    util::log("Dynamic geometry renderer created.");
-
     api::app.p_world_time_manager = new world_time_manager {};
     api::task::synchronize(api::app.p_world_time_manager);
     util::log("World time manager created.");
@@ -300,6 +296,10 @@ void api::world::destroy(world_feature *p_world_feature) {
 
 model *api::world::create(std::string_view tag, std::string_view path, ::mesh::format format) {
     ::mesh::data mesh {format};
+    return api::world::create(tag, path, mesh);
+}
+
+model *api::world::create(std::string_view tag, std::string_view path, ::mesh::data &mesh) {
     if (api::mesh::load(mesh, path.data())) {
         return nullptr;
     }

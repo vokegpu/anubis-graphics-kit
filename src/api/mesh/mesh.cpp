@@ -214,10 +214,37 @@ bool mesh::data::contains(mesh::type type, bool indexing) {
             return indexing ? !this->ic_list.empty() : !this->c_list.empty();
         }
 
+        case mesh::type::instance: {
+            return this->instance_list.empty();
+        }
+
         default: {
             break;
         }
     }
 
     return indexing ? !this->in_list.empty() : !this->n_list.empty();
+}
+
+int32_t mesh::data::append_instanced(const glm::mat4 &mat) {
+    this->instance_list.emplace_back() = {mat, ++this->instance_token};
+    return this->instance_token;
+}
+
+std::vector<mesh::instance> &mesh::data::get_instance_list() {
+    return this->instance_list;
+}
+
+void mesh::data::remove_instance(int32_t instance) {
+    int32_t index {-1};
+    for (int32_t it {}; it < this->instance_list.size(); it++) {
+        if (this->instance_list[it].id == instance) {
+            index = it;
+            break;
+        }
+    }
+
+    if (index != -1) {
+        this->instance_list.erase(this->instance_list.begin() + index);
+    }
 }

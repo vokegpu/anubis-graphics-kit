@@ -2,8 +2,8 @@
 #include "api/gpu/tools.hpp"
 #include "api/util/env.hpp"
 #include "api/api.hpp"
-#include "api/world/environment/env_object.hpp"
-#include "api/world/environment/env_light.hpp"
+#include "api/world/environment/object.hpp"
+#include "api/world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
     model *p_model_dino {api::world::create("Dinossaur", "./data/models/Dinossaur.stl", mesh::format::stl)};
@@ -110,9 +110,6 @@ void client::scenes::starter::on_create() {
     this->p_motion_blur_intensity = ekg::slider("Intensity", 0.43f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_motion_blur_intensity->set_value(0.1f);
     this->p_motion_blur_intensity->set_precision(2);
-
-    SDL_SetWindowSize(api::app.p_sdl_window, 1280, 720);
-    SDL_SetWindowFullscreen(api::app.p_sdl_window, false);
 }
 
 void client::scenes::starter::on_destroy() {

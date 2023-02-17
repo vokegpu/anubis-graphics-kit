@@ -5,7 +5,6 @@ layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec3 aNormal;
 
 layout (location = 3) in mat4 aInstancedModelMatrix;
-layout (locaiton = 4) in mat3 aInstancedNormalMatrix;
 
 out vec3 vPos;
 out vec3 vPosModel;
@@ -19,14 +18,16 @@ uniform mat3 uNormalMatrix;
 uniform mat4 uPerspectiveViewMatrix;
 
 void main() {
+    vec4 modelPos = vec4(1.0f);
+
     if (uInstanced) {
         mat4 mvp = uPerspectiveViewMatrix * aInstancedModelMatrix;
         gl_Position = mvp * vec4(aPos, 1.0f);
-        vec4 modelPos = aInstancedModelMatrix * vec4(aPos, 1.0f);
-        vNormal = normalize(aInstancedNormalMatrix * aNormal);
+        modelPos = aInstancedModelMatrix * vec4(aPos, 1.0f);
+        vNormal = normalize(aNormal);
     } else {
         gl_Position = uMVP * vec4(aPos, 1.0f);
-        vec4 modelPos = uModelMatrix * vec4(aPos, 1.0f);
+        modelPos = uModelMatrix * vec4(aPos, 1.0f);
         vNormal = normalize(uNormalMatrix * aNormal);
     }
 

@@ -1,3 +1,16 @@
+#ifndef AGK_API_WORLD_MODEL_RENDERER_NODE_H
+#define AGK_API_WORLD_MODEL_RENDERER_NODE_H
+
+#include <iostream>
+
+typedef struct node {
+    int parent {};
+    int id {};
+    std::string model {};
+} node;
+
+#endif
+
 #ifndef AGK_API_WORLD_MODEL_RENDERER_H
 #define AGK_API_WORLD_MODEL_RENDERER_H
 
@@ -8,11 +21,18 @@
 #include "api/ui/immshape.hpp"
 #include <vector>
 #include <map>
+#include <array>
 
 class renderer : public feature {
 protected:
     std::vector<model*> loaded_model_list {};
     std::map<std::string, int32_t> model_register_map {};
+
+    std::vector<node> instanced_node_list {};
+    std::map<int32_t, ::mesh::data> instanced_mesh_map {};
+
+    std::vector<float> instance_mat4x4 {};
+    std::vector<float> instance_mat3x3 {};
 
     glm::mat4 mat4x4_perspective_view {};
     glm::mat4 mat4x4_inverse_perspective_view {};
@@ -22,6 +42,7 @@ protected:
 
     int32_t loaded_light_size {};
     bool update_disabled_chunks {};
+    util::timing timing_instances {};
 
     /* Chunking. */
     buffering buffer_chunk {};
@@ -52,12 +73,17 @@ public:
     bool contains(std::string_view tag);
     void refresh();
 
+    ::mesh::data &interact_with_instanced_mesh(int32_t id);
+    int32_t add_mesh_instance(int32_t id, uint32_t key, buffering &buffer, const glm::mat4 &matrix);
+    int32_t remove_mesh_instance(int32_t id, int32_t instance);
+
     void process_terrain();
     void process_environment();
     void process_post_processing();
     void process_editor();
     void process_sky();
     void process_framebuffer(int32_t w, int32_t h);
+    void process_instances();
 
     void on_create() override;
     void on_destroy() override;

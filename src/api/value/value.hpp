@@ -51,6 +51,7 @@ public:
     /* World rendering. */
     value<glm::vec2> fog_bounding {};
     value<glm::vec3> fog_color {};
+    value<int32_t> maximum_buffers {};
 
     /* World update. */
     value<int32_t> chunk_generation_interval {};
@@ -68,6 +69,7 @@ public:
         this->fog_bounding.set_value({0.0f, 512.0f});
         this->fog_color.set_value({0.0f, 0.0f, 0.0f});
         this->chunk_terrain_height.set_value(256);
+        this->maximum_buffers.set_value(10000);
     }
 };
 
