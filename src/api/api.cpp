@@ -47,30 +47,38 @@ void api::mainloop(feature *p_scene_initial) {
     SDL_Event sdl_event {};
     glm::vec3 previous_camera_rotation {2, 2, 2};
 
-    api::app.p_world_client = new ::world {};
-    api::task::synchronize(api::app.p_world_client);
+    api::app.p_asset_manager_service = new asset_manager {};
+    api::task::synchronize(api::app.p_asset_manager_service);
+    util::log("Asset manager created.");
+
+    api::app.p_input_service = new ::input {};
+    api::task::synchronize(api::app.p_input_service);
+    util::log("Input manager created.");
+
+    api::app.p_world_service = new ::world {};
+    api::task::synchronize(api::app.p_world_service);
     util::log("World client created.");
 
-    api::app.p_world_renderer = new renderer {};
-    api::task::synchronize(api::app.p_world_renderer);
+    api::app.p_renderer_service = new renderer {};
+    api::task::synchronize(api::app.p_renderer_service);
     util::log("World renderer created.");
 
-    api::app.p_current_camera = new camera {};
-    api::world::create(api::app.p_current_camera);
+    api::app.p_curr_camera = new camera {};
+    api::world::create(api::app.p_curr_camera);
     util::log("Main camera frustum created.");
 
-    api::app.p_current_player = new entity {};
-    api::world::create(api::app.p_current_player);
+    api::app.p_curr_player = new entity {};
+    api::world::create(api::app.p_curr_player);
     util::log("Main world player created.");
 
-    api::app.p_world_time_manager = new world_time_manager {};
-    api::task::synchronize(api::app.p_world_time_manager);
+    api::app.p_world_time_service = new world_time_manager {};
+    api::task::synchronize(api::app.p_world_time_service);
     util::log("World time manager created.");
 
     /* Flush all object. */
     api::task::populate();
-    api::app.p_current_camera->process_perspective(api::app.screen_width, api::app.screen_height);
-    api::app.p_world_renderer->process_framebuffer(api::app.screen_width, api::app.screen_height);
+    api::app.p_curr_camera->process_perspective(api::app.screen_width, api::app.screen_height);
+    api::app.p_renderer_service->process_framebuffer(api::app.screen_width, api::app.screen_height);
     util::log("All feature objects were synchronized.");
 
     api::scene::load(p_scene_initial);
@@ -99,14 +107,15 @@ void api::mainloop(feature *p_scene_initial) {
                 }
 
                 default: {
-                    api::app.input_manager.on_event(sdl_event);
-                    if (api::app.p_current_scene != nullptr) api::app.p_current_scene->on_event(sdl_event);
-                    api::app.p_world_client->on_event(sdl_event);
-                    api::app.p_world_renderer->on_event(sdl_event);
+                    api::app.p_input_service->on_event(sdl_event);
+                    if (api::app.p_curr_scene != nullptr) api::app.p_curr_scene->on_event(sdl_event);
+                    api::app.p_world_service->on_event(sdl_event);
+                    api::app.p_renderer_service->on_event(sdl_event);
 
                     for (feature *&p_feature : api::app.loaded_service_list) {
                         p_feature->on_event(sdl_event);
                     }
+
                     break;
                 }
             }
@@ -117,27 +126,27 @@ void api::mainloop(feature *p_scene_initial) {
             ticked_frames = 0;
         }
 
-        if (api::app.p_current_scene != nullptr) {
-            api::app.p_current_scene->on_update();
+        if (api::app.p_curr_scene != nullptr) {
+            api::app.p_curr_scene->on_update();
         }
 
         for (feature *&p_feature : api::app.loaded_service_list) {
             p_feature->on_update();
         }
 
-        api::app.p_world_time_manager->on_update();
-        api::app.p_world_client->on_update();
-        api::app.input_manager.on_update();
+        api::app.p_world_time_service->on_update();
+        api::app.p_world_service->on_update();
+        api::app.p_input_service->on_update();
         api::task::populate();
 
         glViewport(0, 0, api::app.screen_width, api::app.screen_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(api::app.background[0], api::app.background[1], api::app.background[2], 1.0f);
 
-        api::app.p_world_renderer->on_render();
+        api::app.p_renderer_service->on_render();
 
-        if (api::app.p_current_scene != nullptr) {
-            api::app.p_current_scene->on_render();
+        if (api::app.p_curr_scene != nullptr) {
+            api::app.p_curr_scene->on_render();
         }
 
         for (feature *&p_feature : api::app.loaded_service_list) {
@@ -162,7 +171,7 @@ void api::scene::load(feature *scene) {
     if (scene == nullptr && current_scene != nullptr) {
         current_scene->on_destroy();
         delete current_scene;
-        api::app.p_current_scene = nullptr;
+        api::app.p_curr_scene = nullptr;
         return;
     }
 
@@ -176,122 +185,38 @@ void api::scene::load(feature *scene) {
         current_scene->on_destroy();
         delete current_scene;
         scene->on_create();
-        api::app.p_current_scene = scene;
+        api::app.p_curr_scene = scene;
         return;
     }
 
     if (scene != nullptr && current_scene == nullptr) {
         scene->on_create();
-        api::app.p_current_scene = scene;
+        api::app.p_curr_scene = scene;
     }
 }
 
 feature *&api::scene::current() {
-    return api::app.p_current_scene;
-}
-
-bool api::shading::create_program(std::string_view tag, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list) {
-    bool flag {!resource_list.empty()};
-    uint32_t shader {};
-    const char *p_shader_resource {};
-    std::string shader_source {};
-    std::vector<uint32_t> compiled_shader_list {};
-
-    for (const ::shading::resource &resource : resource_list) {
-        shader_source.clear();
-
-        if (resource.is_source_code) {
-            shader_source = resource.path.data();
-        } else {
-            flag = util::read_file(resource.path.data(), shader_source);
-        }
-
-        if (shader_source.empty()) {
-            util::log("Invalid shader resource code!");
-            util::log(resource.path.data());
-            break;
-        }
-
-        p_shader_resource = shader_source.data();
-
-        shader = glCreateShader(resource.stage);
-        glShaderSource(shader, 1, &p_shader_resource, nullptr);
-        glCompileShader(shader);
-
-        GLint status {};
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-
-        if (!status) {
-            char log[256];
-            glGetShaderInfoLog(shader, 256, nullptr, log);
-            util::log("Failed to compile shader!");
-            util::log(log);
-            return false;
-        }
-
-        if (!flag) {
-            util::log(tag.data());
-            break;
-        }
-
-        glAttachShader(p_program->id, shader);
-        compiled_shader_list.push_back(shader);
-    }
-
-    if (flag) {
-        GLint status {};
-        glLinkProgram(p_program->id);
-        glGetProgramiv(p_program->id, GL_LINK_STATUS, &status);
-
-        if (!status) {
-            char log[256];
-            glGetProgramInfoLog(p_program->id, 256, nullptr, log);
-            util::log("Failed to link this shading program!");
-            util::log(log);
-        } else {
-            util::log(std::string(tag.data()) + " shading program successfully linked");
-            api::shading::registry(tag, p_program);
-            p_program->send();
-        }
-
-        return status;
-    }
-
-    for (uint32_t &compiled_shaders : compiled_shader_list) {
-        glDeleteShader(compiled_shaders);
-    }
-
-    return false;
-}
-
-bool api::shading::find(std::string_view key, ::shading::program *&p_program) {
-    p_program = api::app.shader_registry_map[key.data()];
-    return p_program != nullptr;
-}
-
-::shading::program *api::shading::registry(std::string_view key, ::shading::program *p_program) {
-    api::app.shader_registry_map[key.data()] = p_program;
-    return p_program;
+    return api::app.p_curr_scene;
 }
 
 camera *&api::world::current_camera() {
-    return api::app.p_current_camera;
+    return api::app.p_curr_camera;
 }
 
 ::world *&api::world::get() {
-    return api::app.p_world_client;
+    return api::app.p_world_service;
 }
 
 renderer *&api::world::renderer() {
-    return api::app.p_world_renderer;
+    return api::app.p_renderer_service;
 }
 
 void api::world::create(world_feature *p_world_feature) {
-    api::app.p_world_client->registry_wf(p_world_feature);
+    api::app.p_world_service->registry_wf(p_world_feature);
 }
 
 void api::world::destroy(world_feature *p_world_feature) {
-    api::app.p_world_client->unregister_wf(p_world_feature);
+    api::app.p_world_service->unregister_wf(p_world_feature);
 }
 
 model *api::world::create(std::string_view tag, std::string_view path, ::mesh::format format) {
@@ -304,27 +229,27 @@ model *api::world::create(std::string_view tag, std::string_view path, ::mesh::d
         return nullptr;
     }
 
-    return api::app.p_world_renderer->add(tag, mesh);
+    return api::app.p_renderer_service->add(tag, mesh);
 }
 
 entity *&api::world::current_player() {
-    return api::app.p_current_player;
+    return api::app.p_curr_player;
 }
 
 world_time_manager *&api::world::time_manager() {
-     return api::app.p_world_time_manager;
+     return api::app.p_world_time_service;
 }
 
 bool api::mesh::load(::mesh::data &data, std::string_view path) {
-    return api::app.mesher_loader.load_object(data, path);
+    return api::app.mesh_loader_manager.load_object(data, path);
 }
 
 mesh_loader &api::mesh::loader() {
-    return api::app.mesher_loader;
+    return api::app.mesh_loader_manager;
 }
 
 bool api::input::pressed(std::string_view input_tag) {
-    return api::app.input_manager.input_map[input_tag.data()];
+    return api::app.p_input_service->input_map[input_tag.data()];
 }
 
 void api::task::registry(feature *p_feature) {
@@ -354,4 +279,8 @@ void api::task::populate() {
 
 void api::task::synchronize(feature *p_feature) {
     api::app.task_queue.push(p_feature);
+}
+
+feature *api::asset::find(std::string_view asset_name) {
+    return api::app.p_asset_manager_service->find(asset_name);
 }

@@ -41,3 +41,7 @@ void input::on_event(SDL_Event &sdl_event) {
 void input::on_update() {
 
 }
+
+input::~input() {
+
+}

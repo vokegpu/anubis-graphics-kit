@@ -4,14 +4,14 @@
 glm::mat4 immshape::mat4x4_orthographic {};
 
 void immshape::invoke() const {
-    glUseProgram(this->p_program->id);
+    this->p_program->invoke();
     glDisable(GL_DEPTH_TEST);
 
     this->p_program->set_uniform_mat4("uOrthographicMatrix", &immshape::mat4x4_orthographic[0][0]);
     this->p_buffer->invoke();
 }
 
-void immshape::link(buffering *p_buffer_linked, shading::program *p_program_linked) {
+void immshape::link(buffering *p_buffer_linked, ::asset::shader *p_program_linked) {
     this->p_buffer = p_buffer_linked;
     this->p_program = p_program_linked;
 }

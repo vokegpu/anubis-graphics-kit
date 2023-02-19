@@ -1,7 +1,7 @@
 #ifndef AGK_API_GPU_TOOLS_H
 #define AGK_API_GPU_TOOLS_H
 
-#include "program.hpp"
+#include "api/asset/impl/shader.hpp"
 #include <glm/glm.hpp>
 #include "api/util/env.hpp"
 
@@ -9,7 +9,7 @@ namespace gpu {
     typedef struct texture {
         unsigned int w {};
         unsigned int h {};
-        unsigned int z {};
+        unsigned int d {};
         unsigned int type {};
         unsigned int format {};
         unsigned int channel {};
@@ -28,6 +28,15 @@ namespace gpu {
         unsigned int id_renderbuffer {};
         unsigned int id_depth {};
     } frame;
+
+    int64_t channels(gpu::texture &texture);
+
+    template<typename t>
+    t *read(gpu::texture &texture, t *p_data) {
+        /* Get content from texture. */
+        glGetTexImage(texture.type, 0, texture.channel, texture.primitive, p_data);
+        return p_data;
+    }
 }
 
 #endif
@@ -38,7 +47,7 @@ namespace gpu {
 class buffering {
 protected:
     uint32_t current_buffer_info[2] {};
-    std::map<uint32_t, uint32_t> buffer_map {};
+    std::unordered_map<uint32_t, uint32_t> buffer_map {};
     uint32_t buffer_vao {};
 public:
     int32_t primitive[2] {GL_TRIANGLES, GL_UNSIGNED_INT};
@@ -162,19 +171,17 @@ public:
 
 class paralleling {
 protected:
-    std::map<std::string, uint32_t> buffer_map {};
+    std::unordered_map<std::string, uint32_t> buffer_map {};
 public:
     uint32_t memory_barrier {GL_ALL_BARRIER_BITS};
     uint32_t dispatch_groups[3] {1, 1, 1};
     uint32_t dimension[3] {1, 1, 1};
     uint32_t map_buffer_type[2] {};
 
-    shading::program *p_program {};
+    ::asset::shader *p_program {};
 
     explicit paralleling() = default;
-    ~paralleling() {
-
-    }
+    ~paralleling() = default;
 
     template<typename v>
     void send_bind(const std::string &name, int32_t size, v *p_data, uint32_t flags, const glm::ivec2 &buffer_type) {
@@ -201,7 +208,7 @@ public:
     }
 
     void invoke() const {
-        glUseProgram(this->p_program->id);
+        this->p_program->invoke();
     }
 
     void dispatch() const {
@@ -224,7 +231,7 @@ public:
 
 class framebuffering {
 public:
-    std::map<uint32_t, gpu::frame> frame_map {};
+    std::unordered_map<uint32_t, gpu::frame> frame_map {};
 public:
     uint32_t current_frame_info {};
 
@@ -372,12 +379,12 @@ public:
 
 class texturing {
 protected:
-    std::map<uint32_t, gpu::texture> texture_map {};
+    std::unordered_map<uint32_t, gpu::texture> texture_map {};
 public:
     uint32_t current_texture_info[2] {};
 
     explicit texturing() = default;
-    ~texturing() {};
+    ~texturing() = default;;
 
     gpu::texture &operator[](uint32_t key) {
         return this->texture_map[key];
@@ -431,7 +438,7 @@ public:
 
         texture.w = in_dimension.x;
         texture.h = in_dimension.y;
-        texture.z = in_dimension.z;
+        texture.d = in_dimension.z;
 
         texture.format = in_format.x;
         texture.channel = in_format.y;
@@ -446,7 +453,7 @@ public:
         /* Send texture buffer to GPU. */
         if (texture.type == GL_TEXTURE_3D) {
             glTexParameteri(texture.type, GL_TEXTURE_WRAP_R, in_filter.z);
-            glTexImage3D(texture.type, 0, texture.format, texture.w, texture.h, texture.z, 0, texture.channel, texture.primitive, p_data);
+            glTexImage3D(texture.type, 0, texture.format, texture.w, texture.h, texture.d, 0, texture.channel, texture.primitive, p_data);
         } else {
             glTexImage2D(texture.type, 0, texture.format, texture.w, texture.h, 0, texture.channel, texture.primitive, p_data);
         }
@@ -465,33 +472,15 @@ public:
 
     template<typename t>
     std::vector<t> &get(std::vector<t> &data) {
-        uint32_t channel {1};
         gpu::texture &texture {this->texture_map[this->current_texture_info[0]]};
 
-        switch (texture.channel) {
-            case GL_RG: {
-                channel = 2;
-                break;
-            }
-
-            case GL_RGB: {
-                channel = 3;
-                break;
-            }
-
-            case GL_RGBA: {
-                channel = 4;
-                break;
-            }
-        }
-
         /* Get the new texture data from GPU. */
-        int64_t size {texture.w * texture.h * texture.z * channel};
+        int64_t size {texture.w * texture.h * texture.d * gpu::channels(texture)};
         if (data.size() != size) {
             data.resize(size);
         }
 
-        glGetTexImage(texture.type, 0, texture.channel, texture.primitive, data.data());
+        gpu::read<t>(texture, data.data());
         return data;
     }
 

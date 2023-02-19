@@ -11,10 +11,10 @@ public:
     static glm::mat4 mat4x4_orthographic;
 
     buffering *p_buffer {};
-    shading::program *p_program {};
+    ::asset::shader *p_program {};
 
     void invoke() const;
-    void link(buffering *p_buffer_linked, shading::program *p_program_linked);
+    void link(buffering *p_buffer_linked, ::asset::shader *p_program_linked);
     void revoke() const;
     void draw(const glm::vec4 &rectangle, const glm::vec4 &color) const;
 };

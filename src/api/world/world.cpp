@@ -13,14 +13,6 @@ void world::on_create() {
     api::app.setting.chunk_generation_interval.set_value(1000);
     api::app.setting.chunk_dimension.set_value(128 * 4);
 
-    api::shading::create_program("heightmap.generator.script", new shading::program {}, {
-            {"./data/scripts/heightmap.generator.script.comp", shading::stage::compute}
-    });
-
-    api::shading::create_program("cloud.generator.script", new shading::program {}, {
-            {"./data/scripts/cloud.generator.script.comp", shading::stage::compute}
-    });
-
     api::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
     this->vegetation_memory_list.reserve(100 * 4);
 
@@ -55,7 +47,7 @@ void world::registry_wf(world_feature *p_world_feature) {
 void world::on_event(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_WINDOWEVENT: {
-            api::app.p_current_camera->on_event(sdl_event);
+            api::app.p_curr_camera->on_event(sdl_event);
             break;
         }
 
@@ -199,7 +191,7 @@ void world::on_update() {
         global_uv = grid_pos;
 
         /* Invoke parallel computation to randomize map. */
-        api::shading::find("heightmap.generator.script", this->parallel.p_program);
+        this->parallel.p_program = (::asset::shader*) api::asset::find("gpu/scripts.heightmap.generator");
         this->parallel.invoke();
         this->parallel.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 
@@ -308,7 +300,7 @@ void world::on_update() {
 
     if (util::reset_when(this->sky_cloud_timing, 256) && false) {
         glm::ivec3 dimension {8, 8, 8};
-        api::shading::find("cloud.generator.script", this->parallel.p_program);
+        this->parallel.p_program = (::asset::shader*) api::asset::find("gpu/scripts.cloud.generator");
         this->parallel.invoke();
 
         this->parallel.dimension[0] = 8;
@@ -330,7 +322,7 @@ void world::on_update() {
     if (this->free_memory_counter > 32) {
         std::vector<world_feature*> new_wf_list {};
         this->wf_high_priority_list.clear();
-        api::app.p_world_renderer->wf_env_draw_list.clear();
+        api::app.p_renderer_service->wf_env_draw_list.clear();
 
         for (auto &p_world_feature : this->wf_list) {
             if (p_world_feature->is_dead || p_world_feature == nullptr) {
@@ -344,7 +336,7 @@ void world::on_update() {
             }
 
             if (p_world_feature->get_visible() == enums::state::enable) {
-                api::app.p_world_renderer->wf_env_draw_list.push_back(p_world_feature);
+                api::app.p_renderer_service->wf_env_draw_list.push_back(p_world_feature);
             }
 
             new_wf_list.push_back(p_world_feature);

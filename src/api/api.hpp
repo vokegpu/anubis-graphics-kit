@@ -22,12 +22,6 @@ namespace api {
         feature *&current();
     }
 
-    namespace shading {
-        bool create_program(std::string_view tag, ::shading::program *p_program, const std::vector<::shading::resource> &resource_list);
-        bool find(std::string_view key, ::shading::program *&p_program);
-        ::shading::program *registry(std::string_view key, ::shading::program *p_program);
-    };
-
     namespace world {
         camera *&current_camera();
         entity *&current_player();
@@ -42,6 +36,10 @@ namespace api {
         void create(world_feature *p_world_feature);
         void destroy(world_feature *p_world_feature);
     };
+
+    namespace asset {
+        feature *find(std::string_view asset_name);
+    }
 
     namespace mesh {
         mesh_loader &loader();

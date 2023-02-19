@@ -5,6 +5,8 @@
 #include "api/api.hpp"
 #include "api/event/event.hpp"
 #include "api/world/environment/light.hpp"
+#include "api/asset/impl/shader.hpp"
+#include "api/asset/impl/texture.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
@@ -116,8 +118,7 @@ void renderer::process_terrain() {
     glm::vec3 color {1.0f, 1.0f, 1.0f};
 
     auto p_time_manager {api::world::time_manager()};
-    shading::program *p_program_pbr {};
-    api::shading::find("terrain.pbr", p_program_pbr);
+    ::asset::shader *p_program_pbr {(::asset::shader*) api::asset::find("gpu/effects.terrain.pbr")};
 
     p_program_pbr->invoke();
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &api::app.setting.fog_bounding.get_value()[0]);
@@ -132,9 +133,6 @@ void renderer::process_terrain() {
 
     glCullFace(GL_FRONT);
     this->buffer_chunk.invoke();
-
-    glActiveTexture(GL_TEXTURE2);
-    this->texture_chunk.invoke(1, {GL_TEXTURE_2D, GL_UNSIGNED_BYTE});
 
     glActiveTexture(GL_TEXTURE0);
     /* Height map texture. */
@@ -173,14 +171,13 @@ void renderer::process_environment() {
     glm::mat3 mat3x3_inverse {};
     glm::mat4 mat4x4_model_view {};
 
-    shading::program *p_program_pbr {};
-    api::shading::find("m.brdf.pbr", p_program_pbr);
+    ::asset::shader *p_program_pbr {(::asset::shader*) api::asset::find("gpu/effects.material.brdf.pbr")};
 
-    glUseProgram(p_program_pbr->id);
+    p_program_pbr->invoke();
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &api::app.setting.fog_bounding.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uFog.uColor", &api::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", api::world::time_manager()->ambient_light);
-    p_program_pbr->set_uniform_vec3("uCameraPos", &api::app.p_current_camera->position[0]);
+    p_program_pbr->set_uniform_vec3("uCameraPos", &api::app.p_curr_camera->position[0]);
     p_program_pbr->set_uniform_mat4("uPerspectiveView", &this->mat4x4_perspective_view[0][0]);
 
     entity *p_entity {};
@@ -234,7 +231,7 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_object->rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_object->scale);
 
-        if (((glm::distance(api::app.p_current_camera->position, p_object->position) > dist_render || !api::app.p_current_camera->viewing(mat4x4_model, p_world_feature->scale, p_model->axis_aligned_bounding_box)) && !p_model->buffer.instancing_rendering)) {
+        if (((glm::distance(api::app.p_curr_camera->position, p_object->position) > dist_render || !api::app.p_curr_camera->viewing(mat4x4_model, p_world_feature->scale, p_model->axis_aligned_bounding_box)) && !p_model->buffer.instancing_rendering)) {
             continue;
         }
 
@@ -278,7 +275,8 @@ void renderer::process_environment() {
     if (this->loaded_light_size != light_amount) {
         this->loaded_light_size = light_amount;
         p_program_pbr->set_uniform_int("uLightAmount", light_amount);
-        api::shading::find("terrain.pbr", p_program_pbr);
+
+        p_program_pbr = (::asset::shader*) api::asset::find("gpu/effects.terrain.pbr");
         p_program_pbr->invoke();
         p_program_pbr->set_uniform_int("uLightAmount", light_amount);
     };
@@ -353,7 +351,7 @@ void renderer::process_post_processing() {
         this->immshape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);
         this->mat4x4_previous_perspective_view = this->mat4x4_perspective_view;
 
-        auto p_camera {api::app.p_current_camera};
+        auto p_camera {api::app.p_curr_camera};
         float yaw {p_camera->rotation.x};
         float pitch {p_camera->rotation.y};
 
@@ -375,8 +373,7 @@ void renderer::process_post_processing() {
 }
 
 void renderer::process_editor() {
-    ::shading::program *p_debug_program {};
-    api::shading::find("coordinate.debug", p_debug_program);
+    ::asset::shader *p_debug_program {(::asset::shader*) api::asset::find("gpu/effects.coordinate.debug")};
 
     glm::mat4 mat4x4_model {1.0f};
     mat4x4_model = glm::scale(mat4x4_model, {20, 20, 20});
@@ -396,34 +393,6 @@ void renderer::process_editor() {
 
 void renderer::on_create() {
     feature::on_create();
-
-    api::shading::create_program("m.brdf.pbr", new ::shading::program {}, {
-            {"./data/effects/material.brdf.pbr.vert", ::shading::stage::vertex},
-            {"./data/effects/material.brdf.pbr.frag", ::shading::stage::fragment}
-    });
-
-    api::shading::create_program("terrain.pbr", new ::shading::program {}, {
-            {"./data/effects/terrain.pbr.vert", ::shading::stage::vertex},
-            {"./data/effects/terrain.pbr.frag", ::shading::stage::fragment},
-            {"./data/effects/terrain.pbr.tesc", ::shading::stage::tesscontrol},
-            {"./data/effects/terrain.pbr.tese", ::shading::stage::tessevaluation}
-    });
-
-    ::shading::program *p_program_post_processing {new ::shading::program {}};
-    api::shading::create_program("processing.post", p_program_post_processing, {
-            {"./data/effects/processing.post.vert", ::shading::stage::vertex},
-            {"./data/effects/processing.post.frag", ::shading::stage::fragment},
-    });
-
-    ::shading::program *p_program_hd_luminance {new ::shading::program {}};
-    api::shading::create_program("hdr.luminance.script", p_program_hd_luminance, {
-            {"./data/scripts/hdr.luminance.script.comp", ::shading::stage::compute}
-    });
-
-    api::shading::create_program("coordinate.debug", new ::shading::program {}, {
-            {"./data/effects/coordinate.debug.vert", ::shading::stage::vertex},
-            {"./data/effects/coordinate.debug.frag", ::shading::stage::fragment}
-    });
 
     this->instance_mat4x4.reserve(sizeof(glm::mat4) * api::app.setting.maximum_buffers.get_value());
     this->instance_mat4x4.reserve(sizeof(glm::mat3) * api::app.setting.maximum_buffers.get_value());
@@ -449,9 +418,9 @@ void renderer::on_create() {
     this->buffer_post_processing.revoke();
 
     /* Link to immediate shape. */
-    this->immshape_post_processing.link(&this->buffer_post_processing, p_program_post_processing);
+    this->immshape_post_processing.link(&this->buffer_post_processing, (::asset::shader*) api::asset::find("gpu/effects.processing.post"));
 
-    this->parallel_post_processing.p_program = p_program_hd_luminance;
+    this->parallel_post_processing.p_program = (::asset::shader*) api::asset::find("gpu/scripts.hdr.luminance.post");
     this->parallel_post_processing.dispatch_groups[0] = 32;
     this->parallel_post_processing.dispatch_groups[1] = 32;
 
@@ -510,17 +479,17 @@ void renderer::on_create() {
     this->buffer_coordinate_debug.attach(1, 3, {sizeof(float) * 6, sizeof(float) * 3});
     this->buffer_coordinate_debug.revoke();
 
-    /* Processing terrain textures. */
-    util::log("Loading world textures.");
+    auto *p_terrain_atlas {(asset::texture<uint8_t>*) api::asset::find("texture/terrain.atlas")};
+    p_terrain_atlas->add("stone", {0.0f, 0.0f, 1.0f, 1.0f});
 
-    /* Stone texture. */
-    util::image img_stone {};
-    util::read_image("./data/textures/terrain_stone.png", img_stone);
-    this->texture_chunk.invoke(1, {GL_TEXTURE_2D, GL_UNSIGNED_BYTE});
-    this->texture_chunk.send<uint8_t>({img_stone.w, img_stone.h, 0}, img_stone.p_data, {GL_RGB, GL_RGB}, {GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_REPEAT});
-    this->texture_chunk.generate_mipmap();
-    this->texture_chunk.revoke();
-    util::free_image(img_stone);
+    auto *p_program {(asset::shader*) api::asset::find("gpu/effects.terrain.pbr")};
+    p_program->invoke();
+
+    /* Attach/store atlas texture coordinates. */
+    glActiveTexture(GL_TEXTURE1);
+    p_terrain_atlas->invoke();
+    p_terrain_atlas->attach("uAtlas", p_program);
+    p_program->revoke();
 }
 
 void renderer::on_destroy() {

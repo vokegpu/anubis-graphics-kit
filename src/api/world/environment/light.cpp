@@ -17,25 +17,24 @@ light::~light() {
 }
 
 void light::on_low_update() {
-    shading::program *p_program_material_pbr {};
-    api::shading::find("m.brdf.pbr", p_program_material_pbr);
+    ::asset::shader *p_program_material_pbr {(::asset::shader*) api::asset::find("gpu/effects.material.brdf.pbr")};
 
     std::string light_index_tag {"uLight["};
     light_index_tag += std::to_string(this->index);
     light_index_tag += ']';
 
-    glUseProgram(p_program_material_pbr->id);
+    p_program_material_pbr->invoke();
     p_program_material_pbr->set_uniform_vec3(light_index_tag + ".uIntensity", &this->intensity[0]);
     p_program_material_pbr->set_uniform_bool(light_index_tag + ".uDirectional", this->directional);
     p_program_material_pbr->set_uniform_vec3(light_index_tag + ".uVector", &this->position[0]);
     glUseProgram(0);
 
-    api::shading::find("terrain.pbr", p_program_material_pbr);
+    p_program_material_pbr = (::asset::shader*) api::asset::find("gpu/effects.terrain.pbr");
     light_index_tag = "uLight[";
     light_index_tag += std::to_string(this->index);
     light_index_tag += ']';
 
-    glUseProgram(p_program_material_pbr->id);
+    p_program_material_pbr->invoke();
     p_program_material_pbr->set_uniform_vec3(light_index_tag + ".uIntensity", &this->intensity[0]);
     p_program_material_pbr->set_uniform_bool(light_index_tag + ".uDirectional", this->directional);
     p_program_material_pbr->set_uniform_vec3(light_index_tag + ".uVector", &this->position[0]);

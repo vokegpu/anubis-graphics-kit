@@ -2,6 +2,7 @@
 #define AGK_API_FEATURE_H
 
 #include <SDL2/SDL.h>
+#include <iostream>
 
 class feature {
 public:
@@ -12,6 +13,7 @@ public:
     bool is_enable {true};
     bool is_dead {};
     int32_t id {};
+    std::string tag {};
 
     virtual void on_create();
     virtual void on_destroy();

@@ -7,6 +7,9 @@
 
 class input : public feature {
 public:
+    input() = default;
+    ~input();
+
     std::map<std::string, bool> input_map {};
     void on_event(SDL_Event &sdl_event) override;
     void on_update() override;
