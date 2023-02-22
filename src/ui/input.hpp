@@ -1,5 +1,5 @@
-#ifndef AGK_API_INPUT_H
-#define AGK_API_INPUT_H
+#ifndef AGK_UI_INPUT_H
+#define AGK_UI_INPUT_H
 
 #include <iostream>
 #include <map>

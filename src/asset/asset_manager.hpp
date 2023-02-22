@@ -1,5 +1,5 @@
-#ifndef AGK_API_ASSET_MANAGER_H
-#define AGK_API_ASSET_MANAGER_H
+#ifndef AGK_ASSET_MANAGER_H
+#define AGK_ASSET_MANAGER_H
 
 #include <iostream>
 #include <map>

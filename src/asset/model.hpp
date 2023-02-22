@@ -1,5 +1,5 @@
-#ifndef AGK_API_ASSET_IMPL_MODEL_H
-#define AGK_API_ASSET_IMPL_MODEL_H
+#ifndef AGK_ASSET_MODEL_H
+#define AGK_ASSET_MODEL_H
 
 #include "core/imodule.hpp"
 #include "mesh.hpp"

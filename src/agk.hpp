@@ -1,5 +1,5 @@
-#ifndef AGK_API_H
-#define AGK_API_H
+#ifndef AGK_H
+#define AGK_H
 
 #include "core/core.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef AGK_API_VALUE_H
-#define AGK_API_VALUE_H
+#ifndef AGK_CORE_VALUE_H
+#define AGK_CORE_VALUE_H
 
 template<typename t>
 class value {
@@ -35,8 +35,8 @@ public:
 
 #endif
 
-#ifndef AGK_API_VALUE_GLOBAL_H
-#define AGK_API_VALUE_GLOBAL_H
+#ifndef AGK_CORE_VALUE_GLOBAL_H
+#define AGK_CORE_VALUE_GLOBAL_H
 
 class value_global {
 public:

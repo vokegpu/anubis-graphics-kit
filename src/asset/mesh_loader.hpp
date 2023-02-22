@@ -1,5 +1,5 @@
-#ifndef AGK_API_MESH_LOADER_H
-#define AGK_API_MESH_LOADER_H
+#ifndef AGK_ASSET_MESH_LOADER_H
+#define AGK_ASSET_MESH_LOADER_H
 
 #include <string>
 #include "mesh.hpp"

@@ -1,5 +1,5 @@
-#ifndef AGK_API_UTIL_MATH_H
-#define AGK_API_UTIL_MATH_H
+#ifndef AGK_UTIL_MATH_H
+#define AGK_UTIL_MATH_H
 
 #include "asset/mesh.hpp"
 #include <glm/glm.hpp>
@@ -32,10 +32,10 @@ namespace util {
     bool check_is_on_forward_plane(const util::aabb &axis_aligned_bounding_box, const util::plane &plane);
 
     static int const SURROUND[9] {
-        -1, 0,
-        1, 0,
-        0, -1,
-        0, 1
+            -1, 0,
+            1, 0,
+            0, -1,
+            0, 1
     };
 }
 

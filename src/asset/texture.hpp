@@ -1,5 +1,5 @@
-#ifndef AGK_API_ASSET_IMPL_TEXTURE_H
-#define AGK_API_ASSET_IMPL_TEXTURE_H
+#ifndef AGK_ASSET_TEXTURE_H
+#define AGK_ASSET_TEXTURE_H
 
 #include "gpu/tools.hpp"
 #include <functional>

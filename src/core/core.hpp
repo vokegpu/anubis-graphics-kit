@@ -1,5 +1,5 @@
-#ifndef AGK_API_PROFILE_H
-#define AGK_API_PROFILE_H
+#ifndef AGK_CORE_H
+#define AGK_CORE_H
 
 #include <SDL2/SDL.h>
 #include "world/world.hpp"

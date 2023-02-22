@@ -1,5 +1,5 @@
-#ifndef AGK_API_UI_IMMEDIATE_SHAPE
-#define AGK_API_UI_IMMEDIATE_SHAPE
+#ifndef AGK_UI_IMMEDIATE_SHAPE
+#define AGK_UI_IMMEDIATE_SHAPE
 
 #include "gpu/tools.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef AGK_API_UTIL_FILE_H
-#define AGK_API_UTIL_FILE_H
+#ifndef AGK_UTIL_FILE_H
+#define AGK_UTIL_FILE_H
 
 #include <iostream>
 

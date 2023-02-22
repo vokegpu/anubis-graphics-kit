@@ -1,5 +1,5 @@
-#ifndef AGK_API_WORLD_ENVIRONMENT_LIGHT_H
-#define AGK_API_WORLD_ENVIRONMENT_LIGHT_H
+#ifndef AGK_WORLD_ENVIRONMENT_LIGHT_H
+#define AGK_WORLD_ENVIRONMENT_LIGHT_H
 
 #include "object.hpp"
 #include "asset/model.hpp"

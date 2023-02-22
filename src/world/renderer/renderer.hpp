@@ -1,18 +1,5 @@
-#ifndef AGK_API_WORLD_MODEL_RENDERER_NODE_H
-#define AGK_API_WORLD_MODEL_RENDERER_NODE_H
-
-#include <iostream>
-
-typedef struct node {
-    int parent {};
-    int id {};
-    std::string model {};
-} node;
-
-#endif
-
-#ifndef AGK_API_WORLD_MODEL_RENDERER_H
-#define AGK_API_WORLD_MODEL_RENDERER_H
+#ifndef AGK_WORLD_RENDERER_H
+#define AGK_WORLD_RENDERER_H
 
 #include "asset/mesh.hpp"
 #include "world/terrain/chunk.hpp"

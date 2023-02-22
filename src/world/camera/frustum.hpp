@@ -1,5 +1,5 @@
-#ifndef AGK_API_WORLD_FRUSTUM_H
-#define AGK_API_WORLD_FRUSTUM_H
+#ifndef AGK_WORLD_FRUSTUM_H
+#define AGK_WORLD_FRUSTUM_H
 
 #include "world/environment/object.hpp"
 #include <vector>

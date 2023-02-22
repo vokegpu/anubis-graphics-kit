@@ -49,7 +49,7 @@ float frustum::get_fov() {
 }
 
 void frustum::on_event(SDL_Event &sdl_event) {
-        switch (sdl_event.type) {
+    switch (sdl_event.type) {
         case SDL_WINDOWEVENT: {
             switch (sdl_event.window.event) {
                 case SDL_WINDOWEVENT_SIZE_CHANGED: {
@@ -103,21 +103,21 @@ bool frustum::viewing(const glm::mat4 &mat4x4_model, const glm::vec3 &scale, con
     const glm::vec3 f {-mat4x4_model[2] * axis_aligned_bounding_box.extents.z};
 
     const float ii {
-        glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, r)) +
-        glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, u)) +
-        glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, f))
+            glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, r)) +
+            glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, u)) +
+            glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, f))
     };
 
     const float ij {
-        glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, r)) +
-        glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, u)) +
-        glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, f))
+            glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, r)) +
+            glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, u)) +
+            glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, f))
     };
 
     const float ik {
-        glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, r)) +
-        glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, u)) +
-        glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, f))
+            glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, r)) +
+            glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, u)) +
+            glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, f))
     };
 
     util::aabb global_aabb {};

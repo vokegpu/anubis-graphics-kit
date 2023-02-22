@@ -1,5 +1,5 @@
-#ifndef AGK_API_MESH_H
-#define AGK_API_MESH_H
+#ifndef AGK_ASSET_MESH_H
+#define AGK_ASSET_MESH_H
 
 #include <vector>
 #include <iostream>

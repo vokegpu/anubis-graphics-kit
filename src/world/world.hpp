@@ -1,5 +1,5 @@
-#ifndef AGK_API_WORLD_H
-#define AGK_API_WORLD_H
+#ifndef AGK_WORLD_H
+#define AGK_WORLD_H
 
 #include "world.hpp"
 #include "world/environment/object.hpp"
@@ -17,7 +17,7 @@ static const float agk_perspective_clip_distance {8096.0f * 8096.0f};
 
 class world : public imodule {
 protected:
-	int32_t wf_chunk_token_id {};
+    int32_t wf_chunk_token_id {};
     bool poll_low_priority_queue {};
     uint16_t free_memory_counter {};
 
@@ -30,13 +30,13 @@ public:
     ~world() = default;
 
     /* Start of environment segment. */
-	std::map<int32_t, object*> registered_wf_map {};
+    std::map<int32_t, object*> registered_wf_map {};
     std::queue<object*> wf_low_priority_queue {};
 
     std::vector<object*> wf_list {};
-	std::vector<object*> wf_high_priority_list {};
+    std::vector<object*> wf_high_priority_list {};
 
-	void registry_wf(object *p_world_feature);
+    void registry_wf(object *p_world_feature);
     object *unregister_wf(object *p_world_feature);
     object *&find_env_wf(int32_t wf_id);
     /* End of environment segment. */
@@ -68,8 +68,8 @@ public:
 
     void on_create() override;
     void on_destroy() override;
-	void on_update() override;
-	void on_event(SDL_Event &sdl_event) override;
+    void on_update() override;
+    void on_event(SDL_Event &sdl_event) override;
 };
 
 #endif

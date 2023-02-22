@@ -1,5 +1,5 @@
-#ifndef AGK_API_GPU_TOOLS_H
-#define AGK_API_GPU_TOOLS_H
+#ifndef AGK_GPU_TOOLS_H
+#define AGK_GPU_TOOLS_H
 
 #include "asset/shader.hpp"
 #include <glm/glm.hpp>
@@ -41,8 +41,8 @@ namespace gpu {
 
 #endif
 
-#ifndef AGK_API_GPU_TOOLS_BUFFERING_H
-#define AGK_API_GPU_TOOLS_BUFFERING_H
+#ifndef AGK_GPU_TOOLS_BUFFERING_H
+#define AGK_GPU_TOOLS_BUFFERING_H
 
 class buffering {
 protected:
@@ -167,8 +167,8 @@ public:
 
 #endif
 
-#ifndef AGK_API_GPU_TOOLS_PARALLELING_H
-#define AGK_API_GPU_TOOLS_PARALLELING_H
+#ifndef AGK_GPU_TOOLS_PARALLELING_H
+#define AGK_GPU_TOOLS_PARALLELING_H
 
 class paralleling {
 protected:
@@ -227,8 +227,8 @@ public:
 
 #endif
 
-#ifndef AGK_API_GPU_TOOLS_FRAMEBUFFERING_H
-#define AGK_API_GPU_TOOLS_FRAMEBUFFERING_H
+#ifndef AGK_GPU_TOOLS_FRAMEBUFFERING_H
+#define AGK_GPU_TOOLS_FRAMEBUFFERING_H
 
 class framebuffering {
 public:
@@ -375,8 +375,8 @@ public:
 
 #endif
 
-#ifndef AGK_API_GPU_TOOLS_TEXTURING_H
-#define AGK_API_GPU_TOOLS_TEXTURING_H
+#ifndef AGK_GPU_TOOLS_TEXTURING_H
+#define AGK_GPU_TOOLS_TEXTURING_H
 
 class texturing {
 protected:
@@ -416,11 +416,11 @@ public:
     }
 
     void delete_buffers() {
-       for (auto const &[key, val] : this->texture_map) {
-           if (val.id != 0) glDeleteTextures(1, &val.id);
-       }
+        for (auto const &[key, val] : this->texture_map) {
+            if (val.id != 0) glDeleteTextures(1, &val.id);
+        }
 
-       this->texture_map.clear();
+        this->texture_map.clear();
     }
 
     void delete_buffer(uint32_t key) {

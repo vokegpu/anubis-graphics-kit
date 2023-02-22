@@ -30,7 +30,7 @@ void client::services::camera_manager::on_event(SDL_Event &sdl_event) {
     }
 
     bool should_rotate {
-        this->camera_rotation && (!this->camera_editor || agk::input::pressed(this->bind_editor_rotate.get_value()))
+            this->camera_rotation && (!this->camera_editor || agk::input::pressed(this->bind_editor_rotate.get_value()))
     };
 
     this->p_camera_linked->set_mouse_locked(should_rotate);

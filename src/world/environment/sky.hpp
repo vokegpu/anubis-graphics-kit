@@ -1,5 +1,5 @@
-#ifndef AGK_WORLD_ENVIRONMENT_TIME_H
-#define AGK_WORLD_ENVIRONMENT_TIME_H
+#ifndef AGK_WORLD_ENVIRONMENT_SKY_H
+#define AGK_WORLD_ENVIRONMENT_SKY_H
 
 #include "core/imodule.hpp"
 #include "util/env.hpp"

@@ -30,13 +30,13 @@ void world::on_destroy() {
 }
 
 void world::registry_wf(object *p_object) {
-	if (p_object == nullptr) {
-		return;
-	}
+    if (p_object == nullptr) {
+        return;
+    }
 
     agk::task::synchronize(p_object);
-	this->registered_wf_map[p_object->id] = p_object;
-	this->wf_list.push_back(p_object);
+    this->registered_wf_map[p_object->id] = p_object;
+    this->wf_list.push_back(p_object);
 }
 
 void world::on_event(SDL_Event &sdl_event) {

@@ -1,5 +1,5 @@
-#ifndef AGK_API_ASSET_IMPL_SHADER_H
-#define AGK_API_ASSET_IMPL_SHADER_H
+#ifndef AGK_ASSET_SHADER_H
+#define AGK_ASSET_SHADER_H
 
 #include <iostream>
 #include <unordered_map>
@@ -114,8 +114,7 @@ namespace asset {
         void set_uniform_bool(std::string_view uniform_name, bool value);
 
         int32_t &get_program();
-
-        void on_create();
+        void on_create() override;
     };
 }
 

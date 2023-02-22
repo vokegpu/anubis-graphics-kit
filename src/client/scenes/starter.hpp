@@ -1,5 +1,5 @@
-#ifndef AGK_IMPL_SCENE_STARTER_H
-#define AGK_IMPL_SCENE_STARTER_H
+#ifndef AGK_CLIENT_SERVICES_STARTER_H
+#define AGK_CLIENT_SERVICES_STARTER_H
 
 #include "core/imodule.hpp"
 #include "gpu/tools.hpp"

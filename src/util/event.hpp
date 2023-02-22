@@ -1,5 +1,5 @@
-#ifndef AGK_API_EVENT_H
-#define AGK_API_EVENT_H
+#ifndef AGK_UTIL_EVENT_H
+#define AGK_UTIL_EVENT_H
 
 #include <SDL2/SDL.h>
 

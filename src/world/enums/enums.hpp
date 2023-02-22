@@ -1,10 +1,10 @@
-#ifndef API_WORLD_ENUMS_H
-#define API_WORLD_ENUMS_H
+#ifndef AGK_WORLD_ENUMS_H
+#define AGK_WORLD_ENUMS_H
 
 namespace enums {
-	enum class material {
-		empty, metal, dialetric
-	};
+    enum class material {
+        empty, metal, dialetric
+    };
 
     /*
      * Invocation priority.
@@ -15,9 +15,9 @@ namespace enums {
         none, low, high
     };
 
-	enum class state {
+    enum class state {
         none, enable, disable
-	};
+    };
 
     enum class type {
         abstract, entity, object, light, model

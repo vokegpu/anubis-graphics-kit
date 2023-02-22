@@ -1,4 +1,3 @@
-#include "client.hpp"
 #include "agk.hpp"
 #include "client/scenes/starter.hpp"
 #include "client/services/camera_manager.hpp"

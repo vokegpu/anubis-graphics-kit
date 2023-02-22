@@ -1,5 +1,5 @@
-#ifndef AGK_API_WORLD_CAMERA_H
-#define AGK_API_WORLD_CAMERA_H
+#ifndef AGK_WORLD_CAMERA_H
+#define AGK_WORLD_CAMERA_H
 
 #include "frustum.hpp"
 

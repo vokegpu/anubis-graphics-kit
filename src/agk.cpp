@@ -224,7 +224,7 @@ entity *&agk::world::current_player() {
 }
 
 sky *&agk::world::sky() {
-     return agk::app.p_world_time_service;
+    return agk::app.p_world_time_service;
 }
 
 bool agk::mesh::load(::mesh::data &data, std::string_view path) {

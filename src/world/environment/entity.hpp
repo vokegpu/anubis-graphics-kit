@@ -1,5 +1,5 @@
-#ifndef AGK_WORLD_API_MODEL_ENTITY_H
-#define AGK_WORLD_API_MODEL_ENTITY_H
+#ifndef AGK_WORLD_ENVIRONMENT_ENTITY_H
+#define AGK_WORLD_ENVIRONMENT_ENTITY_H
 
 #include "object.hpp"
 #include "asset/model.hpp"
