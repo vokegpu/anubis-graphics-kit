@@ -28,7 +28,7 @@ void asset::model::on_create() {
     if (mesh.contains(::mesh::type::vertex)) {
         auto &list {mesh.get_float_list(::mesh::type::vertex)};
         this->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
-        this->buffer.send<float>(sizeof(list), list.data(), this->driver_mode[0]);
+        this->buffer.send<float>(sizeof(float) * list.size(), list.data(), this->driver_mode[0]);
         this->buffer.attach(0, 3);
 
         this->buffer.stride[0] = 0;
@@ -54,26 +54,29 @@ void asset::model::on_create() {
     if (mesh.contains(::mesh::type::textcoord)) {
         auto &list {mesh.get_float_list(::mesh::type::textcoord)};
         this->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
-        this->buffer.send<float>(sizeof(list), list.data(), this->driver_mode[1]);
+        this->buffer.send<float>(sizeof(float) * list.size(), list.data(), this->driver_mode[1]);
         this->buffer.attach(1, 2);
     }
 
     if (mesh.contains(::mesh::type::normal)) {
         auto &list {mesh.get_float_list(::mesh::type::normal)};
         this->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
-        this->buffer.send<float>(sizeof(list), list.data(), this->driver_mode[2]);
+        this->buffer.send<float>(sizeof(float) * list.size(), list.data(), this->driver_mode[2]);
         this->buffer.attach(2, 3);
     }
 
     if (mesh.contains(::mesh::type::vertex, true)) {
         auto &list {mesh.get_uint_list(::mesh::type::vertex)};
         this->buffer.bind(2, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
-        this->buffer.send<uint32_t>(sizeof(list), list.data(), this->driver_mode[2]);
+        this->buffer.send<uint32_t>(sizeof(float) * list.size(), list.data(), this->driver_mode[2]);
 
         this->buffer.stride[0] = 0;
         this->buffer.stride[1] = mesh.faces;
     }
 
-    this->mixin(this->buffer, mesh);
+    if (this->mixin) {
+        this->mixin(this->buffer, mesh);
+    }
+
     this->buffer.revoke();
 }

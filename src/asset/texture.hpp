@@ -42,7 +42,7 @@ namespace asset {
         }
 
         void add(const std::string &sub_texture, const glm::vec4 &tex_coord) {
-            this->atlas_map[sub_texture] = tex_coord;
+            this->atlas_map.insert({sub_texture, tex_coord});
         }
 
         void read_cpu_side() {
@@ -58,19 +58,20 @@ namespace asset {
             glBindTexture(this->gpu_side.type, this->gpu_side.id);
         }
 
-        void attach(std::string_view uniform, ::asset::shader *&p_shader) {
+        void attach(std::string_view uniform_structure, std::string_view uniform_texcoord, ::asset::shader *&p_shader) {
             std::string uniform_name {};
             int32_t index {};
 
             for (auto &[key, value] : this->atlas_map) {
                 uniform_name.clear();
-                uniform_name += uniform;
+                uniform_name += uniform_structure;
                 uniform_name += '[';
                 uniform_name += std::to_string(index++);
                 uniform_name += ']';
+                uniform_name += '.';
+                uniform_name += uniform_texcoord;
 
-                p_shader->set_uniform_vec4(uniform_name.data(), &value[0]);
-                util::log(uniform_name);
+                p_shader->set_uniform_vec4(uniform_name, &value[0]);
             }
         }
 
@@ -99,7 +100,9 @@ namespace asset {
             glBindTexture(this->gpu_side.type, this->gpu_side.id);
 
             bool mipmap {};
-            this->mixin(this->gpu_side, mipmap);
+            if (this->mixin) {
+                this->mixin(this->gpu_side, mipmap);
+            }
 
             switch (this->gpu_side.type) {
                 case GL_TEXTURE_1D: {

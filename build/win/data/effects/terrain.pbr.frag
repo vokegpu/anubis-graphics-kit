@@ -2,8 +2,8 @@
 #define PI 3.1415926535897932384626433832795
 #define TERRAIN_HEIGHT_SIZE 128.0f
 
-#define STONE 0
-#define SAND 1
+#define SAND 0
+#define STONE 1
 #define ROCK 2
 
 layout (location = 0) out vec4 vFragColor;
@@ -19,6 +19,10 @@ uniform vec3 uCameraPos;
 uniform float uAmbientColor;
 uniform float uAmbientLuminance;
 uniform int uLightAmount;
+
+uniform struct {
+    vec4 uTexCoord;
+} uAtlas[12];
 
 uniform struct {
     vec2 uDistance;
@@ -37,7 +41,6 @@ uniform struct {
     vec3 uVector;
 } uLight[100];
 
-uniform vec4 uAtlas[12];
 vec3 mCurrentMaterialRGB;
 
 vec3 schlickFresnel(float lDotH) {
@@ -88,17 +91,16 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     return (diffuse + PI * specular) * intensity * nDotL;
 }
 
-vec2 transformAtlasFromTessCoord(vec4 atlas) {
-    vec2 newUV = vec2(0.0f);
-    return newUV;
+vec2 transform2Modal(vec4 atlas) {
+    return (vTessCoord * atlas.zw) + atlas.xy;
 }
 
 void main() {
-    float dist = length(vPos);
-    float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
+    float dist = sqrt(vPos.x * vPos.x + vPos.y * vPos.y + vPos.z * vPos.z);
+    float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0f, 1.0f);
 
     float g = vHeight / 64.0f;
-    mCurrentMaterialRGB = texture(uTextureAtlas, vTessCoord).rgb;
+    mCurrentMaterialRGB = texture(uTextureAtlas, transform2Modal(uAtlas[SAND].uTexCoord)).rgb;
     vec3 sum = (mCurrentMaterialRGB * g) * (uAmbientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
@@ -109,5 +111,5 @@ void main() {
     }
 
     sum = mix(uFog.uColor, sum, fogFactor);
-    vFragColor = vec4(texture(uTextureAtlas, vTessCoord).rgb, 1.0f);
+    vFragColor = vec4(sum, 1.0f);
 }

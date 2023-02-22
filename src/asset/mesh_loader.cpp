@@ -52,6 +52,20 @@ void mesh_loader::process_indexing(mesh::data &data) {
 }
 
 bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
+    if (path.empty() || path.size() < 3) {
+        util::log("Failed to load object because there is no path insert");
+        return true;
+    }
+
+    std::string file_extension {};
+    if (data.format == ::mesh::format::unknown) {
+        std::vector<std::string> split_path {};
+        util::split(split_path, path, '.');
+        split_path.emplace_back();
+        file_extension = split_path[std::max((int32_t) split_path.size() - 2, 0)];
+        data.format = !this->mesh_ext_map.count(file_extension) ? data.format : this->mesh_ext_map[file_extension];
+    }
+
     switch (data.format) {
         case mesh::format::obj: {
             std::ifstream ifs {};
@@ -84,6 +98,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
         }
 
         default: {
+            util::log("Failed to load object mesh, unknown model format '" + file_extension + "'");
             break;
         }
     }

@@ -32,7 +32,7 @@ public:
     explicit object(::asset::model *p_linked_model = nullptr);
     ~object();
 
-    enums::type type {enums::type::abstract};
+    enums::type type {enums::type::object};
     material *p_material {};
     ::asset::model *p_model {};
     object_transform transform {};

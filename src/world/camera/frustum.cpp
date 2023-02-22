@@ -1,6 +1,6 @@
 #include "frustum.hpp"
 #include "agk.hpp"
-#include "ui/immshape.hpp"
+#include "ui/shape.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 glm::vec3 &frustum::get_front() {
@@ -73,7 +73,7 @@ void frustum::process_perspective(int32_t w, int32_t h) {
 
     this->aspect = size[0] / size[1];
     this->perspective = glm::perspective(glm::radians(this->fov), this->aspect, 0.1f, agk_perspective_clip_distance);
-    immshape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
+    shape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
 
     agk::app.screen_width = w;
     agk::app.screen_height = h;

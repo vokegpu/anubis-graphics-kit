@@ -2,7 +2,7 @@
 #include "util/env.hpp"
 #include <GL/glew.h>
 #include "util/file.hpp"
-#include "util/event.hpp"
+#include "event/event.hpp"
 
 core agk::app {};
 float agk::dt {};
@@ -71,8 +71,8 @@ void agk::mainloop(imodule *p_scene_initial) {
     agk::world::create(agk::app.p_curr_player);
     util::log("Main world player created");
 
-    agk::app.p_world_time_service = new sky {};
-    agk::task::synchronize(agk::app.p_world_time_service);
+    agk::app.p_sky = new sky {};
+    agk::task::synchronize(agk::app.p_sky);
     util::log("World time manager created");
 
     /* Flush all object. */
@@ -134,9 +134,10 @@ void agk::mainloop(imodule *p_scene_initial) {
             p_services->on_update();
         }
 
-        agk::app.p_world_time_service->on_update();
+        agk::app.p_sky->on_update();
         agk::app.p_world_service->on_update();
         agk::app.p_input_service->on_update();
+        agk::app.p_asset_manager_service->on_update();
         agk::task::populate();
 
         glViewport(0, 0, agk::app.screen_width, agk::app.screen_height);
@@ -212,11 +213,11 @@ renderer *&agk::world::renderer() {
 }
 
 void agk::world::create(object *p_object) {
-    agk::app.p_world_service->registry_wf(p_object);
+    agk::app.p_world_service->registry(p_object);
 }
 
 void agk::world::destroy(object *p_object) {
-    agk::app.p_world_service->unregister_wf(p_object);
+    agk::app.p_world_service->erase(p_object);
 }
 
 entity *&agk::world::current_player() {
@@ -224,7 +225,7 @@ entity *&agk::world::current_player() {
 }
 
 sky *&agk::world::sky() {
-    return agk::app.p_world_time_service;
+    return agk::app.p_sky;
 }
 
 bool agk::mesh::load(::mesh::data &data, std::string_view path) {

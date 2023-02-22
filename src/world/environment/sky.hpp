@@ -13,16 +13,18 @@ public:
     uint64_t delta_hour_virtual {};
     uint64_t delta_min_virtual {};
 
-    glm::vec3 color_nightmare {};
+    glm::vec3 color_night {};
     glm::vec3 color_day {};
     glm::vec3 color_from_sky {};
 
     bool is_night {};
     float day_ambient_light {};
-    float nightmare_ambient_light {};
+    float night_ambient_light {};
     float ambient_light {};
     float ambient_next_light {};
     float ambient_luminance {};
+
+    void set_time(int32_t hour, int32_t minutes);
 
     void on_create() override;
     void on_destroy() override;

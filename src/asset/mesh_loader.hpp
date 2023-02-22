@@ -7,11 +7,15 @@
 #include "util/file.hpp"
 #include <map>
 #include <glm/glm.hpp>
+#include <unordered_map>
 
 class mesh_loader {
 protected:
     std::vector<glm::vec3> v_packed_list {}, t_packed_list {}, n_packed_list {};
     std::map<uint32_t, bool> repeated_indexes {};
+    std::map<std::string, mesh::format> mesh_ext_map {
+            {"stl", mesh::format::stl}, {"obj", mesh::format::obj}
+    };
 
     void load_wavefront_object(mesh::data &data, std::ifstream &ifs);
     void load_stl_object(mesh::data &data, std::ifstream &ifs);

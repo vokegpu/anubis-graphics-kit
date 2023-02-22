@@ -1,5 +1,15 @@
 #include "object.hpp"
-#include "util/event.hpp"
+#include "event/event.hpp"
+
+void object_transform::set_position(float x, float y, float z) {
+    if (this->position.x == x && this->position.y == y && this->position.z == z) {
+        return;
+    }
+}
+
+void object_transform::set_scale(float x, float y, float z) {
+
+}
 
 void object::on_low_update() {
 
@@ -14,7 +24,7 @@ void object::set_visible(enums::state enum_state, bool dispatch_event) {
         sdl_event.user.data1 = p_boolean;
         sdl_event.user.data2 = p_wf_id;
 
-        event::dispatch(sdl_event, event::WORLD_REFRESH_ENVIRONMENT);
+        event::dispatch(sdl_event, event::type::world_refresh_environment);
     } else {
         this->visible = enum_state;
     }
@@ -33,7 +43,7 @@ void object::set_priority(enums::priority enum_priority, bool dispatch_event) {
         sdl_event.user.data1 = p_boolean;
         sdl_event.user.data2 = p_wf_id;
 
-        event::dispatch(sdl_event, event::WORLD_CHANGED_PRIORITY);
+        event::dispatch(sdl_event, event::type::world_changed_priority);
     } else {
         this->priority = enum_priority;
     }
@@ -47,18 +57,9 @@ object::object(::asset::model *p_linked_model) {
     this->id = imodule::token++;
     this->set_priority(enums::priority::high);
     this->set_visible(enums::state::enable);
+    this->p_model = p_linked_model;
 }
 
 object::~object() {
-
-}
-
-void object_transform::set_position(float x, float y, float z) {
-    if (this->position.x == x && this->position.y == y && this->position.z == z) {
-        return;
-    }
-}
-
-void object_transform::set_scale(float x, float y, float z) {
 
 }

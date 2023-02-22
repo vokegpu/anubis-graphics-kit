@@ -6,6 +6,7 @@
 
 void asset_manager::load(imodule *p_asset) {
     this->asset_map[p_asset->tag] = p_asset;
+    this->reload_asset_list.push_back(p_asset->tag);
 }
 
 imodule *asset_manager::find(std::string_view resource) {
@@ -50,31 +51,41 @@ void asset_manager::on_create() {
     }});
 
     this->load(new asset::texture<uint8_t> {"texture/terrain.atlas", "./data/textures/terrain_stone.png", {GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB}, [](gpu::texture &texture, bool &mipmap) {
-        //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTextureParameteri(texture.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(texture.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-        glTextureParameteri(texture.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(texture.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTextureParameteri(texture.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTextureParameteri(texture.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTextureParameteri(texture.type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(texture.type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         mipmap = true;
     }});
 
-    this->load(new asset::model {"model/simple-tree", "./data/models/tree-simple.obj", {GL_STATIC_DRAW, GL_STATIC_DRAW, GL_STATIC_DRAW, GL_STATIC_DRAW}});
+    this->load(new asset::model {"model/simple-tree", "./data/models/tree-simple.obj", glm::ivec4(GL_STATIC_DRAW)});
+    this->on_update();
+}
 
-    util::log("Loading all assets");
+void asset_manager::on_destroy() {
+}
+
+void asset_manager::on_update() {
+    if (this->reload_asset_list.empty()) {
+        return;
+    }
+
+    util::log("Attempting to reload new assets");
     std::string asset_message {};
+    imodule *p_asset {};
 
-    for (auto &[key, value] : this->asset_map) {
-        value->on_create();
+    for (const std::string &assets : this->reload_asset_list) {
+        p_asset = this->asset_map[assets];
+        p_asset->on_create();
 
         asset_message.clear();
         asset_message += "Assets '";
-        asset_message += key;
+        asset_message += assets;
         asset_message += "' ";
 
-        if (value->is_dead) {
+        if (p_asset->is_dead) {
             asset_message += "failed to be loaded";
         } else {
             asset_message += "loaded";
@@ -82,7 +93,6 @@ void asset_manager::on_create() {
 
         util::log(asset_message);
     }
-}
 
-void asset_manager::on_destroy() {
+    this->reload_asset_list.clear();
 }

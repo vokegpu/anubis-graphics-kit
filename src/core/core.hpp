@@ -29,7 +29,7 @@ public:
     world *p_world_service {};
     renderer *p_renderer_service {};
     asset_manager *p_asset_manager_service {};
-    sky *p_world_time_service {};
+    sky *p_sky {};
     input *p_input_service {};
 
     mesh_loader mesh_loader_manager {};

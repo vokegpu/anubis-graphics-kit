@@ -20,7 +20,7 @@ namespace enums {
     };
 
     enum class type {
-        abstract, entity, object, light, model
+        object, entity, light
     };
 };
 

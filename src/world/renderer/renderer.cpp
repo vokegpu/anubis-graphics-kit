@@ -1,9 +1,7 @@
 #include "renderer.hpp"
-#include "world/environment/entity.hpp"
 #include "world/environment/object.hpp"
 #include "agk.hpp"
-#include "util/event.hpp"
-#include "world/environment/light.hpp"
+#include "event/event.hpp"
 #include "asset/shader.hpp"
 #include "asset/texture.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,7 +21,7 @@ void renderer::process_terrain() {
     p_program_pbr->set_uniform_vec3("uMaterial.uColor", &color[0]);
     p_program_pbr->set_uniform_bool("uMaterial.uMetal", false);
     p_program_pbr->set_uniform_float("uMaterial.uRough", 0.93f);
-    p_program_pbr->set_uniform_vec3("uCameraPos", &agk::world::current_camera()->transform.position[0]);
+    p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", p_time_manager->ambient_light);
     p_program_pbr->set_uniform_float("uAmbientLuminance", p_time_manager->ambient_luminance);
     p_program_pbr->set_uniform_int("uTerrainHeight", agk::app.setting.chunk_terrain_height.get_value());
@@ -31,10 +29,14 @@ void renderer::process_terrain() {
     glCullFace(GL_FRONT);
     this->buffer_chunk.invoke();
 
-    glActiveTexture(GL_TEXTURE0);
-    /* Height map texture. */
+    glActiveTexture(GL_TEXTURE1);
+    auto *p_texture_atlas {(asset::texture<uint8_t>*) agk::asset::find("texture/terrain.atlas")};
+    p_texture_atlas->invoke();
 
-    for (chunk *&p_chunks : this->wf_chunk_draw_list) {
+    /* Height map texture. */
+    glActiveTexture(GL_TEXTURE0);
+
+    for (chunk *&p_chunks : this->chunk_draw_list) {
         if (p_chunks == nullptr || !p_chunks->is_processed() || p_chunks->is_dead) {
             continue;
         }
@@ -68,83 +70,44 @@ void renderer::process_environment() {
     glm::mat3 mat3x3_inverse {};
     glm::mat4 mat4x4_model_view {};
 
+    float dist_render {agk::app.setting.fog_bounding.get_value().y};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
 
     p_program_pbr->invoke();
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
-    p_program_pbr->set_uniform_float("uAmbientColor", agk::world::sky()->ambient_light);
+    p_program_pbr->set_uniform_float("uAmbientColor", agk::app.p_sky->ambient_light);
     p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_mat4("uPerspectiveView", &this->mat4x4_perspective_view[0][0]);
 
-    entity *p_entity {};
-    ::asset::model *p_model {};
-    object *p_object {};
-    light *p_light {};
-
-    enums::material material_type {};
-    int32_t light_amount {};
-    std::string light_index_tag {};
-    float dist_render {agk::app.setting.fog_bounding.get_value().y};
-
-    for (object *&p_world_feature : this->wf_env_draw_list) {
-        if (p_world_feature == nullptr || p_world_feature->is_dead) {
-            continue;
-        }
-
-        switch (p_world_feature->type) {
-            case enums::type::entity: {
-                p_entity = (entity*) p_world_feature;
-                p_model = p_entity->p_model;
-                break;
-            }
-
-            case enums::type::object: {
-                p_object = (object*) p_world_feature;
-                p_model = p_object->p_model;
-                break;
-            }
-
-            case enums::type::light: {
-                p_light = (light*) p_world_feature;
-                p_light->index = light_amount++;
-                p_model = p_light->p_model;
-                break;
-            }
-
-            default: {
-                break;
-            }
-        }
-
-        if (p_model == nullptr || p_object->p_material == nullptr) {
+    for (object *&p_objects : this->obj_draw_list) {
+        if (p_objects == nullptr || p_objects->p_model == nullptr || p_objects->p_material == nullptr || p_objects->is_dead) {
             continue;
         }
 
         mat4x4_model = glm::mat4(1.0f);
-        mat4x4_model = glm::translate(mat4x4_model, p_object->transform.position);
-        mat4x4_model = glm::rotate(mat4x4_model, p_object->transform.rotation.x, {1, 0, 0});
-        mat4x4_model = glm::rotate(mat4x4_model, p_object->transform.rotation.y, {0, 1, 0});
-        mat4x4_model = glm::rotate(mat4x4_model, p_object->transform.rotation.z, {0, 0, 1});
-        mat4x4_model = glm::scale(mat4x4_model, p_object->transform.scale);
+        mat4x4_model = glm::translate(mat4x4_model, p_objects->transform.position);
+        mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.x, {1, 0, 0});
+        mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.y, {0, 1, 0});
+        mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
+        mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        if (((glm::distance(agk::app.p_curr_camera->transform.position, p_object->transform.position) > dist_render || !agk::app.p_curr_camera->viewing(mat4x4_model, p_world_feature->transform.scale, p_model->axis_aligned_bounding_box)) && !p_model->buffer.instancing_rendering)) {
+        if (((glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position) > dist_render || !agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->transform.scale, p_objects->p_model->axis_aligned_bounding_box)) && !p_objects->p_model->buffer.instancing_rendering)) {
             continue;
         }
 
-        p_program_pbr->set_uniform_bool("uInstanced", p_model->buffer.instancing_rendering);
-        switch (p_model->buffer.instancing_rendering) {
+        p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_model->buffer.instancing_rendering);
+        switch (p_objects->p_model->buffer.instancing_rendering) {
             case true: {
                 p_program_pbr->set_uniform_mat4("uPerspectiveViewMatrix", &this->mat4x4_perspective_view[0][0]);
 
-                material_type = p_object->p_material->get_type();
-                p_program_pbr->set_uniform_bool("uMaterial.uMetal", material_type == enums::material::metal);
-                p_program_pbr->set_uniform_float("uMaterial.uRough", p_object->p_material->get_rough());
-                p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_object->p_material->get_color()[0]);
+                p_program_pbr->set_uniform_bool("uMaterial.uMetal", p_objects->p_material->get_type() == enums::material::metal);
+                p_program_pbr->set_uniform_float("uMaterial.uRough", p_objects->p_material->get_rough());
+                p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_objects->p_material->get_color()[0]);
 
-                p_model->buffer.invoke();
-                p_model->buffer.draw();
-                p_model->buffer.revoke();
+                p_objects->p_model->buffer.invoke();
+                p_objects->p_model->buffer.draw();
+                p_objects->p_model->buffer.revoke();
                 break;
             }
 
@@ -156,26 +119,26 @@ void renderer::process_environment() {
                 mat4x4_model = this->mat4x4_perspective_view * mat4x4_model;
                 p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_model[0][0]);
 
-                material_type = p_object->p_material->get_type();
-                p_program_pbr->set_uniform_bool("uMaterial.uMetal", material_type == enums::material::metal);
-                p_program_pbr->set_uniform_float("uMaterial.uRough", p_object->p_material->get_rough());
-                p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_object->p_material->get_color()[0]);
+                p_program_pbr->set_uniform_bool("uMaterial.uMetal", p_objects->p_material->get_type() == enums::material::metal);
+                p_program_pbr->set_uniform_float("uMaterial.uRough", p_objects->p_material->get_rough());
+                p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_objects->p_material->get_color()[0]);
 
-                p_model->buffer.invoke();
-                p_model->buffer.draw();
-                p_model->buffer.revoke();
+                p_objects->p_model->buffer.invoke();
+                p_objects->p_model->buffer.draw();
+                p_objects->p_model->buffer.revoke();
                 break;
             }
         }
     }
 
+    uint64_t light_amount {agk::app.p_world_service->obj_id_light_list.size()};
     if (this->loaded_light_size != light_amount) {
         this->loaded_light_size = light_amount;
-        p_program_pbr->set_uniform_int("uLightAmount", light_amount);
 
+        p_program_pbr->set_uniform_int("uLightAmount", (int32_t) light_amount);
         p_program_pbr = (::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr");
         p_program_pbr->invoke();
-        p_program_pbr->set_uniform_int("uLightAmount", light_amount);
+        p_program_pbr->set_uniform_int("uLightAmount", (int32_t) light_amount);
     };
 
     glUseProgram(0);
@@ -236,16 +199,16 @@ void renderer::process_post_processing() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_texture);
 
-    this->immshape_post_processing.invoke();
-    this->immshape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
-    this->immshape_post_processing.p_program->set_uniform_float("uHDR.uExposure", agk::app.setting.hdr_exposure.get_value());
-    this->immshape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", agk::app.setting.enable_hdr.get_value());
+    this->shape_post_processing.invoke();
+    this->shape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
+    this->shape_post_processing.p_program->set_uniform_float("uHDR.uExposure", agk::app.setting.hdr_exposure.get_value());
+    this->shape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", agk::app.setting.enable_hdr.get_value());
 
-    this->immshape_post_processing.p_program->set_uniform_bool("uMotionBlur.uEnabled", agk::app.setting.enable_motion_blur.get_value());
+    this->shape_post_processing.p_program->set_uniform_bool("uMotionBlur.uEnabled", agk::app.setting.enable_motion_blur.get_value());
     if (agk::app.setting.enable_motion_blur.get_value()) {
         this->mat4x4_inverse_perspective_view = glm::inverse(this->mat4x4_perspective_view);
-        this->immshape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uInversePerspectiveView", &this->mat4x4_inverse_perspective_view[0][0]);
-        this->immshape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);
+        this->shape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uInversePerspectiveView", &this->mat4x4_inverse_perspective_view[0][0]);
+        this->shape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);
         this->mat4x4_previous_perspective_view = this->mat4x4_perspective_view;
 
         auto p_camera {agk::app.p_curr_camera};
@@ -256,15 +219,15 @@ void renderer::process_post_processing() {
         this->camera_motion_delta.x = yaw - this->camera_motion_delta.x;
         this->camera_motion_delta.y = pitch - this->camera_motion_delta.y;
         float acc {(this->camera_motion_delta.x * this->camera_motion_delta.x + this->camera_motion_delta.y * this->camera_motion_delta.y)};
-        this->immshape_post_processing.p_program->set_uniform_bool("uMotionBlur.uCameraRotated", acc != 0.0f);
+        this->shape_post_processing.p_program->set_uniform_bool("uMotionBlur.uCameraRotated", acc != 0.0f);
         this->camera_motion_delta.x = yaw;
         this->camera_motion_delta.y = pitch;
 
-        this->immshape_post_processing.p_program->set_uniform_float("uMotionBlur.uIntensity", agk::app.setting.motion_blur_intensity.get_value());
+        this->shape_post_processing.p_program->set_uniform_float("uMotionBlur.uIntensity", agk::app.setting.motion_blur_intensity.get_value());
     }
 
-    this->immshape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
-    this->immshape_post_processing.revoke();
+    this->shape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
+    this->shape_post_processing.revoke();
 
     glCullFace(GL_BACK);
 }
@@ -308,9 +271,9 @@ void renderer::on_create() {
     this->buffer_post_processing.revoke();
 
     /* Link to immediate shape. */
-    this->immshape_post_processing.link(&this->buffer_post_processing, (::asset::shader*) agk::asset::find("gpu/effects.processing.post"));
+    this->shape_post_processing.link(&this->buffer_post_processing, (::asset::shader*) agk::asset::find("gpu/effects.processing.post"));
 
-    this->parallel_post_processing.p_program = (::asset::shader*) agk::asset::find("gpu/scripts.hdr.luminance.post");
+    this->parallel_post_processing.p_program = (::asset::shader*) agk::asset::find("gpu/scripts.hdr.luminance");
     this->parallel_post_processing.dispatch_groups[0] = 32;
     this->parallel_post_processing.dispatch_groups[1] = 32;
 
@@ -318,8 +281,6 @@ void renderer::on_create() {
     auto &mesh_chunk {agk::world::get()->chunk_mesh_data};
     auto &v {mesh_chunk.get_float_list(mesh::type::vertex)};
     auto &t {mesh_chunk.get_float_list(mesh::type::textcoord)};
-    auto &c {mesh_chunk.get_float_list(mesh::type::color)};
-    auto &i {mesh_chunk.get_uint_list(mesh::type::vertex)};
 
     this->buffer_chunk.invoke();
     this->buffer_chunk.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
@@ -370,16 +331,14 @@ void renderer::on_create() {
     this->buffer_coordinate_debug.revoke();
 
     auto *p_terrain_atlas {(asset::texture<uint8_t>*) agk::asset::find("texture/terrain.atlas")};
-    p_terrain_atlas->add("stone", {0.0f, 0.0f, 1.0f, 1.0f});
+    p_terrain_atlas->add("sand", {0.0f, 0.0f, 1.0f, 1.0f});
 
-    auto *p_program {(asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
-    p_program->invoke();
+    auto *p_program_pbr {(asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
+    p_program_pbr->invoke();
 
-    /* Attach/store atlas texture coordinates. */
-    glActiveTexture(GL_TEXTURE1);
-    p_terrain_atlas->invoke();
-    p_terrain_atlas->attach("uAtlas", p_program);
-    p_program->revoke();
+    /* Send atlas texture coordinates. */
+    p_terrain_atlas->attach("uAtlas", "uTexCoord", p_program_pbr);
+    p_program_pbr->revoke();
 }
 
 void renderer::on_destroy() {
@@ -389,7 +348,7 @@ void renderer::on_destroy() {
 void renderer::on_render() {
     if (this->update_disabled_chunks) {
         this->update_disabled_chunks = false;
-        this->wf_chunk_draw_list = agk::world::get()->loaded_chunk_list;
+        this->chunk_draw_list = agk::world::get()->loaded_chunk_list;
     }
 
     /* Prepare matrices to render the world. */
@@ -427,13 +386,8 @@ void renderer::on_event(SDL_Event &sdl_event) {
 
         case SDL_USEREVENT: {
             switch (sdl_event.user.code) {
-                case event::WORLD_REFRESH_ENVIRONMENT: {
+                case event::type::world_refresh_environment: {
                     this->on_event_refresh_environment(sdl_event);
-                    break;
-                }
-
-                case event::WORLD_REFRESH_CHUNK: {
-                    this->on_event_refresh_chunk(sdl_event);
                     break;
                 }
             }
@@ -447,37 +401,25 @@ void renderer::on_event_refresh_environment(SDL_Event &sdl_event) {
     auto &world {agk::world::get()};
 
     auto *p_to_remove {static_cast<bool*>(sdl_event.user.data1)};
-    auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
+    auto *p_obj_id {static_cast<int32_t*>(sdl_event.user.data2)};
 
-    object *&p_world_feature {world->find_env_wf(*p_wf_id)};
+    object *&p_obj_target {world->find_object(*p_obj_id)};
     if (*p_to_remove) {
-        this->wf_env_draw_list.clear();
-        if (p_world_feature != nullptr) p_world_feature->set_visible(enums::state::disable, false);
+        this->obj_draw_list.clear();
+        if (p_obj_target != nullptr) p_obj_target->set_visible(enums::state::disable, false);
 
-        for (object *&p_world_features : world->wf_list) {
-            if (p_world_features != nullptr && p_world_features->get_visible() == enums::state::enable) {
-                this->wf_env_draw_list.push_back(p_world_features);
+        for (object *&p_objects : world->obj_list) {
+            if (p_objects != nullptr && p_objects->get_visible() == enums::state::enable) {
+                this->obj_draw_list.push_back(p_objects);
             }
         }
-    } else if (p_world_feature != nullptr && p_world_feature->get_visible() != enums::state::enable) {
-        this->wf_env_draw_list.push_back(p_world_feature);
-        p_world_feature->set_visible(enums::state::enable, false);
+    } else if (p_obj_target != nullptr && p_obj_target->get_visible() != enums::state::enable) {
+        this->obj_draw_list.push_back(p_obj_target);
+        p_obj_target->set_visible(enums::state::enable, false);
     }
 
     delete p_to_remove;
-    delete p_wf_id;
-}
-
-void renderer::on_event_refresh_chunk(SDL_Event &sdl_event) {
-    auto *p_string_chunk_tag {static_cast<std::string*>(sdl_event.user.data1)};
-    auto *&p_world {agk::world::get()};
-    auto *p_chunk {p_world->find_chunk_wf(*p_string_chunk_tag)};
-
-    if (p_chunk != nullptr && p_chunk->is_processed()) {
-        this->add(p_chunk);
-    }
-
-    delete p_string_chunk_tag;
+    delete p_obj_id;
 }
 
 void renderer::add(chunk *p_chunk) {
@@ -485,7 +427,7 @@ void renderer::add(chunk *p_chunk) {
         return;
     }
 
-    this->wf_chunk_draw_list.push_back(p_chunk);
+    this->chunk_draw_list.push_back(p_chunk);
 }
 
 void renderer::refresh() {

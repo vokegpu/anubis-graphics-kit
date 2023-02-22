@@ -1,12 +1,13 @@
 #include "world.hpp"
 #include "agk.hpp"
-#include "util/event.hpp"
+#include "event/event.hpp"
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include "util/env.hpp"
 #include "util/math.hpp"
 #include "util/file.hpp"
 #include "world/environment/object.hpp"
+#include "world/environment/light.hpp"
 
 void world::on_create() {
     agk::app.setting.chunk_generation_interval.set_value(1000);
@@ -29,14 +30,20 @@ void world::on_create() {
 void world::on_destroy() {
 }
 
-void world::registry_wf(object *p_object) {
+void world::registry(object *p_object) {
     if (p_object == nullptr) {
         return;
     }
 
     agk::task::synchronize(p_object);
-    this->registered_wf_map[p_object->id] = p_object;
-    this->wf_list.push_back(p_object);
+    this->obj_register_map[p_object->id] = p_object;
+    this->obj_list.push_back(p_object);
+
+    if (p_object->type == enums::type::light) {
+        SDL_Event sdl_custom_event {};
+        sdl_custom_event.user.data1 = new int32_t {p_object->id};
+        event::dispatch(sdl_custom_event, event::type::world_refresh_environment_lighting);
+    }
 }
 
 void world::on_event(SDL_Event &sdl_event) {
@@ -48,9 +55,13 @@ void world::on_event(SDL_Event &sdl_event) {
 
         case SDL_USEREVENT: {
             switch (sdl_event.user.code) {
-                case event::WORLD_CHANGED_PRIORITY: {
+                case event::type::world_changed_priority: {
                     this->on_event_changed_priority(sdl_event);
                     break;
+                }
+
+                case event::type::world_refresh_environment_lighting: {
+                    this->on_event_refresh_environment_lighting(sdl_event);
                 }
             }
 
@@ -62,17 +73,17 @@ void world::on_event(SDL_Event &sdl_event) {
 void world::on_update() {
     /* World feature environment statement. */
     if (this->poll_low_priority_queue) {
-        for (;!this->wf_low_priority_queue.empty();) {
-            auto &p_world_feature {this->wf_low_priority_queue.front()};
-            if (p_world_feature != nullptr) p_world_feature->on_low_update();
-            this->wf_low_priority_queue.pop();
+        for (;!this->obj_low_priority_queue.empty();) {
+            auto &p_obj_target {this->obj_low_priority_queue.front()};
+            if (p_obj_target != nullptr) p_obj_target->on_low_update();
+            this->obj_low_priority_queue.pop();
         }
     }
 
     // @TODO repeated high priority wf(s)
-    for (object *&p_world_feature : this->wf_high_priority_list) {
-        if (p_world_feature != nullptr) {
-            p_world_feature->on_update();
+    for (object *&p_objects : this->obj_high_priority_list) {
+        if (p_objects != nullptr) {
+            p_objects->on_update();
         }
     }
 
@@ -114,8 +125,8 @@ void world::on_update() {
                 should_refresh_renderer = true;
 
                 for (int32_t &id : p_chunks->vegetation) {
-                    this->unregister_wf(this->registered_wf_map[id]);
-                    this->registered_wf_map.erase(id);
+                    this->erase(this->obj_register_map[id]);
+                    this->obj_register_map.erase(id);
                     free_memory_counter++;
                 }
 
@@ -155,7 +166,7 @@ void world::on_update() {
                 p_chunk->on_create();
                 p_chunk->transform.position.x = static_cast<float>(grid_pos.x * chunk_size);
                 p_chunk->transform.position.z = static_cast<float>(grid_pos.y * chunk_size);
-                p_chunk->id = (int32_t) ++this->wf_chunk_token_id;
+                p_chunk->id = (int32_t) ++this->chunk_token_id;
                 p_chunk->transform.scale = chunk_scale;
 
                 /* Generate a metadata seed to this chunk. */
@@ -281,15 +292,6 @@ void world::on_update() {
 
             vegetation_pos.x = p_vec[1] * (float) chunk_size;
             vegetation_pos.z = p_vec[3] * (float) chunk_size;
-
-            object *p_tree {new object {}};
-            p_tree->p_material = this->p_material_tree;
-            p_tree->transform.position = vegetation_pos;
-            p_tree->transform.scale = scale_factor;
-
-            // Install an instance mesh to this vegetation.
-            p_chunk->vegetation.push_back(p_tree->id);
-            this->registry_wf(p_tree);
         }
     }
 
@@ -316,79 +318,79 @@ void world::on_update() {
 
     if (this->free_memory_counter > 32) {
         std::vector<object*> new_wf_list {};
-        this->wf_high_priority_list.clear();
-        agk::app.p_renderer_service->wf_env_draw_list.clear();
+        this->obj_high_priority_list.clear();
+        agk::app.p_renderer_service->obj_draw_list.clear();
 
-        for (auto &p_world_feature : this->wf_list) {
-            if (p_world_feature->is_dead || p_world_feature == nullptr) {
-                delete p_world_feature;
-                p_world_feature = nullptr;
+        for (auto &p_objects : this->obj_list) {
+            if (p_objects->is_dead || p_objects == nullptr) {
+                delete p_objects;
+                p_objects = nullptr;
                 continue;
             }
 
-            if (p_world_feature->get_priority() == enums::priority::high) {
-                this->wf_high_priority_list.push_back(p_world_feature);
+            if (p_objects->get_priority() == enums::priority::high) {
+                this->obj_high_priority_list.push_back(p_objects);
             }
 
-            if (p_world_feature->get_visible() == enums::state::enable) {
-                agk::app.p_renderer_service->wf_env_draw_list.push_back(p_world_feature);
+            if (p_objects->get_visible() == enums::state::enable) {
+                agk::app.p_renderer_service->obj_draw_list.push_back(p_objects);
             }
 
-            new_wf_list.push_back(p_world_feature);
+            new_wf_list.push_back(p_objects);
         }
 
-        this->wf_list.clear();
-        this->wf_list.insert(this->wf_list.end(), new_wf_list.begin(), new_wf_list.end());
+        this->obj_list.clear();
+        this->obj_list.insert(this->obj_list.end(), new_wf_list.begin(), new_wf_list.end());
         this->free_memory_counter = 0;
         util::log("Cleaned random trash memory");
     }
 }
 
-object *world::unregister_wf(object *p_world_feature) {
-    if (p_world_feature != nullptr) {
-        p_world_feature->is_dead = true;
-        this->registered_wf_map.erase(p_world_feature->id);
-        return p_world_feature;
+object *world::erase(object *p_object) {
+    if (p_object != nullptr) {
+        p_object->is_dead = true;
+        this->obj_register_map.erase(p_object->id);
+        return p_object;
     }
 
     // todo: unregister object from world.
     return nullptr;
 }
 
-object *&world::find_env_wf(int32_t wf_id) {
-    return this->registered_wf_map[wf_id];
+object *&world::find_object(int32_t obj_id) {
+    return this->obj_register_map[obj_id];
 }
 
 void world::on_event_changed_priority(SDL_Event &sdl_event) {
     auto *p_high {static_cast<bool*>(sdl_event.user.data1)};
-    auto *p_wf_id {static_cast<int32_t*>(sdl_event.user.data2)};
+    auto *p_obj_id {static_cast<int32_t*>(sdl_event.user.data2)};
 
-    object *&p_world_feature_target {this->find_env_wf(*p_wf_id)};
-    if (p_world_feature_target != nullptr && !*p_high && p_world_feature_target->get_priority() != enums::priority::low) {
-        p_world_feature_target->set_priority(enums::priority::low, false);
+    object *&p_obj_target {this->find_object(*p_obj_id)};
+    if (p_obj_target != nullptr && !*p_high && p_obj_target->get_priority() != enums::priority::low) {
+        p_obj_target->set_priority(enums::priority::low, false);
         std::vector<object*> new_wf_high_priority_list {};
-        for (object *&p_world_feature : this->wf_high_priority_list) {
-            if (p_world_feature != nullptr && p_world_feature->get_priority() == enums::priority::high) {
-                new_wf_high_priority_list.push_back(p_world_feature);
+        for (object *&p_objects : this->obj_high_priority_list) {
+            if (p_objects != nullptr && p_objects->get_priority() == enums::priority::high) {
+                new_wf_high_priority_list.push_back(p_objects);
             }
         }
 
-        this->wf_high_priority_list.clear();
-        this->wf_high_priority_list.insert(this->wf_high_priority_list.end(), new_wf_high_priority_list.begin(), new_wf_high_priority_list.end());
-    } else if (p_world_feature_target != nullptr && *p_high && p_world_feature_target->get_priority() != enums::priority::high) {
-        p_world_feature_target->set_priority(enums::priority::high, false);
-        this->wf_high_priority_list.push_back(p_world_feature_target);
-    } else if (p_world_feature_target != nullptr && !*p_high) {
-        p_world_feature_target->set_priority(enums::priority::low, false);
-        this->wf_low_priority_queue.push(p_world_feature_target);
+        this->obj_high_priority_list.clear();
+        this->obj_high_priority_list.insert(this->obj_high_priority_list.end(), new_wf_high_priority_list.begin(), new_wf_high_priority_list.end());
+    } else if (p_obj_target != nullptr && *p_high && p_obj_target->get_priority() != enums::priority::high) {
+        p_obj_target->set_priority(enums::priority::high, false);
+        this->obj_high_priority_list.push_back(p_obj_target);
+    } else if (p_obj_target != nullptr && !*p_high) {
+        p_obj_target->set_priority(enums::priority::low, false);
+        this->obj_low_priority_queue.push(p_obj_target);
         this->poll_low_priority_queue = true;
     }
 
-    delete p_wf_id;
+    delete p_obj_id;
     delete p_high;
 }
 
-chunk *world::find_chunk_wf(int32_t wf_id) {
+chunk *world::find_chunk(int32_t wf_id) {
     for (chunk *&p_chunk : this->loaded_chunk_list) {
         if (p_chunk != nullptr && p_chunk->id == wf_id) {
             return p_chunk;
@@ -398,6 +400,30 @@ chunk *world::find_chunk_wf(int32_t wf_id) {
     return nullptr;
 }
 
-chunk *world::find_chunk_wf(const std::string &grid_pos) {
+chunk *world::find_chunk(const std::string &grid_pos) {
     return grid_pos.empty() ? nullptr : this->chunk_map[grid_pos.data()];
+}
+
+void world::on_event_refresh_environment_lighting(SDL_Event &sdl_event) {
+    auto *p_obj_id {static_cast<int32_t*>(sdl_event.user.data1)};
+    auto *p_light {(light*) this->obj_register_map[*p_obj_id]};
+
+    if (p_light != nullptr) {
+        this->obj_id_light_list.push_back(*p_obj_id);
+    }
+
+    const std::vector<int32_t> copy {this->obj_id_light_list};
+    this->obj_id_light_list.clear();
+    int32_t light_index {};
+
+    for (const int32_t &id : copy) {
+        p_light = (light*) this->obj_register_map[id];
+        if (p_light != nullptr) {
+            this->obj_id_light_list.push_back(id);
+            p_light->index = light_index++;
+
+        }
+    }
+
+    delete p_obj_id;
 }

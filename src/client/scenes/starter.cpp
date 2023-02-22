@@ -8,7 +8,7 @@
 void client::scenes::starter::on_create() {
     asset::model *p_model_dino {new asset::model {"models/dinossaur", "./data/models/Dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
     agk::asset::load(p_model_dino);
-    material *p_material {new material(enums::material::dialetric)};
+    material *p_material {new material(enums::material::metal)};
 
     for (int i {}; i < 20; i++) {
         this->p_object_dino = new object(p_model_dino);
@@ -22,11 +22,17 @@ void client::scenes::starter::on_create() {
     }
 
     this->p_light_spot = new light(nullptr);
-    this->p_light_spot->intensity = {50, 50, 50};
-    this->p_light_spot->transform.position = {0, 15, 0};
+    this->p_light_spot->intensity = {300, 300, 300};
+    this->p_light_spot->transform.position = {0, 300, 0};
     this->p_light_spot->update();
 
+    auto p_light_spot2 = new light(nullptr);
+    p_light_spot2->intensity = {50, 50, 50};
+    p_light_spot2->transform.position = {0, 15, 0};
+    p_light_spot2->update();
+
     agk::world::create(this->p_light_spot);
+    agk::world::create(p_light_spot2);
     agk::world::current_player()->speed_base = 0.9540f;
 
     this->p_camera_manager->set_editor_enabled(true);
@@ -56,14 +62,14 @@ void client::scenes::starter::on_create() {
     }});
 
     ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_light_intensity = ekg::slider("LightIntensity", 50.0f, 0.0f, 4024.0f, ekg::dock::top | ekg::dock::left);
+    this->p_light_intensity = ekg::slider("LightIntensity", 0.233f, 0.0f, 4024.0f, ekg::dock::top | ekg::dock::left);
     this->p_light_intensity->set_precision(2);
 
     ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_chunk_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::top | ekg::dock::left);
 
     ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_fog_distance = ekg::slider("FogDist", 1024.0f, 0.0f, 1024.0f * 8, ekg::dock::top | ekg::dock::left);
+    this->p_fog_distance = ekg::slider("FogDist", 1024.0f * 4, 0.0f, 1024.0f * 16, ekg::dock::top | ekg::dock::left);
     this->p_fog_distance->set_precision(2);
 
     ekg::label("FBM Frequency:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
@@ -99,7 +105,7 @@ void client::scenes::starter::on_create() {
     ekg::label("Motion Blur:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     ekg::label("Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.43f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.051f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_motion_blur_intensity->set_precision(2);
 }
 

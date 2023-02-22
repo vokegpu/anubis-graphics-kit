@@ -4,7 +4,7 @@
 #include "asset/mesh.hpp"
 #include "world/terrain/chunk.hpp"
 #include "core/value.hpp"
-#include "ui/immshape.hpp"
+#include "ui/shape.hpp"
 #include <vector>
 #include <map>
 #include <array>
@@ -17,9 +17,8 @@ protected:
     glm::mat4 mat4x4_view {};
     glm::mat4 mat4x4_perspective {};
 
-    int32_t loaded_light_size {};
+    uint64_t loaded_light_size {};
     bool update_disabled_chunks {};
-    util::timing timing_instances {};
 
     /* Chunking. */
     buffering buffer_chunk {};
@@ -27,7 +26,7 @@ protected:
 
     /* Post-processing. */
     buffering buffer_post_processing {};
-    immshape immshape_post_processing {};
+    shape shape_post_processing {};
     paralleling parallel_post_processing {};
     texturing texture_post_processing {};
     framebuffering framebuffer_post_processing {};
@@ -38,10 +37,9 @@ protected:
     buffering buffer_coordinate_debug {};
 
     void on_event_refresh_environment(SDL_Event &sdl_event);
-    void on_event_refresh_chunk(SDL_Event &sdl_event);
 public:
-    std::vector<object*> wf_env_draw_list {};
-    std::vector<chunk*> wf_chunk_draw_list {};
+    std::vector<object*> obj_draw_list {};
+    std::vector<chunk*> chunk_draw_list {};
 
     void add(chunk *p_chunk);
     void refresh();
