@@ -1,14 +1,14 @@
 #ifndef AGK_CLIENT_SERVICES_CAMERA_MANAGER_H
 #define AGK_CLIENT_SERVICES_CAMERA_MANAGER_H
 
-#include "api/feature/feature.hpp"
-#include "api/world/camera/camera.hpp"
-#include "api/value/value.hpp"
-#include "api/world/environment/entity.hpp"
+#include "core/imodule.hpp"
+#include "world/camera/camera.hpp"
+#include "core/value.hpp"
+#include "world/environment/entity.hpp"
 #include <iostream>
 
 namespace client::services {
-    class camera_manager : public feature {
+    class camera_manager : public imodule {
     protected:
         bool camera_rotation {};
         bool camera_movement {};

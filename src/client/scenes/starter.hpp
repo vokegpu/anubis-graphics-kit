@@ -1,15 +1,15 @@
 #ifndef AGK_IMPL_SCENE_STARTER_H
 #define AGK_IMPL_SCENE_STARTER_H
 
-#include "api/feature/feature.hpp"
-#include "api/gpu/tools.hpp"
+#include "core/imodule.hpp"
+#include "gpu/tools.hpp"
 #include "client/services/camera_manager.hpp"
-#include "api/world/environment/light.hpp"
-#include "api/world/environment/object.hpp"
+#include "world/environment/light.hpp"
+#include "world/environment/object.hpp"
 #include <ekg/ekg.hpp>
 
 namespace client::scenes {
-    class starter : public feature {
+    class starter : public imodule {
     public:
         light *p_light_spot {};
         object *p_object_dino {};

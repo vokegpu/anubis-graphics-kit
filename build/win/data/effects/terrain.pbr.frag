@@ -98,7 +98,7 @@ void main() {
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
 
     float g = vHeight / 64.0f;
-    mCurrentMaterialRGB = texture(uTextureAtlas, transformAtlasFromTessCoord(uAtlas[STONE])).rgb;
+    mCurrentMaterialRGB = texture(uTextureAtlas, vTessCoord).rgb;
     vec3 sum = (mCurrentMaterialRGB * g) * (uAmbientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
@@ -109,5 +109,5 @@ void main() {
     }
 
     sum = mix(uFog.uColor, sum, fogFactor);
-    vFragColor = vec4(uAtlas[STONE]);
+    vFragColor = vec4(texture(uTextureAtlas, vTessCoord).rgb, 1.0f);
 }

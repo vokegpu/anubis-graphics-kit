@@ -16,7 +16,7 @@ endif()
 # Set the version of C++ 17 and the build location.
 set(CMAKE_CXX_STANDARD 17)
 set(EXECUTABLE_OUTPUT_PATH ${BUILD_LOCATION})
-# add_compile_options("-O3")
+add_compile_options("-O3")
 
 # Find for all files.
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")

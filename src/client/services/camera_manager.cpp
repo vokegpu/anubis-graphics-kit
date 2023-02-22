@@ -1,9 +1,9 @@
 #include "camera_manager.hpp"
-#include "api/api.hpp"
-#include "api/util/env.hpp"
+#include "agk.hpp"
+#include "util/env.hpp"
 
 void client::services::camera_manager::on_create() {
-    feature::on_create();
+    imodule::on_create();
 
     this->bind_m_backward.set_value("s");
     this->bind_m_forward.set_value("w");
@@ -14,23 +14,23 @@ void client::services::camera_manager::on_create() {
     this->bind_m_jump.set_value("space");
     this->m_speed.set_value(0.2867f);
 
-    this->p_camera_linked = api::world::current_camera();
-    this->p_entity_linked = api::world::current_player();
+    this->p_camera_linked = agk::world::current_camera();
+    this->p_entity_linked = agk::world::current_player();
     this->p_camera_linked->set_visible(enums::state::disable);
 }
 
 void client::services::camera_manager::on_destroy() {
-    feature::on_destroy();
+    imodule::on_destroy();
 }
 
 void client::services::camera_manager::on_event(SDL_Event &sdl_event) {
-    feature::on_event(sdl_event);
+    imodule::on_event(sdl_event);
     if (this->p_camera_linked == nullptr) {
         return;
     }
 
     bool should_rotate {
-        this->camera_rotation && (!this->camera_editor || api::input::pressed(this->bind_editor_rotate.get_value()))
+        this->camera_rotation && (!this->camera_editor || agk::input::pressed(this->bind_editor_rotate.get_value()))
     };
 
     this->p_camera_linked->set_mouse_locked(should_rotate);
@@ -38,35 +38,35 @@ void client::services::camera_manager::on_event(SDL_Event &sdl_event) {
 }
 
 void client::services::camera_manager::on_update() {
-    feature::on_update();
+    imodule::on_update();
 
     if (this->p_entity_linked != nullptr && this->camera_movement) {
         glm::vec3 motion {};
-        if (api::input::pressed(this->bind_m_forward.get_value())) {
+        if (agk::input::pressed(this->bind_m_forward.get_value())) {
             motion.z += 1;
         }
 
-        if (api::input::pressed(this->bind_m_backward.get_value())) {
+        if (agk::input::pressed(this->bind_m_backward.get_value())) {
             motion.z -= 1;
         }
 
-        if (api::input::pressed(this->bind_m_strafe_left.get_value())) {
+        if (agk::input::pressed(this->bind_m_strafe_left.get_value())) {
             motion.x += 1;
         }
 
-        if (api::input::pressed(this->bind_m_strafe_right.get_value())) {
+        if (agk::input::pressed(this->bind_m_strafe_right.get_value())) {
             motion.x -= 1;
         }
 
-        if (api::input::pressed(this->bind_m_jump.get_value())) {
+        if (agk::input::pressed(this->bind_m_jump.get_value())) {
             motion.y += 1;
         }
 
-        if (api::input::pressed(this->bind_m_crouch.get_value())) {
+        if (agk::input::pressed(this->bind_m_crouch.get_value())) {
             motion.y -= 1;
         }
 
-        float yaw {p_camera_linked->rotation.y};
+        float yaw {p_camera_linked->transform.rotation.y};
         float x {glm::cos(glm::radians(yaw))};
         float z {glm::sin(glm::radians(yaw))};
 
@@ -77,8 +77,8 @@ void client::services::camera_manager::on_update() {
         this->p_entity_linked->velocity.z = motion.z * speed * z - motion.x * speed * x;
         this->p_entity_linked->velocity.y = motion.y * speed;
 
-        this->p_entity_linked->rotation = this->p_camera_linked->rotation;
-        this->p_camera_linked->position = this->p_entity_linked->position;
+        this->p_entity_linked->transform.rotation = this->p_camera_linked->transform.rotation;
+        this->p_camera_linked->transform.position = this->p_entity_linked->transform.position;
     }
 }
 
