@@ -11,7 +11,7 @@ void client::scenes::starter::on_create() {
     material *p_material {new material(enums::material::metal)};
 
     for (int i {}; i < 20; i++) {
-        this->p_object_dino = new object(p_model_dino);
+        this->p_object_dino = new object((::asset::model*) agk::asset::find("models/simple-tree"));
         p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
         this->p_object_dino->p_material = p_material;
         this->p_object_dino->transform.position.x = rand() % 100;
@@ -96,6 +96,8 @@ void client::scenes::starter::on_create() {
     p_frame->set_drag(ekg::dock::top);
 
     this->p_enable_post_processing = ekg::checkbox("Post processing effects", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_enable_post_processing->set_value(true);
+
     ekg::label("HDR:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_enable_hdr = ekg::checkbox("Enable", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     ekg::label("Exposure:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
@@ -104,9 +106,45 @@ void client::scenes::starter::on_create() {
 
     ekg::label("Motion Blur:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_enable_motion_blur->set_value(true);
     ekg::label("Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_motion_blur_intensity = ekg::slider("Intensity", 0.051f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_motion_blur_intensity->set_precision(2);
+
+    float mesh[] {
+        -0.2f, -0.2f,
+        -0.4f, -0.2f,
+        -0.2f, -0.4f,
+        -0.4f, -0.4f,
+        0.2f, 0.2f,
+        0.4f, 0.2f,
+        0.2f, 0.4f,
+        0.4f, 0.4f,
+    };
+
+    uint8_t indices[] {
+        0, 1, 3,
+        3, 2, 0,
+        4 + 0, 4 + 1, 4 + 3,
+        4 + 3, 4 + 2, 4 + 0
+    };
+
+    this->buffer_test.invoke();
+    this->buffer_test.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_test.send<float>(sizeof(mesh), mesh, GL_STATIC_DRAW);
+    this->buffer_test.attach(0, 2);
+
+    this->buffer_test.bind(1, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_BYTE});
+    this->buffer_test.send<uint8_t>(sizeof(indices), indices, GL_STATIC_DRAW);
+    this->buffer_test.revoke();
+    this->buffer_test.primitive[0] = GL_TRIANGLES;
+
+    agk::asset::load(new ::asset::shader {"gpu/effects.overlay.debug", {
+            {"./data/effects/overlay.debug.vert", GL_VERTEX_SHADER},
+            {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
+    }});
+
+    agk::world::sky()->set_time(8, 0);
 }
 
 void client::scenes::starter::on_destroy() {
@@ -169,7 +207,13 @@ void client::scenes::starter::on_update() {
     agk::app.setting.chunk_fbm_lacunarity.set_value(this->p_lacunarity->get_value());
     agk::app.setting.chunk_fbm_octaves.set_value((int32_t) this->p_octaves->get_value());
 
-    agk::app.setting.fog_bounding.set_value({0, this->p_fog_distance->get_value()});
+    glm::vec2 fog_bounding {0, this->p_fog_distance->get_value()};
+    agk::app.setting.fog_bounding.set_value(fog_bounding);
+    if (agk_perspective_clip_distance != fog_bounding.y) {
+        agk_perspective_clip_distance = fog_bounding.y;
+        agk::app.p_curr_camera->process_perspective(agk::app.screen_width, agk::app.screen_height);
+    }
+
     agk::app.setting.enable_post_processing.set_value(this->p_enable_post_processing->get_value());
     agk::app.setting.enable_hdr.set_value(this->p_enable_hdr->get_value());
     agk::app.setting.hdr_exposure.set_value(this->p_hdr_exposure->get_value());
@@ -182,4 +226,18 @@ void client::scenes::starter::on_update() {
 
 void client::scenes::starter::on_render() {
     ekg::render();
+    // this->do_test_overlay();
+}
+
+void client::scenes::starter::do_test_overlay() {
+    auto *p_program {(::asset::shader*) agk::asset::find("gpu/effects.overlay.debug")};
+    p_program->invoke();
+    this->buffer_test.invoke();
+
+    this->buffer_test.stride[0] = 0;
+    this->buffer_test.stride[1] = 12;
+    this->buffer_test.draw();
+
+    this->buffer_test.revoke();
+    p_program->revoke();
 }

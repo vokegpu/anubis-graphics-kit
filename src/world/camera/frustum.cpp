@@ -75,21 +75,23 @@ void frustum::process_perspective(int32_t w, int32_t h) {
     this->perspective = glm::perspective(glm::radians(this->fov), this->aspect, 0.1f, agk_perspective_clip_distance);
     shape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
 
-    agk::app.screen_width = w;
-    agk::app.screen_height = h;
-
     this->far = agk_perspective_clip_distance;
     this->near = 0.1f;
     this->w = size[0];
     this->h = size[1];
 
-    std::string msg {"Window resized ("};
-    msg += std::to_string(w);
-    msg += ", ";
-    msg += std::to_string(h);
-    msg += ')';
+    if (w != agk::app.screen_width || h != agk::app.screen_height) {
+        std::string msg{"Window resized ("};
+        msg += std::to_string(w);
+        msg += ", ";
+        msg += std::to_string(h);
+        msg += ')';
 
-    util::log(msg);
+        util::log(msg);
+    }
+
+    agk::app.screen_width = w;
+    agk::app.screen_height = h;
 }
 
 bool frustum::viewing(const glm::mat4 &mat4x4_model, const glm::vec3 &scale, const util::aabb &axis_aligned_bounding_box) {

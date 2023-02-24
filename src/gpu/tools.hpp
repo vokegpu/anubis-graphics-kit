@@ -3,6 +3,7 @@
 
 #include "asset/shader.hpp"
 #include <glm/glm.hpp>
+#include <map>
 #include "util/env.hpp"
 
 namespace gpu {
@@ -47,7 +48,7 @@ namespace gpu {
 class buffering {
 protected:
     uint32_t current_buffer_info[2] {};
-    std::unordered_map<uint32_t, uint32_t> buffer_map {};
+    std::map<uint32_t, uint32_t> buffer_map {};
     uint32_t buffer_vao {};
 public:
     int32_t primitive[2] {GL_TRIANGLES, GL_UNSIGNED_INT};
@@ -55,6 +56,10 @@ public:
 
     bool instancing_rendering {};
     bool indexing_rendering {};
+
+    uint32_t &operator[](uint32_t key) {
+        return this->buffer_map[key];
+    }
 
     void tessellation(int32_t patches) {
         glPatchParameteri(GL_PATCH_VERTICES, patches);

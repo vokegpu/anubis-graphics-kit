@@ -13,7 +13,7 @@
 #include <queue>
 #include <map>
 
-static const float agk_perspective_clip_distance {8096.0f * 8096.0f};
+static float agk_perspective_clip_distance {8096.0f * 8096.0f};
 
 class world : public imodule {
 protected:
@@ -21,7 +21,7 @@ protected:
     bool poll_low_priority_queue {};
     uint16_t free_memory_counter {};
 
-    material *p_material_tree {};
+    material *p_material_tree_global {};
     std::vector<float> vegetation_memory_list {};
 
     void on_event_changed_priority(SDL_Event &sdl_event);

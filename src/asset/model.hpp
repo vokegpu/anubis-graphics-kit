@@ -18,6 +18,7 @@ namespace asset {
         util::aabb axis_aligned_bounding_box {};
         buffering buffer {};
 
+        explicit model() = default;
         model(std::string_view model_tag, std::string_view model_path, const glm::ivec4 &model_driver_mode, const std::function<void(buffering&, ::mesh::data&)> &injection_mixin = {});
         ~model();
 

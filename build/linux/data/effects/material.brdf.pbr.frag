@@ -1,4 +1,4 @@
-#version 450 core
+#version 450
 #define PI 3.1415926535897932384626433832795
 
 layout (location = 0) out vec4 vFragColor;
@@ -6,6 +6,7 @@ layout (location = 0) out vec4 vFragColor;
 in vec3 vPos;
 in vec2 vTexCoord;
 in vec3 vNormal;
+in vec3 vPosModel;
 
 uniform vec3 uCameraPos;
 uniform float uAmbientColor;
@@ -63,7 +64,7 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     if (uLight[index].uDirectional) {
         l = normalize(uLight[index].uVector);
     } else {
-        l = uLight[index].uVector - vPos;
+        l = uLight[index].uVector - vPosModel;
         float dist = length(l);
         l = normalize(l);
         intensity /= (dist * dist);
@@ -90,7 +91,7 @@ void main() {
         sum = mMaterialColor;
     } else {
         vec3 n = normalize(vNormal);
-        vec3 v = normalize(uCameraPos - vPos);
+        vec3 v = normalize(uCameraPos - vPosModel);
 
         if (!gl_FrontFacing) n = -n;
         for (int index = 0; index <= uLightAmount; index++) {

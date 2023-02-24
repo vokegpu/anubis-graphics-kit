@@ -207,7 +207,7 @@ bool mesh::data::contains(mesh::type type, bool indexing) {
         }
 
         case mesh::type::textcoord: {
-            indexing ? !this->it_list.empty() : !this->t_list.empty();
+            return indexing ? !this->it_list.empty() : !this->t_list.empty();
         }
 
         case mesh::type::color: {

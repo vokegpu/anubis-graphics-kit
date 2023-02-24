@@ -67,7 +67,7 @@ void asset::model::on_create() {
 
     if (mesh.contains(::mesh::type::vertex, true)) {
         auto &list {mesh.get_uint_list(::mesh::type::vertex)};
-        this->buffer.bind(2, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
+        this->buffer.bind(3, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         this->buffer.send<uint32_t>(sizeof(float) * list.size(), list.data(), this->driver_mode[2]);
 
         this->buffer.stride[0] = 0;

@@ -1,9 +1,13 @@
-#version 450 core
+#version 450
 #define PI 3.1415926535897932384626433832795
+#define TERRAIN_HEIGHT_SIZE 128.0f
+
+#define SAND 0
+#define STONE 1
+#define ROCK 2
 
 layout (location = 0) out vec4 vFragColor;
-layout (binding = 1) uniform sampler2D uTextureGrain;
-layout (binding = 2) uniform sampler2D uTextureStone;
+layout (binding = 1) uniform sampler2D uTextureAtlas;
 
 in vec3 vPos;
 in float vHeight;
@@ -13,7 +17,12 @@ in vec3 vPosModel;
 
 uniform vec3 uCameraPos;
 uniform float uAmbientColor;
+uniform float uAmbientLuminance;
 uniform int uLightAmount;
+
+uniform struct {
+    vec4 uTexCoord;
+} uAtlas[12];
 
 uniform struct {
     vec2 uDistance;
@@ -77,18 +86,22 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     float nDotL = max(dot(n, l), 1.0f);
     float nDotV = dot(n, v);
 
-    /* 0.25f == fracion of 4 */
+    /* 0.25f == same as divid by 4 */
     vec3 specular = 0.25f * ggxDistrubution(nDotH) * schlickFresnel(lDotH) * geometryDistribution(nDotL) * geometryDistribution(nDotV);
     return (diffuse + PI * specular) * intensity * nDotL;
 }
 
-void main() {
-    float dist = length(vPos);
-    float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
+vec2 transform2Modal(vec4 atlas) {
+    return (vTessCoord * atlas.zw) + atlas.xy;
+}
 
-    float g = vHeight / 255.0;
-    mCurrentMaterialRGB = texture(uTextureStone, vTessCoord).rgb;
-    vec3 sum = mCurrentMaterialRGB * uAmbientColor;
+void main() {
+    float dist = sqrt(vPos.x * vPos.x + vPos.y * vPos.y + vPos.z * vPos.z);
+    float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0f, 1.0f);
+
+    float g = vHeight / 64.0f;
+    mCurrentMaterialRGB = texture(uTextureAtlas, transform2Modal(uAtlas[SAND].uTexCoord)).rgb;
+    vec3 sum = (mCurrentMaterialRGB * g) * (uAmbientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
     vec3 v = normalize(uCameraPos - vPosModel);

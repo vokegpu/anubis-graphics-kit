@@ -1,4 +1,4 @@
-#version 450 core
+#version 450
 
 layout (quads, fractional_odd_spacing, ccw) in;
 layout (binding = 0) uniform sampler2D uTextureHeightMap;
@@ -6,6 +6,7 @@ layout (binding = 0) uniform sampler2D uTextureHeightMap;
 uniform mat4 uMVP_TeseStage;
 uniform mat3 uNormalMatrix;
 uniform mat4 uMatrixModel;
+uniform int uTerrainHeight;
 
 in vec2 vTexCoord_TescStage[];
 out float vHeight;
@@ -27,7 +28,7 @@ void main() {
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
 
-    vHeight = texture(uTextureHeightMap, texCoord).r * 255.0f;
+    vHeight = texture(uTextureHeightMap, texCoord).r * uTerrainHeight;
     vTessCoord = gl_TessCoord.xy;
 
     vec4 p00 = gl_in[0].gl_Position;

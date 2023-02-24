@@ -2,6 +2,7 @@
 
 layout (location = 0) out vec4 vFragColor;
 layout (binding = 0) uniform sampler2D uTexture;
+layout (binding = 1) uniform sampler2D uDepthSampler;
 
 in vec4 vRect;
 uniform vec4 uColor;
@@ -39,9 +40,7 @@ void main() {
     vec4 sum = vec4(0.0f);
 
     if (uMotionBlur.uEnabled && uMotionBlur.uCameraRotated) {
-        // @TODO Fix depth sampler to get precisely pixel coord at world.
-
-        vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, 0.0f, 1.0f);
+        vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, texture(uDepthSampler, fragCoord).r / 1.0f, 1.0f);
         vec4 d = uMotionBlur.uInversePerspectiveView * h;
         vec4 w = d / d.w;
 
@@ -50,17 +49,19 @@ void main() {
         prevPos = prevPos / prevPos.w;
 
         vec2 velocity = currPos.xy - prevPos.xy;
-        vec2 dir = normalize(velocity);
         float numSamples = 20;
 
-        float p = abs(gl_FragCoord.x - (size.x / 2));
-        float distToCenter = p / (size.x / 2);
-        float aspectRatio = size.x / size.y;
-        float l = clamp((length(velocity) * uMotionBlur.uIntensity) * (distToCenter), 0.0f, 1.0f);
+        float distToCenter = length(gl_FragCoord.x - (size.x / 2)) / size.x;
+        float dynmaicIntensity = clamp(length(velocity) * 0.1f, 0.0f, uMotionBlur.uIntensity * 0.1f);
 
         for (float index = 0; index < numSamples; index++) {
-            vec2 nearestUv = fragCoord + (vec2(((index / (numSamples - 1)) - 0.5f) * l * aspectRatio, 0) * dir);
-            sum += texture(uTexture, nearestUv);
+            vec2 nearestTexCoord = fragCoord + (vec2(((index / (numSamples - 1.0f)) - 0.5f) * (dynmaicIntensity) * distToCenter, 0.0f));
+
+            if (nearestTexCoord.x > 1.0f || nearestTexCoord.y > 1.0f || nearestTexCoord.x < 0.0f || nearestTexCoord.y < 0.0f) {
+                nearestTexCoord = fragCoord;
+            }
+
+            sum += texture(uTexture, nearestTexCoord);
         }
 
         sum = sum / numSamples;

@@ -19,9 +19,6 @@ const mat3 XYZtoRGB = mat3(
     -0.4985314f, 0.0415560f, 1.0572252f
 );
 
-uniform mat4 uMVP;
-uniform mat4 uInverseMVP;
-
 uniform struct {
     bool uEnabled;
     float uAverageLuminance;
@@ -29,38 +26,52 @@ uniform struct {
     float uWhite;
 } uHDR;
 
+uniform struct {
+    bool uEnabled;
+    float uIntensity;
+    bool uCameraRotated;
+    mat4 uInversePerspectiveView;
+    mat4 uPreviousPerspectiveView;
+} uMotionBlur;
+
 void main() {
-    vec2 fragCoord = gl_FragCoord.xy / textureSize(uTexture, 0);
-    vec4 framebufferColor = texture(uTexture, fragCoord);
-    vec4 framebufferDepth = texture(uDepthSampler, fragCoord);
+    vec2 size = textureSize(uTexture, 0);
+    vec2 fragCoord = gl_FragCoord.xy / size;
+    vec4 sum = vec4(0.0f);
 
-    float dep = framebufferDepth.r;
-    vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, dep, 1.0f);
-    vec4 d = uInverseMVP * h;
-    vec4 w = d / d.w;
+    if (uMotionBlur.uEnabled && uMotionBlur.uCameraRotated) {
+        vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, texture(uDepthSampler, fragCoord).r / 1.0f, 1.0f);
+        vec4 d = uMotionBlur.uInversePerspectiveView * h;
+        vec4 w = d / d.w;
 
-    vec4 currPos = h;
-    vec4 prevPos = uMVP * w;
-    prevPos = prevPos / prevPos.w;
+        vec4 currPos = h;
+        vec4 prevPos = uMotionBlur.uPreviousPerspectiveView * w;
+        prevPos = prevPos / prevPos.w;
 
-    vec2 velocity = (currPos.xy - prevPos.xy);
-    vec2 texCoord = fragCoord + velocity;
-    int numSamples = 1;
-    if (velocity.x == 0 && velocity.y == 0) {
-        numSamples = 1;
+        vec2 velocity = currPos.xy - prevPos.xy;
+        float numSamples = 20;
+
+        float distToCenter = length(gl_FragCoord.x - (size.x / 2)) / size.x;
+        float dynmaicIntensity = clamp(length(velocity) * 0.1f, 0.0f, uMotionBlur.uIntensity * 0.1f);
+
+        for (float index = 0; index < numSamples; index++) {
+            vec2 nearestTexCoord = fragCoord + (vec2(((index / (numSamples - 1.0f)) - 0.5f) * (dynmaicIntensity) * distToCenter, 0.0f));
+
+            if (nearestTexCoord.x > 1.0f || nearestTexCoord.y > 1.0f || nearestTexCoord.x < 0.0f || nearestTexCoord.y < 0.0f) {
+                nearestTexCoord = fragCoord;
+            }
+
+            sum += texture(uTexture, nearestTexCoord);
+        }
+
+        sum = sum / numSamples;
+    } else {
+        sum = texture(uTexture, fragCoord);
     }
-
-    for (int i = 1; i < numSamples; ++i) {
-        texCoord += velocity;
-        vec4 currColor = texture(uTexture, texCoord);
-        framebufferColor += currColor;
-    }
-
-    vec4 sum = framebufferColor / numSamples;
 
     if (uHDR.uEnabled) {
         float white = 0.928f;
-        float exposure = 0.35f;
+        float exposure = uHDR.uExposure;
 
         vec3 xyzCol = RGBtoXYZ * vec3(sum);
 

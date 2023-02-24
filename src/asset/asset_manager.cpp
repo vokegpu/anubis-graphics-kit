@@ -60,7 +60,10 @@ void asset_manager::on_create() {
         mipmap = true;
     }});
 
-    this->load(new asset::model {"model/simple-tree", "./data/models/tree-simple.obj", glm::ivec4(GL_STATIC_DRAW)});
+    this->load(new asset::model {"models/simple-tree", "./data/models/tree-simple.obj", glm::ivec4(GL_STATIC_DRAW), [](buffering &buffer, ::mesh::data &mesh) {
+        buffer.primitive[0] = GL_TRIANGLE_STRIP;
+    }});
+
     this->on_update();
 }
 

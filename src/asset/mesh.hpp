@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <map>
 
 namespace mesh {
     enum class format {
@@ -35,9 +36,8 @@ namespace mesh {
         int32_t faces {};
 
         explicit inline data() = default;
-        explicit inline data(mesh::format _format) {
-            this->format = _format;
-        }
+        explicit inline data(mesh::format _format) : format(_format) {};
+        inline ~data() = default;
 
         void append(mesh::type type, const glm::vec4 &vec);
         void append(mesh::type type, const glm::vec3 &vec);

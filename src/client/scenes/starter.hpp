@@ -10,6 +10,9 @@
 
 namespace client::scenes {
     class starter : public imodule {
+    protected:
+        buffering buffer_test {};
+        void do_test_overlay();
     public:
         light *p_light_spot {};
         object *p_object_dino {};
@@ -32,7 +35,6 @@ namespace client::scenes {
         ekg::ui::slider *p_hdr_exposure {};
         ekg::ui::checkbox *p_enable_motion_blur {};
         ekg::ui::slider *p_motion_blur_intensity {};
-
 
         void on_create() override;
         void on_destroy() override;

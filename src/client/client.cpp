@@ -1,6 +1,7 @@
 #include "agk.hpp"
 #include "client/scenes/starter.hpp"
 #include "client/services/camera_manager.hpp"
+#include <set>
 
 int32_t main(int32_t argv, char** argc) {
     auto *p_scene {new client::scenes::starter()};

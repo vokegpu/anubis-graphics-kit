@@ -199,6 +199,9 @@ void renderer::process_post_processing() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_texture);
 
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_depth);
+
     this->shape_post_processing.invoke();
     this->shape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
     this->shape_post_processing.p_program->set_uniform_float("uHDR.uExposure", agk::app.setting.hdr_exposure.get_value());

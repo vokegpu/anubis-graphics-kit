@@ -10,7 +10,7 @@ void sky::on_create() {
     // The start hour is 6am.
     this->day_ambient_light = 0.4f;
     this->night_ambient_light = 0.01f;
-    this->set_time(8, 0);
+    this->set_time(6, 0);
 }
 
 void sky::on_destroy() {
@@ -32,7 +32,7 @@ void sky::on_update() {
         this->delta_si_real_elapsed = 0;
         this->delta_day_virtual++;
 
-        std::string msg {std::to_string(this->delta_day_virtual)}; msg += " day(s) have been passed.";
+        std::string msg {std::to_string(this->delta_day_virtual)}; msg += " day(s) passed.";
         util::log(msg);
     }
 
@@ -46,7 +46,7 @@ void sky::on_update() {
             uint64_t delta_i {this->delta_min_virtual - delta_si_h};
             float k {static_cast<float>(delta_i) / 60};
 
-            /* The initial difference from the current color position between the 0.0f is needed. */
+            /* The initial difference from the current color position between the k is needed. */
             this->color_from_sky = (this->color_night) + (k * this->color_day);
             this->color_from_sky = glm::clamp(this->color_from_sky, this->color_night, this->color_day);
             this->ambient_next_light = glm::clamp(k * this->day_ambient_light, this->night_ambient_light, this->day_ambient_light);
@@ -61,7 +61,7 @@ void sky::on_update() {
             uint64_t delta_i {this->delta_min_virtual - delta_si_h};
             float k {static_cast<float>(delta_i) / 60};
 
-            /* As you can see we need to subtract the "initial" nightmare color with the current degree of decrease day color. */
+            /* As you can see we need to subtract the "initial" night color with the current degree of decrease day color. */
             this->color_from_sky = glm::clamp((1.0f - k) * this->color_day, this->color_night, this->color_day);
             this->ambient_next_light = glm::clamp((1.0f - k) * this->day_ambient_light, this->night_ambient_light, this->day_ambient_light);
             break;

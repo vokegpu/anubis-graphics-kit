@@ -2,24 +2,27 @@
 #include "util/env.hpp"
 #include <fstream>
 
-void mesh_loader::process_indexing(mesh::data &data) {
+void mesh_loader::process_indexing(meshpack &pack, uint32_t length) {
     glm::vec3 v1 {}, v2 {}, v3 {}, n1 {}, n2;
     std::vector<uint32_t> nb_seen {};
     uint32_t v[3] {}, cur {};
-    nb_seen.resize(this->v_packed_list.size(), 0);
+    nb_seen.resize(pack.v.size(), 0);
 
-    auto &i_list {data.get_uint_list(mesh::type::vertex)};
-    data.get_float_list(mesh::type::normal).clear();
-    bool contains_n {data.contains(mesh::type::normal)};
+    auto &i_list {pack.mesh.get_uint_list(mesh::type::vertex)};
+    bool contains_n {pack.mesh.contains(mesh::type::normal)};
+    pack.mesh.get_float_list(mesh::type::normal).clear();
 
-    this->n_packed_list.resize(i_list.size());
+    pack.n.resize(i_list.size());
+    uint32_t ia {}, ib {}, ic {};
 
     for (int32_t it {}; it < i_list.size(); it += 3) {
-        uint32_t ia {i_list[it]}, ib {i_list[it + 1]}, ic {i_list[it + 2]};
+        ia = i_list[it + 0];
+        ib = i_list[it + 1];
+        ic = i_list[it + 2];
 
-        v1 = this->v_packed_list[ia];
-        v2 = this->v_packed_list[ib];
-        v3 = this->v_packed_list[ic];
+        v1 = pack.n[ia];
+        v2 = pack.n[ib];
+        v3 = pack.n[ic];
 
         n1 = glm::normalize(glm::cross(v2 - v1, v3 - v1));
         v[0] = ia;
@@ -27,7 +30,7 @@ void mesh_loader::process_indexing(mesh::data &data) {
         v[2] = ic;
 
         if (!contains_n) {
-            this->n_packed_list.push_back(n1);
+            pack.n.push_back(n1);
         }
 
         for (int32_t it_cur {}; it_cur < 3; it_cur++) {
@@ -35,19 +38,19 @@ void mesh_loader::process_indexing(mesh::data &data) {
             nb_seen[cur]++;
 
             if (nb_seen[cur] == 1) {
-                this->n_packed_list[cur] = n1;
+                pack.n[cur] = n1;
             } else {
-                n2 = this->n_packed_list[cur];
+                n2 = pack.n[cur];
                 n2.x = static_cast<float>(n2.x * (1.0 - 1.0 / nb_seen[cur]) + n1.x * 1.0 / nb_seen[cur]);
                 n2.y = static_cast<float>(n2.y * (1.0 - 1.0 / nb_seen[cur]) + n1.y * 1.0 / nb_seen[cur]);
                 n2.z = static_cast<float>(n2.z * (1.0 - 1.0 / nb_seen[cur]) + n1.z * 1.0 / nb_seen[cur]);
-                this->n_packed_list[cur] = glm::normalize(n2);
+                pack.n[cur] = glm::normalize(n2);
             }
         }
     }
 
-    for (glm::vec3 &n : this->n_packed_list) {
-        data.append(mesh::type::normal, n);
+    for (glm::vec3 &n : pack.n) {
+        pack.mesh.append(mesh::type::normal, n);
     }
 }
 
@@ -103,9 +106,6 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
         }
     }
 
-    this->v_packed_list.clear();
-    this->t_packed_list.clear();
-    this->n_packed_list.clear();
     return true;
 }
 
@@ -127,6 +127,12 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
     glm::vec3 vector3f {};
     glm::vec2 vector2f {};
 
+    //std::vector<meshpack> mesh_pack_list {};
+    //mesh_pack_list.emplace_back();
+    uint32_t current_pack {};
+    bool first_pack {true};
+    meshpack pack {};
+
     while (std::getline(ifs, string_buffer)) {
         line_size = string_buffer.size();
 
@@ -136,7 +142,7 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
 
         find = string_buffer.substr(0, 2);
 
-        if (find != "v " && find != "vt" && find != "vn" && find != "f ") {
+        if (find != "v " && find != "vt" && find != "vn" && find != "f " && find != "o ") {
             continue;
         }
 
@@ -154,58 +160,58 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
             }
         }
 
-        if (find == "v ") {
+        if (find == "o ") {
+        } else if (find == "v ") {
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
 
-            this->v_packed_list.push_back(vector3f);
-            data.append(mesh::type::vertex, vector3f);
+            pack.v.push_back(vector3f);
+            pack.mesh.append(mesh::type::vertex, vector3f);
         } else if (find == "vt") {
-            vector3f.x = std::stof(split[x]);
-            vector3f.y = std::stof(split[y]);
+            vector2f.x = std::stof(split[x]);
+            vector2f.y = std::stof(split[y]);
 
-            vector2f.x = vector3f.x;
-            vector2f.y = vector3f.y;
-
-            this->t_packed_list.push_back(vector3f);
-            data.append(mesh::type::textcoord, vector2f);
+            pack.t.push_back(vector2f);
+            pack.mesh.append(mesh::type::textcoord, vector2f);
         } else if (find == "vn") {
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
 
-            this->n_packed_list.push_back(vector3f);
-            data.append(mesh::type::normal, vector3f);
+            pack.n.push_back(vector3f);
+            pack.mesh.append(mesh::type::normal, vector3f);
         } else if (find == "f ") {
             /* get the faces vertex indexes  */
-            v_contains = data.contains(mesh::type::vertex);
-            t_contains = data.contains(mesh::type::textcoord);
-            n_contains = data.contains(mesh::type::normal);
+            v_contains = pack.mesh.contains(mesh::type::vertex);
+            t_contains = pack.mesh.contains(mesh::type::textcoord);
+            n_contains = pack.mesh.contains(mesh::type::normal);
 
             for (int32_t indexes {1}; indexes < split.size(); indexes++) {
                 util::split(split_first, split[indexes], '/');
-                data.faces++;
+                pack.mesh.faces++;
 
                 /* send geometry indices to be used later in rendering */
 
                 if (v_contains) {
-                    data.append(mesh::type::vertex, static_cast<uint32_t>(abs(std::stoi(split_first[0]))) - 1);
+                    pack.mesh.append(mesh::type::vertex, static_cast<uint32_t>(abs(std::stoi(split_first[0]))) - 1);
                 }
 
                 if (t_contains) {
-                    data.append(mesh::type::textcoord, static_cast<uint32_t>(abs(std::stoi(split_first[1]))) - 1);
+                    pack.mesh.append(mesh::type::textcoord, static_cast<uint32_t>(abs(std::stoi(split_first[1]))) - 1);
                 }
 
                 if (n_contains) {
-                    data.append(mesh::type::normal, static_cast<uint32_t>(abs(std::stoi(split_first[2 - (!t_contains)]))) - 1);
+                    pack.mesh.append(mesh::type::normal, static_cast<uint32_t>(abs(std::stoi(split_first[2 - (!t_contains)]))) - 1);
                 }
             }
         }
     }
 
+    this->process_indexing(pack, 0);
+    data = pack.mesh;
+
     util::log("Mesh loader collector: Wavefront object faces (" + std::to_string(data.faces) + ")");
-    this->process_indexing(data);
 }
 
 void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
