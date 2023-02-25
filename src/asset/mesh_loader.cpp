@@ -2,58 +2,6 @@
 #include "util/env.hpp"
 #include <fstream>
 
-void mesh_loader::process_indexing(meshpack &pack, uint32_t length) {
-    glm::vec3 v1 {}, v2 {}, v3 {}, n1 {}, n2;
-    std::vector<uint32_t> nb_seen {};
-    uint32_t v[3] {}, cur {};
-    nb_seen.resize(pack.v.size(), 0);
-
-    auto &i_list {pack.mesh.get_uint_list(mesh::type::vertex)};
-    bool contains_n {pack.mesh.contains(mesh::type::normal)};
-    pack.mesh.get_float_list(mesh::type::normal).clear();
-
-    pack.n.resize(i_list.size());
-    uint32_t ia {}, ib {}, ic {};
-
-    for (int32_t it {}; it < i_list.size(); it += 3) {
-        ia = i_list[it + 0];
-        ib = i_list[it + 1];
-        ic = i_list[it + 2];
-
-        v1 = pack.n[ia];
-        v2 = pack.n[ib];
-        v3 = pack.n[ic];
-
-        n1 = glm::normalize(glm::cross(v2 - v1, v3 - v1));
-        v[0] = ia;
-        v[1] = ib;
-        v[2] = ic;
-
-        if (!contains_n) {
-            pack.n.push_back(n1);
-        }
-
-        for (int32_t it_cur {}; it_cur < 3; it_cur++) {
-            cur = v[it_cur];
-            nb_seen[cur]++;
-
-            if (nb_seen[cur] == 1) {
-                pack.n[cur] = n1;
-            } else {
-                n2 = pack.n[cur];
-                n2.x = static_cast<float>(n2.x * (1.0 - 1.0 / nb_seen[cur]) + n1.x * 1.0 / nb_seen[cur]);
-                n2.y = static_cast<float>(n2.y * (1.0 - 1.0 / nb_seen[cur]) + n1.y * 1.0 / nb_seen[cur]);
-                n2.z = static_cast<float>(n2.z * (1.0 - 1.0 / nb_seen[cur]) + n1.z * 1.0 / nb_seen[cur]);
-                pack.n[cur] = glm::normalize(n2);
-            }
-        }
-    }
-
-    for (glm::vec3 &n : pack.n) {
-        pack.mesh.append(mesh::type::normal, n);
-    }
-}
-
 bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     if (path.empty() || path.size() < 3) {
         util::log("Failed to load object because there is no path insert");
@@ -61,6 +9,8 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     }
 
     std::string file_extension {};
+    this->current_path = path;
+
     if (data.format == ::mesh::format::unknown) {
         std::vector<std::string> split_path {};
         util::split(split_path, path, '.');
@@ -127,11 +77,8 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
     glm::vec3 vector3f {};
     glm::vec2 vector2f {};
 
-    //std::vector<meshpack> mesh_pack_list {};
-    //mesh_pack_list.emplace_back();
-    uint32_t current_pack {};
-    bool first_pack {true};
     meshpack pack {};
+    uint32_t index {}, vsize {};
 
     while (std::getline(ifs, string_buffer)) {
         line_size = string_buffer.size();
@@ -140,9 +87,29 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
             continue;
         }
 
-        find = string_buffer.substr(0, 2);
+        find = string_buffer.substr(0, std::min(6, (int32_t) line_size));
+        if (find == "mtllib") {
+            util::split(split_first, this->current_path, '/');
 
-        if (find != "v " && find != "vt" && find != "vn" && find != "f " && find != "o ") {
+            uint64_t size {split_first[std::max((int32_t) split_first.size() - 1, 0)].size()};
+            uint64_t tab_find {6 + 1};
+
+            std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
+            std::string file {string_buffer.substr(tab_find, string_buffer.size() - tab_find)};
+            std::ifstream ifs_mtllib {folder + file};
+
+            if (ifs_mtllib.is_open()) {
+                this->load_wavefront_object_mtllib(pack.mesh, ifs_mtllib);
+            } else {
+                util::log("Failed to open mtl lib material '" + (folder + file) + "'");
+            }
+
+            ifs_mtllib.close();
+            continue;
+        }
+
+        find = string_buffer.substr(0, 2);
+        if (find != "v " && find != "vt" && find != "vn" && find != "f ") {
             continue;
         }
 
@@ -160,58 +127,79 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
             }
         }
 
-        if (find == "o ") {
-        } else if (find == "v ") {
+        if (find == "v ") {
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
 
             pack.v.push_back(vector3f);
-            pack.mesh.append(mesh::type::vertex, vector3f);
+            v_contains = true;
         } else if (find == "vt") {
             vector2f.x = std::stof(split[x]);
             vector2f.y = std::stof(split[y]);
 
             pack.t.push_back(vector2f);
-            pack.mesh.append(mesh::type::textcoord, vector2f);
+            t_contains = true;
         } else if (find == "vn") {
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
 
             pack.n.push_back(vector3f);
-            pack.mesh.append(mesh::type::normal, vector3f);
+            n_contains = true;
         } else if (find == "f ") {
-            /* get the faces vertex indexes  */
-            v_contains = pack.mesh.contains(mesh::type::vertex);
-            t_contains = pack.mesh.contains(mesh::type::textcoord);
-            n_contains = pack.mesh.contains(mesh::type::normal);
-
             for (int32_t indexes {1}; indexes < split.size(); indexes++) {
                 util::split(split_first, split[indexes], '/');
                 pack.mesh.faces++;
 
-                /* send geometry indices to be used later in rendering */
-
                 if (v_contains) {
-                    pack.mesh.append(mesh::type::vertex, static_cast<uint32_t>(abs(std::stoi(split_first[0]))) - 1);
+                    vsize = (uint32_t) pack.v.size() + 1;
+                    index = (std::stoi(split_first[0]));
+                    index = (index + vsize) % vsize;
+
+                    pack.mesh.append(mesh::type::vertex, pack.v[index - 1]);
                 }
 
                 if (t_contains) {
-                    pack.mesh.append(mesh::type::textcoord, static_cast<uint32_t>(abs(std::stoi(split_first[1]))) - 1);
+                    vsize = (uint32_t) pack.t.size() + 1;
+                    index = (std::stoi(split_first[1]));
+                    index = (index + vsize) % vsize;
+
+                    pack.mesh.append(mesh::type::textcoord, pack.t[index - 1]);
                 }
 
                 if (n_contains) {
-                    pack.mesh.append(mesh::type::normal, static_cast<uint32_t>(abs(std::stoi(split_first[2 - (!t_contains)]))) - 1);
+                    vsize = (uint32_t) pack.n.size() + 1;
+                    index = (std::stoi(split_first[2 - (!t_contains)]));
+                    index = (index + vsize) % vsize;
+
+                    pack.mesh.append(mesh::type::normal, pack.n[index - 1]);
                 }
             }
         }
     }
 
-    this->process_indexing(pack, 0);
     data = pack.mesh;
-
     util::log("Mesh loader collector: Wavefront object faces (" + std::to_string(data.faces) + ")");
+}
+
+void mesh_loader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &ifs) {
+    std::string string_buffer {};
+    std::string mtl_string_info {};
+    std::vector<std::string> split {};
+
+    while (std::getline(ifs, string_buffer)) {
+        if (string_buffer.size() < 2) {
+            continue;
+        }
+
+        util::split(split, string_buffer, ' ');
+        if (split[0] == "map_Kd") {
+            mtl_string_info = string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
+            data.mtl_texture_list.push_back(mtl_string_info);
+            util::log("Found mtl map_Kd '" + mtl_string_info + "'");
+        }
+    }
 }
 
 void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
@@ -282,16 +270,16 @@ void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
 }
 
 bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
-    unsigned char r {}, g {}, b {};
-    float f_r {}, f_g {}, f_b {};
-    float greyscale {};
+    unsigned char r{}, g{}, b{};
+    float f_r{}, f_g{}, f_b{};
+    float greyscale{};
 
-    uint32_t width {static_cast<uint32_t>(resource.w)};
-    uint32_t height {static_cast<uint32_t>(resource.h)};
-    glm::vec3 vertex {};
+    uint32_t width{static_cast<uint32_t>(resource.w)};
+    uint32_t height{static_cast<uint32_t>(resource.h)};
+    glm::vec3 vertex{};
 
-    for (uint32_t h {}; h < height; h++) {
-        for (uint32_t w {}; w < width; w++) {
+    for (uint32_t h{}; h < height; h++) {
+        for (uint32_t w{}; w < width; w++) {
             r = resource.p_data[(w + h * width) * resource.format];
             g = resource.p_data[(w + h * width) * resource.format + 1];
             b = resource.p_data[(w + h * width) * resource.format + 2];
@@ -310,12 +298,12 @@ bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
         }
     }
 
-    for (uint32_t h {}; h < height - 1; h++) {
-        for (uint32_t w {}; w < width - 1; w++) {
-            uint32_t i1 {h * width + w};
-            uint32_t i2 {h * width + w + 1};
-            uint32_t i3 {(h + 1) * width + w};
-            uint32_t i4 {(h + 1) * width + w + 1};
+    for (uint32_t h{}; h < height - 1; h++) {
+        for (uint32_t w{}; w < width - 1; w++) {
+            uint32_t i1{h * width + w};
+            uint32_t i2{h * width + w + 1};
+            uint32_t i3{(h + 1) * width + w};
+            uint32_t i4{(h + 1) * width + w + 1};
 
             data.append(mesh::type::vertex, i1);
             data.append(mesh::type::vertex, i3);

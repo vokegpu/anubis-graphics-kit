@@ -34,6 +34,7 @@ public:
 
     enums::type type {enums::type::object};
     material *p_material {};
+
     ::asset::model *p_model {};
     object_transform transform {};
 

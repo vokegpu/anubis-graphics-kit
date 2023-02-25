@@ -50,11 +50,12 @@ protected:
     uint32_t current_buffer_info[2] {};
     std::map<uint32_t, uint32_t> buffer_map {};
     uint32_t buffer_vao {};
+    int32_t element_index {};
 public:
     int32_t primitive[2] {GL_TRIANGLES, GL_UNSIGNED_INT};
     int32_t stride[3] {0, 0, 0};
 
-    bool instancing_rendering {};
+    bool instance_rendering {};
     bool indexing_rendering {};
 
     uint32_t &operator[](uint32_t key) {
@@ -76,6 +77,7 @@ public:
             case GL_ELEMENT_ARRAY_BUFFER: {
                 this->indexing_rendering = true;
                 this->primitive[1] = buffer_type.y;
+                this->element_index = key;
                 break;
             }
         }
@@ -123,7 +125,7 @@ public:
     }
 
     void draw() {
-        switch (this->instancing_rendering) {
+        switch (this->instance_rendering) {
             case true: {
                 if (this->indexing_rendering) {
                     const void *p_hack {(void*) (uint64_t) this->stride[0]};
@@ -139,7 +141,7 @@ public:
                     const void *p_hack {(void*) (uint64_t) this->stride[0]};
                     glDrawElements(this->primitive[0], this->stride[1], this->primitive[1], p_hack);
                 } else {
-                    glDrawArrays(this->primitive[0], this->stride[0],this->stride[1]);
+                    glDrawArrays(this->primitive[0], this->stride[0], this->stride[1]);
                 }
                 break;
             }
@@ -162,6 +164,11 @@ public:
         }
 
         auto &buffer {this->buffer_map[key]};
+        if (key == this->element_index) {
+            this->indexing_rendering = false;
+            this->element_index = -1;
+        }
+
         if (buffer != 0) {
             glDeleteBuffers(1, &buffer);
         }

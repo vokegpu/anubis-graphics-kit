@@ -6,13 +6,17 @@
 #include "world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    asset::model *p_model_dino {new asset::model {"models/dinossaur", "./data/models/Dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
+    asset::model *p_model_dino {new asset::model {"dinossaur", "./data/models/Dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
+
     agk::asset::load(p_model_dino);
-    material *p_material {new material(enums::material::metal)};
+
+    material *p_material {new material(enums::material::dialetric)};
+    p_material->append_mtl((::asset::model*) agk::asset::find("models/vegetation.coconut"));
 
     for (int i {}; i < 20; i++) {
-        this->p_object_dino = new object((::asset::model*) agk::asset::find("models/simple-tree"));
+        this->p_object_dino = new object((::asset::model*) agk::asset::find("models/vegetation.coconut"));
         p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
+
         this->p_object_dino->p_material = p_material;
         this->p_object_dino->transform.position.x = rand() % 100;
         this->p_object_dino->transform.position.z = rand() % 100;
@@ -108,7 +112,7 @@ void client::scenes::starter::on_create() {
     this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::top | ekg::dock::left | ekg::dock::next);
     this->p_enable_motion_blur->set_value(true);
     ekg::label("Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.051f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.351f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_motion_blur_intensity->set_precision(2);
 
     float mesh[] {
@@ -139,7 +143,7 @@ void client::scenes::starter::on_create() {
     this->buffer_test.revoke();
     this->buffer_test.primitive[0] = GL_TRIANGLES;
 
-    agk::asset::load(new ::asset::shader {"gpu/effects.overlay.debug", {
+    agk::asset::load(new ::asset::shader {"effects.overlay.debug", {
             {"./data/effects/overlay.debug.vert", GL_VERTEX_SHADER},
             {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});

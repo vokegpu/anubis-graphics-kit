@@ -17,7 +17,9 @@ namespace asset {
         std::function<void(gpu::texture&, bool&)> mixin {};
     public:
         explicit texture(std::string_view texture_name, std::string_view path, const glm::ivec4 &texture_info, const std::function<void(gpu::texture &, bool &)> &injection_mixin = {}) {
-            this->tag = texture_name;
+            this->tag += "textures/";
+            this->tag += texture_name;
+
             this->mixin = injection_mixin;
             this->gpu_side.primitive = texture_info.y;
             this->gpu_side.type = texture_info.x;

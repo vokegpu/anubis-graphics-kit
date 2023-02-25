@@ -2,7 +2,9 @@
 #include "agk.hpp"
 
 asset::model::model(std::string_view model_tag, std::string_view model_path, const glm::ivec4 &model_driver_mode, const std::function<void(buffering&, ::mesh::data&)> &injection_mixin) {
-    this->tag = model_tag;
+    this->tag += "models/";
+    this->tag += this->name = model_tag;
+
     this->path = model_path;
     this->mixin = injection_mixin;
     this->driver_mode[0] = model_driver_mode.x;
@@ -74,9 +76,30 @@ void asset::model::on_create() {
         this->buffer.stride[1] = mesh.faces;
     }
 
+    for (std::string &mtl : mesh.mtl_texture_list) {
+        ::asset::texture<uint8_t> *p_mtl_asset {new ::asset::texture<uint8_t> {this->name + ".mtl." + mtl, "./data/textures/" + mtl, {GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB}, [](gpu::texture &texture, bool &mipmap) {
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+            glTexParameteri(texture.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(texture.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+            glTexParameteri(texture.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(texture.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+            mipmap = true;
+        }}};
+
+        agk::asset::load(p_mtl_asset);
+        this->linked_mtl_list.push_back(p_mtl_asset->tag);
+    }
+
     if (this->mixin) {
         this->mixin(this->buffer, mesh);
     }
 
     this->buffer.revoke();
+}
+
+std::vector<std::string> &asset::model::get_linked_mtl_list() {
+    return this->linked_mtl_list;
 }

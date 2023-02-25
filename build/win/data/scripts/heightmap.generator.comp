@@ -169,7 +169,6 @@ void main() {
     float yLevel = fbm(vec3(uvNoised * uFrequency, PI));
     size -= 1; // Indexing start at 0 not 1.
 
-    /* Read near chunk metada and runs yLevel to improve realism of terrain. */
     if (uCheckNearest) {
         vec2 uvNearest = uv;
         float predict = 0.0f;

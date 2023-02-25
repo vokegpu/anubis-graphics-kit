@@ -30,10 +30,10 @@ namespace mesh {
         uint8_t v_len {3};
         uint8_t t_len {2};
         uint8_t n_len {3};
-        int32_t remove_token {};
     public:
         mesh::format format {mesh::format::unknown};
         int32_t faces {};
+        std::vector<std::string> mtl_texture_list {};
 
         explicit inline data() = default;
         explicit inline data(mesh::format _format) : format(_format) {};

@@ -1,5 +1,6 @@
 #include "object.hpp"
 #include "event/event.hpp"
+#include "agk.hpp"
 
 void object_transform::set_position(float x, float y, float z) {
     if (this->position.x == x && this->position.y == y && this->position.z == z) {

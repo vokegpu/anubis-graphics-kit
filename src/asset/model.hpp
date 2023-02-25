@@ -11,9 +11,10 @@
 namespace asset {
     class model : public imodule {
     protected:
-        std::string path {};
+        std::string path {}, name {};
         std::function<void(buffering&, ::mesh::data&)> mixin {};
         uint32_t driver_mode[4] {};
+        std::vector<std::string> linked_mtl_list {};
     public:
         util::aabb axis_aligned_bounding_box {};
         buffering buffer {};
@@ -22,6 +23,7 @@ namespace asset {
         model(std::string_view model_tag, std::string_view model_path, const glm::ivec4 &model_driver_mode, const std::function<void(buffering&, ::mesh::data&)> &injection_mixin = {});
         ~model();
 
+        std::vector<std::string> &get_linked_mtl_list();
         void on_create() override;
     };
 }

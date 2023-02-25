@@ -30,7 +30,7 @@ void renderer::process_terrain() {
     this->buffer_chunk.invoke();
 
     glActiveTexture(GL_TEXTURE1);
-    auto *p_texture_atlas {(asset::texture<uint8_t>*) agk::asset::find("texture/terrain.atlas")};
+    auto *p_texture_atlas {(asset::texture<uint8_t>*) agk::asset::find("textures/terrain.atlas")};
     p_texture_atlas->invoke();
 
     /* Height map texture. */
@@ -92,12 +92,14 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        if (((glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position) > dist_render || !agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->transform.scale, p_objects->p_model->axis_aligned_bounding_box)) && !p_objects->p_model->buffer.instancing_rendering)) {
+        if (((glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position) > dist_render || !agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->transform.scale, p_objects->p_model->axis_aligned_bounding_box)) && !p_objects->p_model->buffer.instance_rendering)) {
             continue;
         }
 
-        p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_model->buffer.instancing_rendering);
-        switch (p_objects->p_model->buffer.instancing_rendering) {
+        p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_model->buffer.instance_rendering);
+        p_program_pbr->set_uniform_bool("uMaterial.uActiveSampler", p_objects->p_material->invoke_all_textures());
+
+        switch (p_objects->p_model->buffer.instance_rendering) {
             case true: {
                 p_program_pbr->set_uniform_mat4("uPerspectiveViewMatrix", &this->mat4x4_perspective_view[0][0]);
 
@@ -333,7 +335,7 @@ void renderer::on_create() {
     this->buffer_coordinate_debug.attach(1, 3, {sizeof(float) * 6, sizeof(float) * 3});
     this->buffer_coordinate_debug.revoke();
 
-    auto *p_terrain_atlas {(asset::texture<uint8_t>*) agk::asset::find("texture/terrain.atlas")};
+    auto *p_terrain_atlas {(asset::texture<uint8_t>*) agk::asset::find("textures/terrain.atlas")};
     p_terrain_atlas->add("sand", {0.0f, 0.0f, 1.0f, 1.0f});
 
     auto *p_program_pbr {(asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};

@@ -2,6 +2,7 @@
 #define PI 3.1415926535897932384626433832795
 
 layout (location = 0) out vec4 vFragColor;
+layout (binding = 0) uniform sampler2D uSampler;
 
 in vec3 vPos;
 in vec2 vTexCoord;
@@ -19,6 +20,7 @@ uniform struct {
     vec3 uColor;
     bool uMetal;
     float uRough;
+    bool uActiveSampler;
 } uMaterial;
 
 uniform struct {
@@ -84,8 +86,13 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
 void main() {
     float dist = length(vPos);
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
+
     mMaterialColor = uMaterial.uColor;
-    vec3 sum = mMaterialColor * uAmbientColor;
+    if (uMaterial.uActiveSampler) {
+        mMaterialColor = texture(uSampler, vTexCoord).rgb;
+    }
+
+    vec3 sum = mMaterialColor;
 
     if (uMaterial.uRough == -1) {
         sum = mMaterialColor;

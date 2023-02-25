@@ -22,7 +22,8 @@ namespace asset {
         int32_t program {};
     public:
         explicit shader(std::string_view shader_tag, const std::vector<asset::shader_resource> &resource_list) : program(glCreateProgram()) {
-            this->tag = shader_tag;
+            this->tag += "gpu/";
+            this->tag += shader_tag;
 
             bool flag {!resource_list.empty()};
             uint32_t shader {};

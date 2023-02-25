@@ -16,8 +16,9 @@ void world::on_create() {
     agk::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
     this->vegetation_memory_list.reserve(100 * 4);
 
-    this->p_material_tree_global = new material {enums::material::dialetric};
-    this->p_material_tree_global->set_color({0.2, 0.2f, 0.2f});
+    this->p_material_vegetation_coconut = new material {enums::material::dialetric};
+    this->p_material_vegetation_coconut->set_color({0.2, 0.2f, 0.2f});
+    this->p_material_vegetation_coconut->append_mtl((::asset::model*) agk::asset::find("models/vegetation.coconut"));
 
     util::log("Tree simple assets created");
 
@@ -279,7 +280,7 @@ void world::on_update() {
         this->parallel.revoke();
 
         int32_t index_length {static_cast<int32_t>(this->vegetation_memory_list[99 * 4])};
-        if (index_length == 0 || true) {
+        if (index_length == 0) {
             return;
         }
 
@@ -291,12 +292,17 @@ void world::on_update() {
         auto *p_model_instance {new ::asset::model {}};
         auto *p_tree_instance {new object {p_model_instance}};
         auto &buffer {p_model_instance->buffer};
+        p_tree_instance->p_material = this->p_material_vegetation_coconut;
 
-        // Set the instance model to chunk position.
+        // Set the instance model for chunk position.
         p_tree_instance->transform.position = {(grid_pos.x * chunk_size) + (chunk_size / 2), 0, (grid_pos.y * chunk_size) + (chunk_size / 2)};
-        ::asset::model *p_model_coconut_tree {(::asset::model*) agk::asset::find("models/vegetation.coconut.tree")};
+        ::asset::model *p_model_coconut_tree {(::asset::model*) agk::asset::find("models/vegetation.coconut")};
+        this->registry(p_tree_instance);
 
         buffer.invoke();
+        buffer.stride[1] = p_model_coconut_tree->buffer.stride[1];
+        buffer.stride[2] = index_length;
+        buffer.instance_rendering = true;
 
         p_model_coconut_tree->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
         buffer.attach(0, 3);
@@ -307,17 +313,8 @@ void world::on_update() {
         p_model_coconut_tree->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
         buffer.attach(2, 3);
 
-        buffer.send<float>(sizeof(glm::mat4x4) * index_length, nullptr, GL_DYNAMIC_DRAW);
-
-        buffer.attach(3, 4, {sizeof(glm::mat4), 0});
-        buffer.attach(3, 4, {sizeof(glm::mat4), sizeof(glm::vec4)});
-        buffer.attach(3, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 2});
-        buffer.attach(3, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 3});
-
-        buffer.divisor(3, 1);
-        buffer.divisor(4, 1);
-        buffer.divisor(5, 1);
-        buffer.divisor(6, 1);
+        buffer.bind(4, {GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.send<float>(sizeof(glm::mat4) * index_length, nullptr, GL_DYNAMIC_DRAW);
 
         for (int32_t it {}; it < index_length; it++) {
             float *p_vec {&(this->vegetation_memory_list[it * 4])};
@@ -333,6 +330,15 @@ void world::on_update() {
             buffer.edit<float>(it * sizeof(glm::mat4), sizeof(glm::mat4), &mat4x4_model[0][0]);
         }
 
+        buffer.attach(3, 4, {sizeof(glm::mat4), 0});
+        buffer.attach(4, 4, {sizeof(glm::mat4), sizeof(glm::vec4)});
+        buffer.attach(5, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 2});
+        buffer.attach(6, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 3});
+
+        buffer.divisor(3, 1);
+        buffer.divisor(4, 1);
+        buffer.divisor(5, 1);
+        buffer.divisor(6, 1);
         buffer.revoke();
     }
 

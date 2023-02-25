@@ -21,7 +21,7 @@ protected:
     bool poll_low_priority_queue {};
     uint16_t free_memory_counter {};
 
-    material *p_material_tree_global {};
+    material *p_material_vegetation_coconut {};
     std::vector<float> vegetation_memory_list {};
 
     void on_event_changed_priority(SDL_Event &sdl_event);
