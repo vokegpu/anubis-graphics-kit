@@ -5,6 +5,14 @@
 #include <vector>
 #include "util/math.hpp"
 
+struct viewplane {
+    glm::vec3 n {};
+    float distance {};
+
+    inline viewplane() = default;
+    void set_plane(const glm::vec3 &p, float dist);
+};
+
 class frustum : public object {
 protected:
     glm::vec3 front {};
@@ -13,10 +21,11 @@ protected:
     glm::vec3 world_up {};
     glm::mat4 view {};
     glm::mat4 perspective {};
+    glm::mat4 mvp {};
 
-    glm::vec3 refer_x {};
-    glm::vec3 refer_y {};
-    glm::vec3 refer_z {};
+    glm::vec3 rx {};
+    glm::vec3 ry {};
+    glm::vec3 rz {};
 
     float fov {90.0f};
     float w {};
@@ -27,12 +36,7 @@ protected:
     float near {};
     float far {};
 
-    util::plane top_face {};
-    util::plane bottom_face {};
-    util::plane right_face {};
-    util::plane left_face {};
-    util::plane far_face {};
-    util::plane near_face {};
+    viewplane planes[6] {};
 public:
     frustum() = default;
     ~frustum() = default;
@@ -43,10 +47,11 @@ public:
     glm::vec3 &get_world_up();
     glm::mat4 &get_view();
     glm::mat4 &get_perspective();
+    glm::mat4 &get_mvp();
 
     void set_fov(float radians_angle);
     float get_fov();
-    bool viewing(const glm::mat4 &mat4x4_model, const glm::vec3 &scale, const util::aabb &axis_aligned_bounding_box);
+    bool viewing(glm::mat4 &mat4x4_model, const util::aabb &aabb);
 
     void process_perspective(int32_t w, int32_t h);
     void on_event(SDL_Event &sdl_event) override;

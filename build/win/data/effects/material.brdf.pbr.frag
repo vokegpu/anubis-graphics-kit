@@ -89,10 +89,10 @@ void main() {
 
     mMaterialColor = uMaterial.uColor;
     if (uMaterial.uActiveSampler) {
-        mMaterialColor = texture(uSampler, vTexCoord).rgb;
+        mMaterialColor = texture(uSampler, vec2(vTexCoord.x, 1.0f - vTexCoord.y)).rgb;
     }
 
-    vec3 sum = mMaterialColor;
+    vec3 sum = mMaterialColor * uAmbientColor;
 
     if (uMaterial.uRough == -1) {
         sum = mMaterialColor;

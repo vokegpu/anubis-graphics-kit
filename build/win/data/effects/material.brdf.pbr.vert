@@ -28,7 +28,7 @@ void main() {
     } else {
         gl_Position = uMVP * vec4(aPos, 1.0f);
         modelPos = uModelMatrix * vec4(aPos, 1.0f);
-        vNormal = normalize(aNormal);
+        vNormal = normalize(uNormalMatrix * aNormal);
     }
 
     vPos = gl_Position.xyz;

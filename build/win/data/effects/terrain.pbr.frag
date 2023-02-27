@@ -3,8 +3,8 @@
 #define TERRAIN_HEIGHT_SIZE 128.0f
 
 #define SAND 0
-#define STONE 1
-#define ROCK 2
+#define ROCK 1
+#define STONE 2
 
 layout (location = 0) out vec4 vFragColor;
 layout (binding = 1) uniform sampler2D uTextureAtlas;
@@ -100,7 +100,15 @@ void main() {
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0f, 1.0f);
 
     float g = vHeight / 64.0f;
-    mCurrentMaterialRGB = texture(uTextureAtlas, transform2Modal(uAtlas[SAND].uTexCoord)).rgb;
+    int choosenType = 0;
+
+    if (g < 0.3f) {
+        choosenType = SAND;
+    } else {
+        choosenType = ROCK;
+    }
+
+    mCurrentMaterialRGB = texture(uTextureAtlas, transform2Modal(uAtlas[choosenType].uTexCoord)).rgb;
     vec3 sum = (mCurrentMaterialRGB * g) * (uAmbientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);

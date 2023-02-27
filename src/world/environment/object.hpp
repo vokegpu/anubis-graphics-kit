@@ -7,7 +7,7 @@ struct object_transform {
 public:
     glm::mat4 mat4x4 {};
     glm::vec3 position {};
-    glm::vec3 scale {};
+    glm::vec3 scale {1.0f, 1.0f, 1.0f};
     glm::vec3 rotation {};
 public:
     void set_position(float x, float y, float z);

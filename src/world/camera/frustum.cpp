@@ -25,18 +25,6 @@ glm::mat4 &frustum::get_view() {
 }
 
 glm::mat4 &frustum::get_perspective() {
-    const float half_v_side {this->far * glm::tan(this->fov * 0.5f)};
-    const float half_h_side {half_v_side * this->aspect};
-    const glm::vec3 front_mult_far {this->far * this->front};
-    
-    /* The distance is perpendicular to P. */
-    this->near_face = {this->transform.position + this->near * this->front, this->front};
-    this->far_face = {this->transform.position + front_mult_far, -this->front};
-    this->right_face =  {this->transform.position, glm::cross(front_mult_far - this->right * half_h_side, this->up)};
-    this->left_face = {this->transform.position, glm::cross(this->transform.position, glm::cross(this->up, front_mult_far + this->right * half_h_side))};
-    this->top_face = {this->transform.position, glm::cross(this->right, front_mult_far - this->up * half_v_side)};
-    this->bottom_face = {this->transform.position, glm::cross(front_mult_far + this->up * half_v_side, this->right)};
-
     return this->perspective;
 }
 
@@ -65,22 +53,20 @@ void frustum::on_event(SDL_Event &sdl_event) {
     }
 }
 
-void frustum::process_perspective(int32_t w, int32_t h) {
+void frustum::process_perspective(int32_t width, int32_t height) {
     const float size[2] {
-            static_cast<float>(w),
-            static_cast<float>(h)
+            static_cast<float>(width),
+            static_cast<float>(height)
     };
 
     this->aspect = size[0] / size[1];
-    this->perspective = glm::perspective(glm::radians(this->fov), this->aspect, 0.1f, agk_perspective_clip_distance);
+    this->far = agk_perspective_clip_distance;
+    this->near = 0.03f;
+
+    this->perspective = glm::perspective(glm::radians(this->fov), this->aspect, this->near, this->far);
     shape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
 
-    this->far = agk_perspective_clip_distance;
-    this->near = 0.1f;
-    this->w = size[0];
-    this->h = size[1];
-
-    if (w != agk::app.screen_width || h != agk::app.screen_height) {
+    if (this->w != size[0] || this->h != size[1]) {
         std::string msg{"Window resized ("};
         msg += std::to_string(w);
         msg += ", ";
@@ -90,48 +76,68 @@ void frustum::process_perspective(int32_t w, int32_t h) {
         util::log(msg);
     }
 
-    agk::app.screen_width = w;
-    agk::app.screen_height = h;
+    agk::app.screen_width = width;
+    agk::app.screen_height = height;
+    this->w = size[0];
+    this->h = size[1];
 }
 
-bool frustum::viewing(const glm::mat4 &mat4x4_model, const glm::vec3 &scale, const util::aabb &axis_aligned_bounding_box) {
-    // @TODO Add frustum view culling.
+bool frustum::viewing(glm::mat4 &mat4x4_model, const util::aabb &aabb) {
+    const glm::vec3 max {glm::vec3(mat4x4_model * glm::vec4(aabb.max, 1.0f))};
+    const glm::vec3 min {glm::vec3(mat4x4_model * glm::vec4(aabb.min, 1.0f))};
+    glm::vec3 p {};
+
+    for (uint8_t it {}; it < 6; it++) {
+        p.x = this->planes[it].n.x > 0 ? max.x : min.x;
+        p.y = this->planes[it].n.y > 0 ? max.y : min.y;
+        p.z = this->planes[it].n.z > 0 ? max.z : min.z;
+
+        if (glm::dot(this->planes[it].n, p) + this->planes[it].distance < 0.0f) {
+            return false;
+        }
+    }
+
     return true;
+}
 
-    const glm::vec3 global_center {mat4x4_model * glm::vec4(axis_aligned_bounding_box.center, 1.0f)};
+glm::mat4 &frustum::get_mvp() {
+    this->mvp = this->get_perspective() * this->view;
 
-    const glm::vec3 r {mat4x4_model[0] * axis_aligned_bounding_box.extents.x};
-    const glm::vec3 u {mat4x4_model[1] * axis_aligned_bounding_box.extents.y};
-    const glm::vec3 f {-mat4x4_model[2] * axis_aligned_bounding_box.extents.z};
+    float m0 {this->mvp[0][0]};
+    float m1 {this->mvp[0][1]};
+    float m2 {this->mvp[0][2]};
+    float m3 {this->mvp[0][3]};
 
-    const float ii {
-            glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, r)) +
-            glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, u)) +
-            glm::abs(glm::dot({1.0f, 0.0f, 0.0f}, f))
-    };
+    float m4 {this->mvp[1][0]};
+    float m5 {this->mvp[1][1]};
+    float m6 {this->mvp[1][2]};
+    float m7 {this->mvp[1][3]};
 
-    const float ij {
-            glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, r)) +
-            glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, u)) +
-            glm::abs(glm::dot({0.0f, 1.0f, 0.0f}, f))
-    };
+    float m8 {this->mvp[2][0]};
+    float m9 {this->mvp[2][1]};
+    float m10 {this->mvp[2][2]};
+    float m11 {this->mvp[2][3]};
 
-    const float ik {
-            glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, r)) +
-            glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, u)) +
-            glm::abs(glm::dot({0.0f, 0.0f, 1.0f}, f))
-    };
+    float m12 {this->mvp[3][0]};
+    float m13 {this->mvp[3][1]};
+    float m14 {this->mvp[3][2]};
+    float m15 {this->mvp[3][3]};
 
-    util::aabb global_aabb {};
-    global_aabb.center = global_center;
-    global_aabb.extents = {ii, ij, ik};
+    this->planes[0].set_plane(glm::vec3(m3 - m0, m7 - m4, m11 - m8), m15 - m12);
+    this->planes[1].set_plane(glm::vec3(m3 + m0, m7 + m4, m11 + m8), m15 + m12);
+    this->planes[2].set_plane(glm::vec3(m3 + m1, m7 + m5, m11 + m9), m15 + m13);
+    this->planes[3].set_plane(glm::vec3(m3 - m1, m7 - m5, m11 - m9), m15 - m13);
+    this->planes[4].set_plane(glm::vec3(m3 - m2, m7 - m6, m11 - m10), m15 - m14);
+    this->planes[5].set_plane(glm::vec3(m3 + m2, m7 + m6, m11 + m10), m15 + m14);
+    return mvp;
+}
 
-    return (
-            util::check_is_on_forward_plane(global_aabb, this->left_face) &&
-            util::check_is_on_forward_plane(global_aabb, this->right_face) &&
-            util::check_is_on_forward_plane(global_aabb, this->top_face) &&
-            util::check_is_on_forward_plane(global_aabb, this->bottom_face) &&
-            util::check_is_on_forward_plane(global_aabb, this->near_face) &&
-            util::check_is_on_forward_plane(global_aabb, this->far_face)
-    );
+void viewplane::set_plane(const glm::vec3 &p, float dist) {
+    float len {glm::length(p)};
+    if (len > 0.0f) {
+        len = 1.0f / len;
+    }
+
+    this->n = p * len;
+    this->distance = dist * len;
 }

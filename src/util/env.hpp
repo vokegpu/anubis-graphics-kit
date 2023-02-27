@@ -11,6 +11,7 @@ namespace util {
         uint64_t ticks {};
     };
 
+    void log2f(float x, float y);
     bool reset(util::timing&);
     bool reach(util::timing&, uint64_t);
     bool reset_when(util::timing&, uint64_t);

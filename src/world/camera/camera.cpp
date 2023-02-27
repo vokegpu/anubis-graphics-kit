@@ -1,5 +1,4 @@
 #include "camera.hpp"
-#include "util/env.hpp"
 
 void camera::set_mouse_sensitivity(float value) {
     this->mouse_sensitivity = value;

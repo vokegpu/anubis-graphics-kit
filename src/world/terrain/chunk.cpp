@@ -1,6 +1,4 @@
 #include "chunk.hpp"
-#include "agk.hpp"
-#include "GL/glew.h"
 
 chunk::chunk() {
 }

@@ -87,6 +87,11 @@ public:
         this->current_buffer_info[1] = buffer_type.y;
     }
 
+    void bind(const glm::ivec2 &buffer_type) {
+        this->current_buffer_info[0] = buffer_type.x;
+        this->current_buffer_info[1] = buffer_type.y;
+    }
+
     template<typename t>
     void send(uint32_t size, const t *p_data, GLenum gl_driver_read_mode) {
         glBufferData(this->current_buffer_info[0], size, p_data, gl_driver_read_mode);

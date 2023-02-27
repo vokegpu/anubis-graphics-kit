@@ -43,7 +43,11 @@ namespace asset {
             }
         }
 
-        void add(const std::string &sub_texture, const glm::vec4 &tex_coord) {
+        void add(const std::string &sub_texture, glm::vec4 tex_coord) {
+            if (glm::length(tex_coord) > 1.0f) {
+                tex_coord /= glm::vec4 {this->gpu_side.w, this->gpu_side.h, this->gpu_side.w, this->gpu_side.h};
+            }
+
             this->atlas_map.insert({sub_texture, tex_coord});
         }
 

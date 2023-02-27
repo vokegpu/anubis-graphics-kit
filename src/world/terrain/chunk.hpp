@@ -43,7 +43,6 @@ public:
     buffering buffer {};
     chunk_metadata metadata {};
     uint32_t texture {};
-    std::vector<int32_t> vegetation {};
 
     explicit chunk();
     ~chunk();

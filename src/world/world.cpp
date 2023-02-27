@@ -15,12 +15,11 @@ void world::on_create() {
 
     agk::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
     this->vegetation_memory_list.reserve(100 * 4);
+    util::generate_aabb(this->aabb_chunk, this->chunk_mesh_data);
 
     this->p_material_vegetation_coconut = new material {enums::material::dialetric};
     this->p_material_vegetation_coconut->set_color({0.2, 0.2f, 0.2f});
     this->p_material_vegetation_coconut->append_mtl((::asset::model*) agk::asset::find("models/vegetation.coconut"));
-
-    util::log("Tree simple assets created");
 
     /* Generate texture for parallel vegetation spawn. */
     this->texture_vegetation.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
@@ -125,11 +124,14 @@ void world::on_update() {
                 p_chunks->on_destroy();
                 should_refresh_renderer = true;
 
-                for (int32_t &id : p_chunks->vegetation) {
-                    this->erase(this->obj_register_map[id]);
-                    this->obj_register_map.erase(id);
+                for (imodule *&p_module : p_chunks->components) {
+                    this->erase(this->obj_register_map[p_module->id]);
+                    this->obj_register_map.erase(p_module->id);
                     free_memory_counter++;
                 }
+
+                delete p_chunks->p_model;
+                p_chunks->p_model = nullptr;
 
                 delete p_chunks;
                 p_chunks = nullptr;
@@ -147,7 +149,7 @@ void world::on_update() {
 
         this->loaded_chunk_list = current_loaded_chunk;
         float scale_factor {static_cast<float>(chunk_size) / 128};
-        scale_factor *= 6.4f;
+        scale_factor *= AGK_WORLD_SCALE_FACTOR;
         glm::vec3 chunk_scale {scale_factor, scale_factor, scale_factor};
 
         for (int32_t z {-chunk_gen_dist}; z != chunk_gen_dist; z++) {
@@ -186,7 +188,10 @@ void world::on_update() {
     }
 
     if (!this->queue_chunking.empty() && util::reset_when(this->chunk_poll_chunking, 16)) {
+        auto *p_model_instance {new ::asset::model {}};
         chunk *p_chunk {this->queue_chunking.front()};
+        p_chunk->p_model = p_model_instance;
+        p_model_instance->axis_aligned_bounding_box = this->aabb_chunk;
 
         /* Use grid position as global UV for height map connection. */
         glm::vec2 global_uv {};
@@ -284,12 +289,11 @@ void world::on_update() {
             return;
         }
 
-        glm::vec3 scale_factor {6.4F, 6.4F, 6.4F};
+        glm::vec3 scale_factor {glm::vec3(AGK_WORLD_SCALE_FACTOR)};
         glm::vec4 vegetation_pos {};
         glm::mat4 mat4x4_vegetation_model = glm::scale(glm::mat4(1.0f), p_chunk->transform.scale);
         glm::mat4 mat4x4_model {};
 
-        auto *p_model_instance {new ::asset::model {}};
         auto *p_tree_instance {new object {p_model_instance}};
         auto &buffer {p_model_instance->buffer};
         p_tree_instance->p_material = this->p_material_vegetation_coconut;
@@ -297,7 +301,9 @@ void world::on_update() {
         // Set the instance model for chunk position.
         p_tree_instance->transform.position = {(grid_pos.x * chunk_size) + (chunk_size / 2), 0, (grid_pos.y * chunk_size) + (chunk_size / 2)};
         ::asset::model *p_model_coconut_tree {(::asset::model*) agk::asset::find("models/vegetation.coconut")};
+
         this->registry(p_tree_instance);
+        p_chunk->add(p_tree_instance);
 
         buffer.invoke();
         buffer.stride[1] = p_model_coconut_tree->buffer.stride[1];
@@ -305,12 +311,15 @@ void world::on_update() {
         buffer.instance_rendering = true;
 
         p_model_coconut_tree->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffer.attach(0, 3);
 
         p_model_coconut_tree->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffer.attach(1, 2);
 
         p_model_coconut_tree->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
+        buffer.bind({GL_ARRAY_BUFFER, GL_FLOAT});
         buffer.attach(2, 3);
 
         buffer.bind(4, {GL_ARRAY_BUFFER, GL_FLOAT});
@@ -326,6 +335,7 @@ void world::on_update() {
 
             mat4x4_model = glm::mat4(1.0f);
             mat4x4_model = glm::translate(mat4x4_model, glm::vec3(vegetation_pos));
+            mat4x4_model = glm::scale(mat4x4_model, scale_factor);
 
             buffer.edit<float>(it * sizeof(glm::mat4), sizeof(glm::mat4), &mat4x4_model[0][0]);
         }

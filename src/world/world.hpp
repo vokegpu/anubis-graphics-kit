@@ -14,6 +14,7 @@
 #include <map>
 
 static float agk_perspective_clip_distance {8096.0f * 8096.0f};
+static const float AGK_WORLD_SCALE_FACTOR {6.40000000000000000f};
 
 class world : public imodule {
 protected:
@@ -54,6 +55,7 @@ public:
     util::timing chunk_poll_chunking {};
     mesh::data chunk_mesh_data {};
     texturing texture_chunk {};
+    util::aabb aabb_chunk {};
 
     std::vector<glm::vec3> near_chunk_global_uv {};
     std::queue<chunk*> queue_chunking {};

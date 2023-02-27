@@ -34,23 +34,8 @@ void asset::model::on_create() {
         this->buffer.attach(0, 3);
 
         this->buffer.stride[0] = 0;
-        this->buffer.stride[1] = std::max((int32_t) (list.size() / 3), 1);
-
-        glm::vec3 min {glm::vec3(std::numeric_limits<float>::max())};
-        glm::vec3 max {glm::vec3(std::numeric_limits<float>::min())};
-
-        for (int32_t it {}; it < this->buffer.stride[1]; it++) {
-            const float *p_vec {&list.at(it * 3)};
-            min.x = std::min(min.x, p_vec[0]);
-            min.y = std::min(min.y, p_vec[1]);
-            min.z = std::min(min.z, p_vec[2]);
-
-            max.x = std::max(max.x, p_vec[0]);
-            max.y = std::max(max.y, p_vec[1]);
-            max.z = std::max(max.z, p_vec[2]);
-        }
-
-        this->axis_aligned_bounding_box = {min, max};
+        this->buffer.stride[1] = (uint32_t) list.size() / 3;
+        util::generate_aabb(this->axis_aligned_bounding_box, mesh);
     }
 
     if (mesh.contains(::mesh::type::textcoord)) {

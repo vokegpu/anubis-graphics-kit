@@ -12,8 +12,9 @@ void renderer::process_terrain() {
     glm::mat3 mat3x3_inverse_transpose {};
     glm::vec3 color {1.0f, 1.0f, 1.0f};
 
-    auto p_time_manager {agk::world::sky()};
+    auto *&p_time_manager {agk::world::sky()};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
+    auto *&p_camera {agk::world::current_camera()};
 
     p_program_pbr->invoke();
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
@@ -41,11 +42,15 @@ void renderer::process_terrain() {
             continue;
         }
 
-        glBindTexture(GL_TEXTURE_2D, p_chunks->texture);
-
         mat4x4_model = glm::mat4(1);
         mat4x4_model = glm::translate(mat4x4_model, p_chunks->transform.position);
         mat4x4_model = glm::scale(mat4x4_model, p_chunks->transform.scale);
+
+        if (!p_camera->viewing(mat4x4_model, p_chunks->p_model->axis_aligned_bounding_box)) {
+            continue;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, p_chunks->texture);
 
         mat3x3_inverse_transpose = glm::inverseTranspose(glm::mat3(mat4x4_model));
         p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse_transpose[0][0]);
@@ -68,7 +73,7 @@ void renderer::process_terrain() {
 void renderer::process_environment() {
     glm::mat4 mat4x4_model {};
     glm::mat3 mat3x3_inverse {};
-    glm::mat4 mat4x4_model_view {};
+    glm::mat4 mat4x4_mvp {};
 
     float dist_render {agk::app.setting.fog_bounding.get_value().y};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
@@ -80,8 +85,11 @@ void renderer::process_environment() {
     p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_mat4("uPerspectiveView", &this->mat4x4_perspective_view[0][0]);
 
+    glDisable(GL_CULL_FACE);
+    uint32_t draw_call_count {};
+
     for (object *&p_objects : this->obj_draw_list) {
-        if (p_objects == nullptr || p_objects->p_model == nullptr || p_objects->p_material == nullptr || p_objects->is_dead) {
+        if (p_objects == nullptr || p_objects->p_model == nullptr || p_objects->p_material == nullptr || p_objects->is_dead || glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position) > dist_render) {
             continue;
         }
 
@@ -92,24 +100,20 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        if (((glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position) > dist_render || !agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->transform.scale, p_objects->p_model->axis_aligned_bounding_box)) && !p_objects->p_model->buffer.instance_rendering)) {
+        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->p_model->axis_aligned_bounding_box)) {
             continue;
         }
 
         p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_model->buffer.instance_rendering);
         p_program_pbr->set_uniform_bool("uMaterial.uActiveSampler", p_objects->p_material->invoke_all_textures());
+        mat4x4_mvp = this->mat4x4_perspective_view * mat4x4_model;
 
         switch (p_objects->p_model->buffer.instance_rendering) {
             case true: {
                 p_program_pbr->set_uniform_mat4("uPerspectiveViewMatrix", &this->mat4x4_perspective_view[0][0]);
-
                 p_program_pbr->set_uniform_bool("uMaterial.uMetal", p_objects->p_material->get_type() == enums::material::metal);
                 p_program_pbr->set_uniform_float("uMaterial.uRough", p_objects->p_material->get_rough());
                 p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_objects->p_material->get_color()[0]);
-
-                p_objects->p_model->buffer.invoke();
-                p_objects->p_model->buffer.draw();
-                p_objects->p_model->buffer.revoke();
                 break;
             }
 
@@ -117,20 +121,19 @@ void renderer::process_environment() {
                 mat3x3_inverse = glm::inverseTranspose(glm::mat3(mat4x4_model));
                 p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse[0][0]);
                 p_program_pbr->set_uniform_mat4("uModelMatrix", &mat4x4_model[0][0]);
-
-                mat4x4_model = this->mat4x4_perspective_view * mat4x4_model;
-                p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_model[0][0]);
-
+                p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
                 p_program_pbr->set_uniform_bool("uMaterial.uMetal", p_objects->p_material->get_type() == enums::material::metal);
                 p_program_pbr->set_uniform_float("uMaterial.uRough", p_objects->p_material->get_rough());
                 p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_objects->p_material->get_color()[0]);
-
-                p_objects->p_model->buffer.invoke();
-                p_objects->p_model->buffer.draw();
-                p_objects->p_model->buffer.revoke();
                 break;
             }
         }
+
+        p_objects->p_model->buffer.invoke();
+        p_objects->p_model->buffer.draw();
+        p_objects->p_model->buffer.revoke();
+
+        draw_call_count++;
     }
 
     uint64_t light_amount {agk::app.p_world_service->obj_id_light_list.size()};
@@ -144,6 +147,7 @@ void renderer::process_environment() {
     };
 
     glUseProgram(0);
+    glEnable(GL_CULL_FACE);
 }
 
 void renderer::process_post_processing() {
@@ -335,8 +339,10 @@ void renderer::on_create() {
     this->buffer_coordinate_debug.attach(1, 3, {sizeof(float) * 6, sizeof(float) * 3});
     this->buffer_coordinate_debug.revoke();
 
+    glm::vec2 terrain_atlas {512, 512};
     auto *p_terrain_atlas {(asset::texture<uint8_t>*) agk::asset::find("textures/terrain.atlas")};
-    p_terrain_atlas->add("sand", {0.0f, 0.0f, 1.0f, 1.0f});
+    p_terrain_atlas->add("sand", {terrain_atlas.x * 0, terrain_atlas.y * 0, terrain_atlas.x, terrain_atlas.y});
+    p_terrain_atlas->add("rock", {terrain_atlas.x * 1, terrain_atlas.y * 0, terrain_atlas.x, terrain_atlas.y});
 
     auto *p_program_pbr {(asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
     p_program_pbr->invoke();
@@ -360,7 +366,7 @@ void renderer::on_render() {
     auto &p_camera {agk::world::current_camera()};
     this->mat4x4_perspective = p_camera->get_perspective();
     this->mat4x4_view = p_camera->get_view();
-    this->mat4x4_perspective_view = this->mat4x4_perspective * this->mat4x4_view;
+    this->mat4x4_perspective_view = p_camera->get_mvp();
 
     /* Yes? */
     switch (agk::app.setting.enable_post_processing.get_value()) {

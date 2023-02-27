@@ -30,13 +30,21 @@ float util::lerp(float a, float b, float delta) {
     return a + (b - a) * delta;
 }
 
-bool util::check_is_on_forward_plane(const util::aabb &axis_aligned_bounding_box, const util::plane &plane) {
-    const float r {
-            axis_aligned_bounding_box.extents.x * glm::abs(plane.n.x) +
-            axis_aligned_bounding_box.extents.y * glm::abs(plane.n.y) +
-            axis_aligned_bounding_box.extents.z * glm::abs(plane.n.z)
-    };
+void util::generate_aabb(util::aabb &aabb, mesh::data &mesh) {
+    auto &list {mesh.get_float_list(mesh::type::vertex)};
+    glm::vec3 min {glm::vec3(std::numeric_limits<float>::max())};
+    glm::vec3 max {glm::vec3(std::numeric_limits<float>::min())};
 
-    /* Known as signed distance to plane. */
-    return -r <= glm::dot(plane.n, axis_aligned_bounding_box.center) - plane.distance;
+    for (int32_t it {}; it < list.size() / 3; it++) {
+        const float *p_vec {&list.at(it * 3)};
+        min.x = std::min(min.x, p_vec[0]);
+        min.y = std::min(min.y, p_vec[1]);
+        min.z = std::min(min.z, p_vec[2]);
+
+        max.x = std::max(max.x, p_vec[0]);
+        max.y = std::max(max.y, p_vec[1]);
+        max.z = std::max(max.z, p_vec[2]);
+    }
+
+    aabb = {min, max};
 }

@@ -49,3 +49,7 @@ void util::split(std::vector<std::string> &list, std::string_view str, const cha
         list.push_back(string_buffer);
     }
 }
+
+void util::log2f(float x, float y) {
+    util::log("XY ["+ std::to_string(x) + ", " + std::to_string(y) + "]");
+}

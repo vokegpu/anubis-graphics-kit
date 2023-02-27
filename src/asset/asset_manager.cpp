@@ -50,7 +50,7 @@ void asset_manager::on_create() {
             {"./data/scripts/heightmap.generator.comp", GL_COMPUTE_SHADER}
     }});
 
-    this->load(new asset::texture<uint8_t> {"terrain.atlas", "./data/textures/terrain_stone.png", {GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB}, [](gpu::texture &texture, bool &mipmap) {
+    this->load(new asset::texture<uint8_t> {"terrain.atlas", "./data/textures/terrain_atlas.png", {GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB}, [](gpu::texture &texture, bool &mipmap) {
         glTextureParameteri(texture.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTextureParameteri(texture.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 

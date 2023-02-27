@@ -6,22 +6,17 @@
 #include "world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    asset::model *p_model_dino {new asset::model {"dinossaur", "./data/models/Dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
-
+    asset::model *p_model_dino {new asset::model {"dinossaur", "./data/models/dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
     agk::asset::load(p_model_dino);
 
     material *p_material {new material(enums::material::dialetric)};
     p_material->append_mtl((::asset::model*) agk::asset::find("models/vegetation.coconut"));
 
-    for (int i {}; i < 20; i++) {
-        this->p_object_dino = new object((::asset::model*) agk::asset::find("models/vegetation.coconut"));
+    for (int i {}; i < 1; i++) {
+        this->p_object_dino = new object(p_model_dino);
         p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
-
         this->p_object_dino->p_material = p_material;
-        this->p_object_dino->transform.position.x = rand() % 100;
-        this->p_object_dino->transform.position.z = rand() % 100;
-        this->p_object_dino->transform.scale = {0.2f, 0.2f, 0.2f};
-
+        this->p_object_dino->transform.scale = {6.0f, 6.0f, 6.0f};
         agk::world::create(this->p_object_dino);
     }
 
@@ -148,7 +143,8 @@ void client::scenes::starter::on_create() {
             {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
-    agk::world::sky()->set_time(8, 0);
+    agk::world::sky()->set_time(0, 0);
+    agk::world::current_player()->transform.position.y += 90;
 }
 
 void client::scenes::starter::on_destroy() {
