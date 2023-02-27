@@ -22,6 +22,7 @@ The location of executables are on `./build/`, choose your system and run Anubis
 * World time system with cycle of day and night (~~skybox, sun, moon & clouds too~~).
 * High dynamic range (HDR).
 * Dynamic input system.
+* Frustum culling.
 * ~~Motion blur~~.
 * ~~Screen space occlusion ambient (SSAO)~~.
 * Connected heightmaps.
