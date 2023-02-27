@@ -51,7 +51,7 @@ public:
 
     void set_fov(float radians_angle);
     float get_fov();
-    bool viewing(glm::mat4 &mat4x4_model, const util::aabb &aabb);
+    bool viewing(glm::mat4 &mat4x4_model, util::aabb &aabb);
 
     void process_perspective(int32_t w, int32_t h);
     void on_event(SDL_Event &sdl_event) override;

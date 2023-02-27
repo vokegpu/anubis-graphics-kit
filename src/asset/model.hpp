@@ -16,7 +16,7 @@ namespace asset {
         uint32_t driver_mode[4] {};
         std::vector<std::string> linked_mtl_list {};
     public:
-        util::aabb axis_aligned_bounding_box {};
+        util::aabb aabb {};
         buffering buffer {};
 
         explicit model() = default;

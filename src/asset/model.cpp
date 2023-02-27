@@ -35,7 +35,7 @@ void asset::model::on_create() {
 
         this->buffer.stride[0] = 0;
         this->buffer.stride[1] = (uint32_t) list.size() / 3;
-        util::generate_aabb(this->axis_aligned_bounding_box, mesh);
+        util::generate_aabb(this->aabb, mesh);
     }
 
     if (mesh.contains(::mesh::type::textcoord)) {

@@ -327,36 +327,36 @@ bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint
     for (uint32_t h {}; h <= height - 1; h++) {
         for (uint32_t w {}; w <= width - 1; w++) {
             /* first vertex of quad */
-            vertex.x = static_cast<float>(w);
+            vertex.x = static_cast<float>(w) / static_cast<float>(width);
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h);
+            vertex.z = static_cast<float>(h) / static_cast<float>(height);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
             data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
 
             /* second vertex of quad */
-            vertex.x = static_cast<float>(w + 1);
+            vertex.x = static_cast<float>(w + 1) / static_cast<float>(width);
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h);
+            vertex.z = static_cast<float>(h) / static_cast<float>(height);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));
             data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
 
             /* third vertex of quad */
-            vertex.x = static_cast<float>(w);
+            vertex.x = static_cast<float>(w) / static_cast<float>(width);
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h + 1);
+            vertex.z = static_cast<float>(h + 1) / static_cast<float>(height);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
             data.append(mesh::type::textcoord, static_cast<float>(h + 1) / static_cast<float>(height));
 
             /* four vertex of quad */
-            vertex.x = static_cast<float>(w + 1);
+            vertex.x = static_cast<float>(w + 1) / static_cast<float>(width);
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h + 1);
+            vertex.z = static_cast<float>(h + 1) / static_cast<float>(height);
 
             data.append(mesh::type::vertex, vertex);
             data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));

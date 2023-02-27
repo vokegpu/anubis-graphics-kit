@@ -15,6 +15,9 @@ void renderer::process_terrain() {
     auto *&p_time_manager {agk::world::sky()};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
     auto *&p_camera {agk::world::current_camera()};
+    float dist_render {agk::app.setting.fog_bounding.get_value().y};
+    dist_render += dist_render * 0.5f;
+    float dist {};
 
     p_program_pbr->invoke();
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
@@ -38,15 +41,18 @@ void renderer::process_terrain() {
     glActiveTexture(GL_TEXTURE0);
 
     for (chunk *&p_chunks : this->chunk_draw_list) {
-        if (p_chunks == nullptr || !p_chunks->is_processed() || p_chunks->is_dead) {
+        if (p_chunks == nullptr || !p_chunks->is_processed() || p_chunks->is_dead || (dist = glm::distance(p_camera->transform.position, p_chunks->transform.position)) > dist_render) {
             continue;
         }
 
-        mat4x4_model = glm::mat4(1);
+        mat4x4_model = glm::mat4(1.0f);
         mat4x4_model = glm::translate(mat4x4_model, p_chunks->transform.position);
+        mat4x4_model = glm::rotate(mat4x4_model, p_chunks->transform.rotation.x, {1, 0, 0});
+        mat4x4_model = glm::rotate(mat4x4_model, p_chunks->transform.rotation.y, {0, 1, 0});
+        mat4x4_model = glm::rotate(mat4x4_model, p_chunks->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_chunks->transform.scale);
 
-        if (!p_camera->viewing(mat4x4_model, p_chunks->p_model->axis_aligned_bounding_box)) {
+        if (!p_camera->viewing(mat4x4_model, p_chunks->p_model->aabb)) {
             continue;
         }
 
@@ -76,6 +82,8 @@ void renderer::process_environment() {
     glm::mat4 mat4x4_mvp {};
 
     float dist_render {agk::app.setting.fog_bounding.get_value().y};
+    dist_render += dist_render * 0.5f;
+    float dist {};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
 
     p_program_pbr->invoke();
@@ -89,7 +97,7 @@ void renderer::process_environment() {
     uint32_t draw_call_count {};
 
     for (object *&p_objects : this->obj_draw_list) {
-        if (p_objects == nullptr || p_objects->p_model == nullptr || p_objects->p_material == nullptr || p_objects->is_dead || glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position) > dist_render) {
+        if (p_objects == nullptr || p_objects->p_model == nullptr || p_objects->p_material == nullptr || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
             continue;
         }
 
@@ -100,7 +108,7 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->p_model->axis_aligned_bounding_box)) {
+        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->p_model->aabb)) {
             continue;
         }
 

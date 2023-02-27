@@ -11,11 +11,14 @@
 
 void world::on_create() {
     agk::app.setting.chunk_generation_interval.set_value(1000);
-    agk::app.setting.chunk_dimension.set_value(128 * 4);
+    agk::app.setting.chunk_dimension.set_value(256);
+    agk::app.setting.chunk_terrain_height.set_value(256);
 
     agk::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
     this->vegetation_memory_list.reserve(100 * 4);
     util::generate_aabb(this->aabb_chunk, this->chunk_mesh_data);
+    this->aabb_chunk.max.y = agk::app.setting.chunk_terrain_height.get_value();
+    util::log(std::to_string(this->aabb_chunk.max.x) + "x" + std::to_string(this->aabb_chunk.min.y) + "x" + std::to_string(this->aabb_chunk.max.z));
 
     this->p_material_vegetation_coconut = new material {enums::material::dialetric};
     this->p_material_vegetation_coconut->set_color({0.2, 0.2f, 0.2f});
@@ -148,9 +151,8 @@ void world::on_update() {
         }
 
         this->loaded_chunk_list = current_loaded_chunk;
-        float scale_factor {static_cast<float>(chunk_size) / 128};
-        scale_factor *= AGK_WORLD_SCALE_FACTOR;
-        glm::vec3 chunk_scale {scale_factor, scale_factor, scale_factor};
+        float scale_factor {static_cast<float>(chunk_size)};
+        glm::vec3 chunk_scale {scale_factor, scale_factor / 10, scale_factor};
 
         for (int32_t z {-chunk_gen_dist}; z != chunk_gen_dist; z++) {
             for (int32_t x {-chunk_gen_dist}; x != chunk_gen_dist; x++) {
@@ -191,7 +193,7 @@ void world::on_update() {
         auto *p_model_instance {new ::asset::model {}};
         chunk *p_chunk {this->queue_chunking.front()};
         p_chunk->p_model = p_model_instance;
-        p_model_instance->axis_aligned_bounding_box = this->aabb_chunk;
+        p_model_instance->aabb = this->aabb_chunk;
 
         /* Use grid position as global UV for height map connection. */
         glm::vec2 global_uv {};
@@ -289,7 +291,8 @@ void world::on_update() {
             return;
         }
 
-        glm::vec3 scale_factor {glm::vec3(AGK_WORLD_SCALE_FACTOR)};
+        glm::vec3 scale_factor {6.4f};
+
         glm::vec4 vegetation_pos {};
         glm::mat4 mat4x4_vegetation_model = glm::scale(glm::mat4(1.0f), p_chunk->transform.scale);
         glm::mat4 mat4x4_model {};
@@ -299,7 +302,8 @@ void world::on_update() {
         p_tree_instance->p_material = this->p_material_vegetation_coconut;
 
         // Set the instance model for chunk position.
-        p_tree_instance->transform.position = {(grid_pos.x * chunk_size) + (chunk_size / 2), 0, (grid_pos.y * chunk_size) + (chunk_size / 2)};
+        p_tree_instance->transform.position = p_chunk->transform.position;
+        p_tree_instance->transform.scale = p_chunk->transform.scale;
         ::asset::model *p_model_coconut_tree {(::asset::model*) agk::asset::find("models/vegetation.coconut")};
 
         this->registry(p_tree_instance);

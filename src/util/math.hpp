@@ -8,13 +8,6 @@ namespace util {
     struct aabb {
         glm::vec3 min {};
         glm::vec3 max {};
-        glm::vec3 center {};
-
-        explicit aabb() = default;
-        inline aabb(const glm::vec3 &min, const glm::vec3 &max) : center((min + max) / 2.0f) {
-            this->min = min;
-            this->max = max;
-        }
     };
 
     void generate_aabb(util::aabb &aabb, mesh::data &mesh);

@@ -16,7 +16,7 @@ void client::scenes::starter::on_create() {
         this->p_object_dino = new object(p_model_dino);
         p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
         this->p_object_dino->p_material = p_material;
-        this->p_object_dino->transform.scale = {6.0f, 6.0f, 6.0f};
+        this->p_object_dino->transform.scale = {1.0f, 1.0f, 1.0f};
         agk::world::create(this->p_object_dino);
     }
 
@@ -143,7 +143,7 @@ void client::scenes::starter::on_create() {
             {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
-    agk::world::sky()->set_time(0, 0);
+    agk::world::sky()->set_time(8, 0);
     agk::world::current_player()->transform.position.y += 90;
 }
 
