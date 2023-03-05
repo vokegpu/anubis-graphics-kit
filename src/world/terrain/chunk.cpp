@@ -12,7 +12,7 @@ void chunk::on_create() {
 }
 
 void chunk::on_destroy() {
-    this->buffer.free_buffers();
+    this->buffer.delete_buffers();
 }
 
 bool chunk::is_processed() {

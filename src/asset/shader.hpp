@@ -1,3 +1,5 @@
+#include "gpu/tools.hpp"
+
 #ifndef AGK_ASSET_SHADER_H
 #define AGK_ASSET_SHADER_H
 
@@ -8,6 +10,7 @@
 #include "util/env.hpp"
 #include "core/imodule.hpp"
 #include <vector>
+#include <functional>
 
 namespace asset {
     typedef struct shader_resource {
@@ -20,10 +23,15 @@ namespace asset {
     protected:
         std::unordered_map<std::string, int32_t> uniform_unordered_map {};
         int32_t program {};
+        std::vector<uint32_t> buffer_id_list {};
+        std::function<void(asset::shader*)> mixin {};
     public:
-        explicit shader(std::string_view shader_tag, const std::vector<asset::shader_resource> &resource_list) : program(glCreateProgram()) {
+        shaderbuffering shaderbuffer {};
+
+        explicit shader(std::string_view shader_tag, const std::vector<asset::shader_resource> &resource_list, const std::function<void(asset::shader*)> &injection_mixin = [](asset::shader*) {}) : program(glCreateProgram()) {
             this->tag += "gpu/";
             this->tag += shader_tag;
+            this->mixin = injection_mixin;
 
             bool flag {!resource_list.empty()};
             uint32_t shader {};
@@ -102,6 +110,11 @@ namespace asset {
 
         void invoke();
         void revoke();
+        void attach(std::string_view block, uint32_t binding);
+
+        int32_t find(uint32_t buffer_id);
+        int32_t append(uint32_t buffer_id);
+        std::vector<uint32_t> &buffer_id_data();
 
         void set_uniform_vec4(std::string_view uniform_name, const float *p_value);
         void set_uniform_vec3(std::string_view uniform_name, const float *p_value);

@@ -54,11 +54,11 @@ enums::priority object::get_priority() {
     return this->priority;
 }
 
-object::object(::asset::model *p_linked_model) {
+object::object(material *p_linked_material) {
     this->id = imodule::token++;
     this->set_priority(enums::priority::high);
     this->set_visible(enums::state::enable);
-    this->p_model = p_linked_model;
+    this->p_material = p_linked_material;
 }
 
 object::~object() {

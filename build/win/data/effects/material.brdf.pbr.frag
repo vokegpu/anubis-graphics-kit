@@ -2,7 +2,22 @@
 #define PI 3.1415926535897932384626433832795
 
 layout (location = 0) out vec4 vFragColor;
-layout (binding = 0) uniform sampler2D uSampler;
+
+// PBR sampler(s)
+layout (binding = 0) uniform sampler2D uSamplerAlbedo;
+layout (binding = 1) uniform sampler2D uSamplerSpecular;
+layout (binding = 2) uniform sampler2D uSamplerNormalMap;
+
+struct Material {
+    vec4 mSamplerFlags;
+    vec4 mSurface;
+    vec4 mColor;
+};
+
+// Material buffer
+layout (std140, binding = 0) uniform uniformBufferMaterial {
+    Material ubMaterial[100];
+};
 
 in vec3 vPos;
 in vec2 vTexCoord;
@@ -13,15 +28,12 @@ uniform vec3 uCameraPos;
 uniform float uAmbientColor;
 uniform int uLightAmount;
 uniform float uGamma = 1.0f;
+uniform int uMaterialIndex;
 
-vec3 mMaterialColor;
-
-uniform struct {
-    vec3 uColor;
-    bool uMetal;
-    float uRough;
-    bool uActiveSampler;
-} uMaterial;
+Material material;
+vec3 colorSpecular;
+vec3 colorAlbedo;
+vec3 colorNormalMap;
 
 uniform struct {
     vec3 uIntensity;
@@ -36,28 +48,28 @@ uniform struct {
 
 vec3 shlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04f);
-    if (uMaterial.uMetal) {
-        f0 = mMaterialColor;
+    if (material.mSurface.x == 1) {
+        f0 = colorAlbedo;
     }
     return f0 + (1 - f0) * pow(clamp(1.0f - lDotH, 0.0f, 1.0f), 5.0f);
 }
 
 float geometrySmith(float dotProd) {
-    float k = (uMaterial.uRough + 1.0f) * (uMaterial.uRough + 1.0f) / 8.0f;
+    float k = (material.mSurface.y + 1.0f) * (material.mSurface.y + 1.0f) / 8.0f;
     float denom = dotProd * (1.0f - k) + k;
     return 1.0f / denom;
 }
 
 float ggxDistribution(float nDotH) {
-    float a2 = uMaterial.uRough * uMaterial.uRough * uMaterial.uRough * uMaterial.uRough;
+    float a2 = material.mSurface.y * material.mSurface.y * material.mSurface.y * material.mSurface.y;
     float d = (nDotH * nDotH) * (a2 - 1.0f) + 1.0f;
     return a2 / (PI * d * d);
 }
 
 vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 diffuse = vec3(0.0f);
-    if (!uMaterial.uMetal) {
-        diffuse = mMaterialColor;
+    if (material.mSurface.x == 0) {
+        diffuse = colorAlbedo;
     }
 
     vec3 intensity = uLight[index].uIntensity;
@@ -86,24 +98,33 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
 void main() {
     float dist = length(vPos);
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
+    material = ubMaterial[uMaterialIndex];
+    vec2 texCoord = vec2(vTexCoord.x, 1.0f - vTexCoord.y);
 
-    mMaterialColor = uMaterial.uColor;
-    if (uMaterial.uActiveSampler) {
-        mMaterialColor = texture(uSampler, vec2(vTexCoord.x, 1.0f - vTexCoord.y)).rgb;
+    // Not all models come with albedo, specular, and normal map textures, then set to the color.
+    colorAlbedo = material.mColor.rgb;
+    colorSpecular = material.mColor.rgb;
+    colorNormalMap = vec3(0.0f);
+
+    if (material.mSamplerFlags.x == 1) {
+        colorAlbedo = texture(uSamplerAlbedo, texCoord).rgb;
     }
 
-    vec3 sum = mMaterialColor * uAmbientColor;
+    if (material.mSamplerFlags.y == 1) {
+        colorSpecular = texture(uSamplerSpecular, texCoord).rgb;
+    }
 
-    if (uMaterial.uRough == -1) {
-        sum = mMaterialColor;
-    } else {
-        vec3 n = normalize(vNormal);
-        vec3 v = normalize(uCameraPos - vPosModel);
+    if (material.mSamplerFlags.z == 1) {
+        colorNormalMap = texture(uSamplerNormalMap, texCoord).rgb;
+    }
 
-        if (!gl_FrontFacing) n = -n;
-        for (int index = 0; index <= uLightAmount; index++) {
-            sum += bidirecionalReflectanceDistributionFunc(n, v, index);
-        }
+    vec3 sum = colorAlbedo * uAmbientColor;
+    vec3 n = normalize(vNormal);
+    vec3 v = normalize(uCameraPos - vPosModel);
+
+    if (!gl_FrontFacing) n = -n;
+    for (int index = 0; index <= uLightAmount; index++) {
+        sum += bidirecionalReflectanceDistributionFunc(n, v, index);
     }
 
     sum = mix(uFog.uColor, sum, fogFactor);

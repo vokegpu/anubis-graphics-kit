@@ -1,10 +1,10 @@
 #ifndef AGK_GPU_TOOLS_H
 #define AGK_GPU_TOOLS_H
 
-#include "asset/shader.hpp"
 #include <glm/glm.hpp>
 #include <map>
 #include "util/env.hpp"
+#include "GL/GLEW.h"
 
 namespace gpu {
     typedef struct texture {
@@ -39,6 +39,77 @@ namespace gpu {
         return p_data;
     }
 }
+
+#endif
+
+#ifndef AGK_GPU_TOOLS_SHADERBUFFERING_H
+#define AGK_GPU_TOOLS_SHADERBUFFERING_H
+
+class shaderbuffering {
+protected:
+    uint32_t current_buffer_info[3] {};
+    std::map<uint32_t, uint32_t> buffer_map {};
+public:
+    uint32_t &operator[](uint32_t k_buffer) {
+        return this->buffer_map[k_buffer];
+    }
+
+    void invoke(uint32_t key, uint32_t buffer_info) {
+        auto &buffer {this->buffer_map[key]};
+        if (buffer == 0) {
+            glGenBuffers(1, &buffer);
+        }
+
+        glBindBuffer(buffer_info, buffer);
+        this->current_buffer_info[0] = buffer_info;
+        this->current_buffer_info[1] = buffer;
+    }
+
+    template<typename t>
+    void send(uint32_t size, const t *p_data, uint32_t gl_driver_read_mode) {
+        glBufferData(this->current_buffer_info[0], size, p_data, gl_driver_read_mode);
+    }
+
+    template<typename t>
+    void edit(uint32_t offset, int64_t size, const t *p_data) {
+        glBufferSubData(this->current_buffer_info[0], offset, size, p_data);
+    }
+
+    void bind(uint32_t binding, const glm::ivec2 &stride = {0, 0}) {
+        if (stride.x == 0 && stride.y == 0) {
+            glBindBufferBase(this->current_buffer_info[0], binding, this->current_buffer_info[1]);
+        } else {
+            glBindBufferRange(this->current_buffer_info[0], binding, this->current_buffer_info[1], stride.x, stride.y);
+        }
+    }
+
+    void attach(uint32_t program, std::string_view block, uint32_t binding) {
+        uint32_t block_index {glGetUniformBlockIndex(program, block.data())};
+        glUniformBlockBinding(program, block_index, binding);
+    }
+
+    void revoke() {
+        glBindBuffer(this->current_buffer_info[0], 0);
+    }
+
+    void delete_buffers() {
+        for (auto it {this->buffer_map.begin()}; it != this->buffer_map.end(); it = std::next(it)) {
+            if (it->second != 0) glDeleteBuffers(1, &it->second);
+        }
+
+        this->buffer_map.clear();
+    }
+
+    void delete_buffer(uint32_t key) {
+        if (!this->buffer_map.count(key)) {
+            return;
+        }
+
+        auto &buffer {this->buffer_map[key]};
+        if (buffer != 0) glDeleteBuffers(1, &buffer);
+        this->buffer_map.erase(key);
+    }
+};
 
 #endif
 
@@ -153,11 +224,9 @@ public:
         }
     }
 
-    void free_buffers() {
-        for (auto &[key, value] : this->buffer_map) {
-            if (value != 0) {
-                glDeleteBuffers(1, &value);
-            }
+    void delete_buffers() {
+        for (auto it {this->buffer_map.begin()}; it != this->buffer_map.end(); it = std::next(it)) {
+            if (it->second != 0) glDeleteBuffers(1, &it->second);
         }
 
         this->buffer_map.clear();
@@ -184,68 +253,10 @@ public:
 
 #endif
 
-#ifndef AGK_GPU_TOOLS_PARALLELING_H
-#define AGK_GPU_TOOLS_PARALLELING_H
-
-class paralleling {
-protected:
-    std::unordered_map<std::string, uint32_t> buffer_map {};
-public:
-    uint32_t memory_barrier {GL_ALL_BARRIER_BITS};
-    uint32_t dispatch_groups[3] {1, 1, 1};
-    uint32_t dimension[3] {1, 1, 1};
-    uint32_t map_buffer_type[2] {};
-
-    ::asset::shader *p_program {};
-
-    explicit paralleling() = default;
-    ~paralleling() = default;
-
-    template<typename v>
-    void send_bind(const std::string &name, int32_t size, v *p_data, uint32_t flags, const glm::ivec2 &buffer_type) {
-        this->map_buffer_type[0] = buffer_type.x;
-        this->map_buffer_type[1] = buffer_type.y;
-
-        if (this->buffer_map[name] == 0) glGenBuffers(1, &this->buffer_map[name]);
-        glBindBuffer(buffer_type.x, this->buffer_map[name]);
-        glBufferStorage(buffer_type.x, sizeof(v), p_data, flags);
-    }
-
-    template<typename v>
-    void invoke_bind(const std::string &name, v *&p_data, int32_t size = 1) {
-        p_data = (v*) glMapBufferRange(this->map_buffer_type[0], 0, sizeof(v) * size, this->map_buffer_type[1]);
-    }
-
-    void revoke_bind() {
-        glUnmapBuffer(this->map_buffer_type[0]);
-    }
-
-    void attach(uint32_t slot, gpu::texture &texture, uint32_t mode) const {
-        /* Bind image to the compute shader. */
-        glBindImageTexture(slot, texture.id, 0, GL_FALSE, 0, mode, texture.format);
-    }
-
-    void invoke() const {
-        this->p_program->invoke();
-    }
-
-    void dispatch() const {
-        /* Pipeline "draw call", but for target texture. */
-        glDispatchCompute(this->dimension[0] / this->dispatch_groups[0], this->dimension[1] / this->dispatch_groups[1], this->dimension[2] / this->dispatch_groups[2]);
-
-        /* Do pipeline wait for process. */
-        glMemoryBarrier(memory_barrier);
-    }
-
-    void revoke() const {
-        glUseProgram(0);
-    }
-};
-
-#endif
-
 #ifndef AGK_GPU_TOOLS_FRAMEBUFFERING_H
 #define AGK_GPU_TOOLS_FRAMEBUFFERING_H
+
+#include <unordered_map>
 
 class framebuffering {
 public:
@@ -380,10 +391,10 @@ public:
     }
 
     void delete_buffers() {
-        for (auto const &[key, texture] : this->frame_map) {
-            if (texture.id_fbo != 0) glDeleteFramebuffers(1, &texture.id_fbo);
-            if (texture.id_renderbuffer != 0) glDeleteRenderbuffers(1, &texture.id_renderbuffer);
-            if (texture.id_texture != 0) glDeleteTextures(1, &texture.id_texture);
+        for (auto it {this->frame_map.begin()}; it != this->frame_map.end(); it = std::next(it)) {
+            if (it->second.id_fbo != 0) glDeleteFramebuffers(1, &it->second.id_fbo);
+            if (it->second.id_renderbuffer != 0) glDeleteRenderbuffers(1, &it->second.id_renderbuffer);
+            if (it->second.id_texture != 0) glDeleteTextures(1, &it->second.id_texture);
         }
 
         this->frame_map.clear();
@@ -394,6 +405,8 @@ public:
 
 #ifndef AGK_GPU_TOOLS_TEXTURING_H
 #define AGK_GPU_TOOLS_TEXTURING_H
+
+#include <unordered_map>
 
 class texturing {
 protected:
@@ -433,8 +446,8 @@ public:
     }
 
     void delete_buffers() {
-        for (auto const &[key, val] : this->texture_map) {
-            if (val.id != 0) glDeleteTextures(1, &val.id);
+        for (auto it {this->texture_map.begin()}; it != this->texture_map.end(); it = std::next(it)) {
+            if (it->second.id != 0) glDeleteTextures(1, &it->second.id);
         }
 
         this->texture_map.clear();
@@ -514,6 +527,69 @@ public:
 
     int64_t size() {
         return (int64_t) this->texture_map.size();
+    }
+};
+
+#endif
+
+#ifndef AGK_GPU_TOOLS_PARALLELING_H
+#define AGK_GPU_TOOLS_PARALLELING_H
+
+#pragma once
+#include "asset/shader.hpp"
+
+class paralleling {
+protected:
+    std::unordered_map<std::string, uint32_t> buffer_map {};
+public:
+    uint32_t memory_barrier {GL_ALL_BARRIER_BITS};
+    uint32_t dispatch_groups[3] {1, 1, 1};
+    uint32_t dimension[3] {1, 1, 1};
+    uint32_t map_buffer_type[2] {};
+
+    ::asset::shader *p_program {};
+
+    explicit paralleling() = default;
+    ~paralleling() = default;
+
+    template<typename v>
+    void send_bind(const std::string &name, int32_t size, v *p_data, uint32_t flags, const glm::ivec2 &buffer_type) {
+        this->map_buffer_type[0] = buffer_type.x;
+        this->map_buffer_type[1] = buffer_type.y;
+
+        if (this->buffer_map[name] == 0) glGenBuffers(1, &this->buffer_map[name]);
+        glBindBuffer(buffer_type.x, this->buffer_map[name]);
+        glBufferStorage(buffer_type.x, sizeof(v), p_data, flags);
+    }
+
+    template<typename v>
+    void invoke_bind(const std::string &name, v *&p_data, int32_t size = 1) {
+        p_data = (v*) glMapBufferRange(this->map_buffer_type[0], 0, sizeof(v) * size, this->map_buffer_type[1]);
+    }
+
+    void revoke_bind() {
+        glUnmapBuffer(this->map_buffer_type[0]);
+    }
+
+    void attach(uint32_t slot, gpu::texture &texture, uint32_t mode) const {
+        /* Bind image to the compute shader. */
+        glBindImageTexture(slot, texture.id, 0, GL_FALSE, 0, mode, texture.format);
+    }
+
+    void invoke() const {
+        this->p_program->invoke();
+    }
+
+    void dispatch() const {
+        /* Pipeline "draw call", but for target texture. */
+        glDispatchCompute(this->dimension[0] / this->dispatch_groups[0], this->dimension[1] / this->dispatch_groups[1], this->dimension[2] / this->dispatch_groups[2]);
+
+        /* Do pipeline wait for process. */
+        glMemoryBarrier(memory_barrier);
+    }
+
+    void revoke() const {
+        glUseProgram(0);
     }
 };
 

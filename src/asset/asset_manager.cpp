@@ -3,6 +3,7 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include "model.hpp"
+#include "world/pbr/material.hpp"
 
 void asset_manager::load(imodule *p_asset) {
     this->asset_map[p_asset->tag] = p_asset;
@@ -24,6 +25,13 @@ void asset_manager::on_create() {
     this->load(new asset::shader {"effects.material.brdf.pbr", {
             {"./data/effects/material.brdf.pbr.vert", GL_VERTEX_SHADER},
             {"./data/effects/material.brdf.pbr.frag", GL_FRAGMENT_SHADER}
+    }, [](asset::shader *p_shader) {
+        float emptymetadata[12] {};
+        p_shader->attach("uniformBufferMaterial", 0);
+        p_shader->shaderbuffer.invoke(0, GL_UNIFORM_BUFFER);
+        p_shader->shaderbuffer.send<float>(sizeof(emptymetadata) * 100, nullptr, GL_DYNAMIC_DRAW);
+        p_shader->shaderbuffer.bind(0);
+        p_shader->shaderbuffer.revoke();
     }});
 
     this->load(new asset::shader {"effects.processing.post", {
@@ -60,8 +68,9 @@ void asset_manager::on_create() {
         mipmap = true;
     }});
 
-    this->load(new asset::model {"vegetation.coconut", "./data/models/Coconut Tree.obj", glm::ivec4(GL_STATIC_DRAW), [](buffering &buffer, ::mesh::data &mesh) {
-        buffer.primitive[0] = GL_TRIANGLES;
+    this->load(new asset::model {"vegetation.coconut", "./data/models/Coconut Tree.obj", glm::ivec4(GL_STATIC_DRAW)});
+    this->load(new asset::model {"vegetation.grass", [](buffering &buffer, ::mesh::data &mesh) {
+        buffer.primitive[0] = GL_TRIANGLE_STRIP;
     }});
 
     this->on_update();

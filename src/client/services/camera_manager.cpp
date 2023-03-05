@@ -42,6 +42,8 @@ void client::services::camera_manager::on_update() {
 
     if (this->p_entity_linked != nullptr && this->camera_movement) {
         glm::vec3 motion {};
+        bool rotated {};
+
         if (agk::input::pressed(this->bind_m_forward.get_value())) {
             motion.z += 1;
         }
@@ -66,6 +68,26 @@ void client::services::camera_manager::on_update() {
             motion.y -= 1;
         }
 
+        if (agk::input::pressed("left")) {
+            this->p_camera_linked->transform.rotation.y -= 0.9f;
+            rotated = true;
+        }
+
+        if (agk::input::pressed("right")) {
+            this->p_camera_linked->transform.rotation.y += 0.9f;
+            rotated = true;
+        }
+
+        if (agk::input::pressed("up")) {
+            this->p_camera_linked->transform.rotation.x += 0.9f;
+            rotated = true;
+        }
+
+        if (agk::input::pressed("down")) {
+            this->p_camera_linked->transform.rotation.x -= 0.9f;
+            rotated = true;
+        }
+
         float yaw {p_camera_linked->transform.rotation.y};
         float x {glm::cos(glm::radians(yaw))};
         float z {glm::sin(glm::radians(yaw))};
@@ -79,6 +101,10 @@ void client::services::camera_manager::on_update() {
 
         this->p_entity_linked->transform.rotation = this->p_camera_linked->transform.rotation;
         this->p_camera_linked->transform.position = this->p_entity_linked->transform.position;
+        
+        if (rotated) {
+            this->p_camera_linked->update_rotation();
+        }
     }
 }
 

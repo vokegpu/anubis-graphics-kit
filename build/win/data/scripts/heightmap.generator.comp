@@ -12,6 +12,7 @@ uniform float uPersistence;
 uniform float uLacunarity;
 uniform int uOctaves;
 uniform vec2 uGlobalUV;
+uniform vec3 uChunkScale;
 
 uniform struct {
     vec3 uGlobalUV;
@@ -96,12 +97,12 @@ float noise(vec2 st) {
     vec2 f = fract(st);
 
     float a = rand(i);
-    float b = rand(i + vec2(1.0, 0.0));
-    float c = rand(i + vec2(0.0, 1.0));
-    float d = rand(i + vec2(1.0, 1.0));
+    float b = rand(i + vec2(1.0f, 0.0f));
+    float c = rand(i + vec2(0.0f, 1.0f));
+    float d = rand(i + vec2(1.0f, 1.0f));
 
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+    vec2 u = f * f * (3.0f - 2.0f * f);
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0f - u.x) + (d - b) * u.x * u.y;
 }
 
 float snoise(vec2 v)  {
@@ -214,17 +215,17 @@ void main() {
     }
 
     /* Store the size of vegetation at end of texture. */
-    float vegetationFactor = noise(uvNoised);
-    float vegetationRadius = 36.0f;
+    float vegetationFactor = noise4D(uGlobalUV * PI);
+    float vegetationRadius = 512.0f;
 
     vec4 prevVegetation = imageLoad(uVegetationMap, indexInfo);
-    vec3 prevVegPos = prevVegetation.yzw * vegetationRadius;
-    vec3 currVegPos = vec3(uv.x, yLevel, uv.y) * vegetationRadius;
+    vec3 prevVegPos = imageLoad(uVegetationMap, ivec2(prevVegetation.yz)).yzw * uChunkScale;
+    vec3 currVegPos = vec3(uv.x, yLevel, uv.y) * uChunkScale;
     float currVegDist = length(currVegPos - prevVegPos);
 
-    if (vegetationFactor > yLevel && currVegDist > 36.0f && prevVegetation.x < 100) {
+    if (currVegDist > vegetationRadius && vegetationFactor > 0.444333333f && false) {
         imageStore(uVegetationMap, ivec2(prevVegetation.x, 0), vec4(1.0f, uv.x, yLevel, uv.y));
-        imageStore(uVegetationMap, indexInfo, vec4(prevVegetation.x + 1.0f, uv.x, yLevel, uv.y));
+        imageStore(uVegetationMap, indexInfo, vec4(prevVegetation.x + 1.0f, pixelCoord.x, pixelCoord.y, 0.0f));
     }
 
     yLevel = clamp(yLevel, 0.0f, 1.0f);

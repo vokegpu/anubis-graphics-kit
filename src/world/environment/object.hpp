@@ -29,14 +29,14 @@ protected:
     enums::state visible {enums::state::none};
     enums::priority priority {enums::priority::none};
 public:
-    explicit object(::asset::model *p_linked_model = nullptr);
+    explicit object(material *p_linked_material = nullptr);
     ~object();
 
     enums::type type {enums::type::object};
     material *p_material {};
-
-    ::asset::model *p_model {};
+    buffering *p_instance {};
     object_transform transform {};
+    util::aabb aabb {};
 
     void set_visible(enums::state enum_state, bool dispatch_event = true);
     enums::state get_visible();

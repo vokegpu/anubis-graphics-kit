@@ -8,11 +8,21 @@
 
 namespace mesh {
     enum class format {
-        unknown, obj, stl
+        unknown, wavefrontobj, stl, gltf
     };
 
     enum class type {
         vertex, textcoord, normal, color
+    };
+
+    struct wavefront {
+        struct mtllib {
+            std::map<std::string, glm::vec4> floats {};
+            std::map<std::string, std::string> strings {};
+        };
+
+        std::map<std::string, mesh::wavefront::mtllib> mtllib_map {};
+        std::vector<std::string> mtllib_newmtl_list {};
     };
 
     struct data {
@@ -33,7 +43,8 @@ namespace mesh {
     public:
         mesh::format format {mesh::format::unknown};
         int32_t faces {};
-        std::vector<std::string> mtl_texture_list {};
+
+        mesh::wavefront wavefront {};
 
         explicit inline data() = default;
         explicit inline data(mesh::format _format) : format(_format) {};

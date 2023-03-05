@@ -8,14 +8,13 @@
 void client::scenes::starter::on_create() {
     asset::model *p_model_dino {new asset::model {"dinossaur", "./data/models/dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
     agk::asset::load(p_model_dino);
-
-    material *p_material {new material(enums::material::dialetric)};
-    p_material->append_mtl((::asset::model*) agk::asset::find("models/vegetation.coconut"));
+    material *p_material {new material {}};
+    p_material->set_is_metal(true);
+    p_material->p_model = p_model_dino;
 
     for (int i {}; i < 1; i++) {
-        this->p_object_dino = new object(p_model_dino);
+        this->p_object_dino = new object(p_material);
         p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
-        this->p_object_dino->p_material = p_material;
         this->p_object_dino->transform.scale = {1.0f, 1.0f, 1.0f};
         agk::world::create(this->p_object_dino);
     }
@@ -60,7 +59,11 @@ void client::scenes::starter::on_create() {
         starter->p_object_dino->transform.rotation = p->transform.rotation;
     }});
 
-    ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    ekg::button("Vsync", ekg::dock::top | ekg::dock::left)->set_callback(new ekg::cpu::event {"callback23", nullptr, [](void *p_data) {
+        agk::setfps(60, !agk::app.vsync);
+    }});
+
+    ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_font_size(ekg::font::small);
     this->p_light_intensity = ekg::slider("LightIntensity", 0.233f, 0.0f, 4024.0f, ekg::dock::top | ekg::dock::left);
     this->p_light_intensity->set_precision(2);
 
@@ -72,19 +75,19 @@ void client::scenes::starter::on_create() {
     this->p_fog_distance->set_precision(2);
 
     ekg::label("FBM Frequency:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_frequency = ekg::slider("Frequency", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_frequency = ekg::slider("Frequency", 0.34105f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_frequency->set_precision(3);
 
     ekg::label("FBM Amplitude:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_amplitude = ekg::slider("Amplitude", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_amplitude = ekg::slider("Amplitude", 0.18874f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_amplitude->set_precision(3);
 
     ekg::label("FBM Persistence:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_persistence = ekg::slider("Persistence", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_persistence = ekg::slider("Persistence", 0.28834f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_persistence->set_precision(3);
     
     ekg::label("FBM Lacunarity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_lacunarity = ekg::slider("Lacunarity", 0.15f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    this->p_lacunarity = ekg::slider("Lacunarity", 0.29888f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
     this->p_lacunarity->set_precision(3);
 
     ekg::label("FBM Octaves:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
@@ -189,6 +192,7 @@ void client::scenes::starter::on_update() {
         std::string title {"Anubis Graphics Kit "};
         title += std::to_string(agk::app.display_fps);
         title += "fps";
+        title += agk::app.vsync ? "+vsync" : "";
         SDL_SetWindowTitle(agk::app.p_sdl_window, title.c_str());
         this->last_display_fps = agk::app.display_fps;
     }
@@ -207,7 +211,7 @@ void client::scenes::starter::on_update() {
     agk::app.setting.chunk_fbm_lacunarity.set_value(this->p_lacunarity->get_value());
     agk::app.setting.chunk_fbm_octaves.set_value((int32_t) this->p_octaves->get_value());
 
-    glm::vec2 fog_bounding {0, this->p_fog_distance->get_value()};
+    glm::vec2 fog_bounding {this->p_fog_distance->get_value() * 0.5f, this->p_fog_distance->get_value()};
     agk::app.setting.fog_bounding.set_value(fog_bounding);
     if (agk_perspective_clip_distance != fog_bounding.y) {
         agk_perspective_clip_distance = fog_bounding.y;

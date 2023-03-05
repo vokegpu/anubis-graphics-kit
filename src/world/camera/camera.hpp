@@ -8,8 +8,6 @@ protected:
     float mouse_sensitivity {0.2f};
     bool mouse_locked {};
     bool mouse_shown {};
-
-    void update_rotation();
 public:
     camera() = default;
     ~camera() = default;
@@ -22,6 +20,8 @@ public:
 
     void on_create() override;
     void on_event(SDL_Event &sdl_event) override;
+
+    void update_rotation();
 };
 
 #endif

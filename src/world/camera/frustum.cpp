@@ -68,9 +68,9 @@ void frustum::process_perspective(int32_t width, int32_t height) {
 
     if (this->w != size[0] || this->h != size[1]) {
         std::string msg{"Window resized ("};
-        msg += std::to_string(w);
+        msg += std::to_string(width);
         msg += ", ";
-        msg += std::to_string(h);
+        msg += std::to_string(height);
         msg += ')';
 
         util::log(msg);
@@ -92,7 +92,7 @@ bool frustum::viewing(glm::mat4 &mat4x4_model, util::aabb &aabb) {
         p.y = this->planes[it].n.y > 0.0f ? max.y : min.y;
         p.z = this->planes[it].n.z > 0.0f ? max.z : min.z;
 
-        if (glm::dot(this->planes[it].n, p) + this->planes[it].distance < 0.0f) {
+        if (glm::dot(this->planes[it].n, p) + this->planes[it].distance < -1.666) {
             return false;
         }
     }
@@ -102,6 +102,10 @@ bool frustum::viewing(glm::mat4 &mat4x4_model, util::aabb &aabb) {
 
 glm::mat4 &frustum::get_mvp() {
     this->mvp = this->perspective * this->view;
+
+    if (!agk::input::pressed("f")) {
+        return this->mvp;
+    }
 
     float m0 {this->mvp[0][0]};
     float m1 {this->mvp[0][1]};

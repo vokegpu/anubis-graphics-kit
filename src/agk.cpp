@@ -29,7 +29,7 @@ void agk::mainloop(imodule *p_scene_initial) {
     glewExperimental = true;
     glewInit();
 
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(0);
     util::log("OpenGL 4 context created");
 
     SDL_Surface *p_surf {SDL_LoadBMP("./data/icon.bmp")};
@@ -43,6 +43,7 @@ void agk::mainloop(imodule *p_scene_initial) {
     uint64_t fps_interval {1000};
     uint64_t ticked_frames {};
     uint64_t cpu_performance_frequency {1};
+    cpu_ticks_interval = 0;
 
     SDL_Event sdl_event {};
     glm::vec3 previous_camera_rotation {2, 2, 2};
@@ -156,7 +157,10 @@ void agk::mainloop(imodule *p_scene_initial) {
 
         ticked_frames++;
         SDL_GL_SwapWindow(agk::app.p_sdl_window);
-        SDL_Delay(cpu_ticks_interval);
+
+        if (agk::app.vsync) {
+            SDL_Delay(agk::app.fps / 1000);
+        }
     }
 
     util::log("Anubis Graphics Kit shutdown! ^^");
@@ -164,6 +168,15 @@ void agk::mainloop(imodule *p_scene_initial) {
 
 void agk::viewport() {
     glViewport(0, 0, agk::app.screen_width, agk::app.screen_height);
+}
+
+void agk::setfps(uint32_t fps, bool vsync) {
+    if (agk::app.vsync != vsync) {
+        agk::app.vsync = vsync;
+        SDL_GL_SetSwapInterval(vsync);
+    }
+
+    agk::app.fps = fps;
 }
 
 void agk::scene::load(imodule *p_scene) {

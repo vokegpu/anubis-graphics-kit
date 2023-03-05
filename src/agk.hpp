@@ -10,6 +10,7 @@ namespace agk {
     void mainloop(imodule *p_scene_initial);
     void path(const char*);
     void viewport();
+    void setfps(uint32_t fps, bool vsync = agk::app.vsync);
 
     namespace task {
         void registry(imodule *p_feature);

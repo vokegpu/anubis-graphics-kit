@@ -52,7 +52,7 @@ void renderer::process_terrain() {
         mat4x4_model = glm::rotate(mat4x4_model, p_chunks->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_chunks->transform.scale);
 
-        if (!p_camera->viewing(mat4x4_model, p_chunks->p_model->aabb)) {
+        if (!p_camera->viewing(mat4x4_model, p_chunks->aabb)) {
             continue;
         }
 
@@ -97,7 +97,7 @@ void renderer::process_environment() {
     uint32_t draw_call_count {};
 
     for (object *&p_objects : this->obj_draw_list) {
-        if (p_objects == nullptr || p_objects->p_model == nullptr || p_objects->p_material == nullptr || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
+        if (p_objects == nullptr || p_objects->p_material == nullptr || p_objects->p_material->p_model == nullptr || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
             continue;
         }
 
@@ -108,38 +108,27 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->p_model->aabb)) {
+        p_objects->aabb = p_objects->p_material->p_model->aabb;
+        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->aabb)) {
             continue;
         }
 
-        p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_model->buffer.instance_rendering);
-        p_program_pbr->set_uniform_bool("uMaterial.uActiveSampler", p_objects->p_material->invoke_all_textures());
+        p_objects->p_material->invoke(p_program_pbr);
+        p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_instance != nullptr);
         mat4x4_mvp = this->mat4x4_perspective_view * mat4x4_model;
 
-        switch (p_objects->p_model->buffer.instance_rendering) {
-            case true: {
-                p_program_pbr->set_uniform_mat4("uPerspectiveViewMatrix", &this->mat4x4_perspective_view[0][0]);
-                p_program_pbr->set_uniform_bool("uMaterial.uMetal", p_objects->p_material->get_type() == enums::material::metal);
-                p_program_pbr->set_uniform_float("uMaterial.uRough", p_objects->p_material->get_rough());
-                p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_objects->p_material->get_color()[0]);
-                break;
-            }
-
-            case false: {
-                mat3x3_inverse = glm::inverseTranspose(glm::mat3(mat4x4_model));
-                p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse[0][0]);
-                p_program_pbr->set_uniform_mat4("uModelMatrix", &mat4x4_model[0][0]);
-                p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
-                p_program_pbr->set_uniform_bool("uMaterial.uMetal", p_objects->p_material->get_type() == enums::material::metal);
-                p_program_pbr->set_uniform_float("uMaterial.uRough", p_objects->p_material->get_rough());
-                p_program_pbr->set_uniform_vec3("uMaterial.uColor", &p_objects->p_material->get_color()[0]);
-                break;
-            }
+        if (p_objects->p_instance != nullptr) {
+            p_program_pbr->set_uniform_mat4("uPerspectiveViewMatrix", &this->mat4x4_perspective_view[0][0]);
+        } else {
+            mat3x3_inverse = glm::inverseTranspose(glm::mat3(mat4x4_model));
+            p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse[0][0]);
+            p_program_pbr->set_uniform_mat4("uModelMatrix", &mat4x4_model[0][0]);
+            p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
         }
 
-        p_objects->p_model->buffer.invoke();
-        p_objects->p_model->buffer.draw();
-        p_objects->p_model->buffer.revoke();
+        p_objects->p_material->p_model->buffer.invoke();
+        p_objects->p_material->p_model->buffer.draw();
+        p_objects->p_material->p_model->buffer.revoke();
 
         draw_call_count++;
     }
@@ -451,6 +440,14 @@ void renderer::add(chunk *p_chunk) {
 
 void renderer::refresh() {
     this->update_disabled_chunks = true;
+}
+
+void renderer::read_materials_metadata(std::vector<material_metadata> &metadata_list) {
+    for (material *&p_materials : this->material_list) {
+        if (p_materials != nullptr) {
+            metadata_list.push_back(p_materials->getmetadata());
+        }
+    }
 }
 
 void renderer::process_framebuffer(int32_t w, int32_t h) {

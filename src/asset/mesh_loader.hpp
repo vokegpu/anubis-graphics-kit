@@ -7,9 +7,6 @@
 #include <glm/glm.hpp>
 
 struct meshpack {
-    mesh::data mesh {};
-    std::string name {};
-
     std::vector<glm::vec3> v {};
     std::vector<glm::vec2> t {};
     std::vector<glm::vec3> n {};
@@ -25,12 +22,13 @@ struct meshpack {
 #include "util/file.hpp"
 #include <map>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 
 class mesh_loader {
 protected:
     std::string current_path {};
     std::map<std::string, mesh::format> mesh_ext_map {
-            {"stl", mesh::format::stl}, {"obj", mesh::format::obj}
+            {"stl", mesh::format::stl}, {"obj", mesh::format::wavefrontobj}, {"gltf", mesh::format::gltf}
     };
 
     void load_wavefront_object_mtllib(mesh::data &data, std::ifstream &ifs);

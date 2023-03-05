@@ -1,3 +1,20 @@
+#ifndef AGK_WORLD_PBR_MATERIAL_METADATA_H
+#define AGK_WORLD_PBR_MATERIAL_METADATA_H
+
+#include <glm/glm.hpp>
+
+struct material_metadata {
+    glm::vec3 color {};
+    float rough {};
+
+    int32_t metal {};
+    int32_t active_sampler_albedo {};
+    int32_t active_sampler_specular {};
+    int32_t active_sampler_normal_map {};
+};
+
+#endif
+
 #ifndef AGK_WORLD_PBR_MATERIAL_H
 #define AGK_WORLD_PBR_MATERIAL_H
 
@@ -8,39 +25,36 @@
 #include <vector>
 
 class material {
+private:
+    static int32_t token;
 protected:
-    glm::vec3 color {};
-    float rough {0.43f};
-    enums::material type {enums::material::empty};
-    std::vector<uint32_t> texture_list {};
-    bool material_mtl_updated {};
-    std::string asset_model_mtl {};
+    std::map<std::string, uint32_t> sampler_map {};
+    bool should_reload {};
+    int32_t id {};
+    int32_t shader_index {};
+    material_metadata metadata {};
 public:
-    explicit material(enums::material material_type);
+    asset::model *p_model {};
+
+    material();
     ~material();
 
-    template<typename t>
-    void append_texture(::asset::texture<t> *p_asset_texture) {
-        if (p_asset_texture == nullptr) {
-            return;
-        }
-
-        this->append_texture(p_asset_texture->gpu_side_data().id);
+    uint32_t &operator[](std::string_view k_sampler) {
+        return this->sampler_map[k_sampler.data()];
     }
 
-    void append_mtl(::asset::model *p_asset_model);
-    void append_texture(uint32_t texture);
-    void remove_texture(uint32_t texture);
-    bool invoke_all_textures();
+    material_metadata &getmetadata();
 
-    void set_color(glm::vec3 color3f);
-    glm::vec3 get_color();
+    void set_is_metal(bool _is_metal);
+    bool is_metal();
 
-    void set_rough_based_type(enums::material material_type);
-    void set_rough(float rough_value);
+    void set_rough(float _rough);
     float get_rough();
 
-    enums::material get_type();
+    void set_color(const glm::vec3 &color);
+    const glm::vec3 &get_color();
+
+    void invoke(::asset::shader *p_shader);
 };
 
 #endif

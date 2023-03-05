@@ -20,6 +20,7 @@ public:
     bool mainloop {};
     uint64_t fps {60};
     uint64_t display_fps {};
+    bool vsync {};
     float background[3] {1.0f, 1.0f, 1.0f};
 
     imodule *p_curr_scene {};

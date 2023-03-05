@@ -18,9 +18,11 @@ namespace asset {
     public:
         util::aabb aabb {};
         buffering buffer {};
+        ::mesh::wavefront mtllib_wavefront {};
 
         explicit model() = default;
         model(std::string_view model_tag, std::string_view model_path, const glm::ivec4 &model_driver_mode, const std::function<void(buffering&, ::mesh::data&)> &injection_mixin = {});
+        model(std::string_view model_tag, const std::function<void(buffering&, ::mesh::data&)> &injection_mixin = {});
         ~model();
 
         std::vector<std::string> &get_linked_mtl_list();

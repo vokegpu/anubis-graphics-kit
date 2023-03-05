@@ -20,12 +20,14 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     }
 
     switch (data.format) {
-        case mesh::format::obj: {
+        case mesh::format::wavefrontobj: {
             std::ifstream ifs {};
             ifs.open(path.data());
 
             if (!ifs.is_open()) {
-                util::log("Failed to open/read object wavefront file: '" + std::string(path.data()) + "'");
+                std::string msg {"Failed to open/read OBJ Wavefront file: '"};
+                msg += path;
+                msg += "'";
                 return true;
             }
 
@@ -40,12 +42,27 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
             ifs.open(path.data(), std::ifstream::in | std::ifstream::binary);
 
             if (!ifs.is_open()) {
-                util::log("Failed to open/read stl file: '" + std::string(path.data()) + "'");
+                std::string msg {"Failed to open/read STL file: '"};
+                msg += path;
+                msg += "'";
                 return true;
             }
         
             this->load_stl_object(data, ifs);
             ifs.close();
+
+            return false;
+        }
+
+        case mesh::format::gltf: {
+            std::ifstream ifs(path.data());
+            if (!ifs.is_open()) {
+                std::string msg {"Failed to open/read GLTF file: '"};
+                msg += path;
+                msg += "'";
+                util::log(msg);
+                return true;
+            }
 
             return false;
         }
@@ -79,6 +96,7 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
 
     meshpack pack {};
     uint32_t index {}, vsize {};
+    std::string mtlib_path {};
 
     while (std::getline(ifs, string_buffer)) {
         line_size = string_buffer.size();
@@ -96,20 +114,14 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
 
             std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
             std::string file {string_buffer.substr(tab_find, string_buffer.size() - tab_find)};
-            std::ifstream ifs_mtllib {folder + file};
 
-            if (ifs_mtllib.is_open()) {
-                this->load_wavefront_object_mtllib(pack.mesh, ifs_mtllib);
-            } else {
-                util::log("Failed to open mtl lib material '" + (folder + file) + "'");
-            }
-
-            ifs_mtllib.close();
+            mtlib_path += folder;
+            mtlib_path += file;
             continue;
         }
 
         find = string_buffer.substr(0, 2);
-        if (find != "v " && find != "vt" && find != "vn" && find != "f ") {
+        if (find != "v " && find != "vt" && find != "vn" && find != "f " && find != "o ") {
             continue;
         }
 
@@ -127,7 +139,9 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
             }
         }
 
-        if (find == "v ") {
+        if (find == "o ") {
+            data.wavefront.mtllib_newmtl_list.push_back(split[x]);
+        } else if (find == "v ") {
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
@@ -150,14 +164,14 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
         } else if (find == "f ") {
             for (int32_t indexes {1}; indexes < split.size(); indexes++) {
                 util::split(split_first, split[indexes], '/');
-                pack.mesh.faces++;
+                data.faces++;
 
                 if (v_contains) {
                     vsize = (uint32_t) pack.v.size() + 1;
                     index = (std::stoi(split_first[0]));
                     index = (index + vsize) % vsize;
 
-                    pack.mesh.append(mesh::type::vertex, pack.v[index - 1]);
+                    data.append(mesh::type::vertex, pack.v[index - 1]);
                 }
 
                 if (t_contains) {
@@ -165,7 +179,7 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
                     index = (std::stoi(split_first[1]));
                     index = (index + vsize) % vsize;
 
-                    pack.mesh.append(mesh::type::textcoord, pack.t[index - 1]);
+                    data.append(mesh::type::textcoord, pack.t[index - 1]);
                 }
 
                 if (n_contains) {
@@ -173,13 +187,24 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
                     index = (std::stoi(split_first[2 - (!t_contains)]));
                     index = (index + vsize) % vsize;
 
-                    pack.mesh.append(mesh::type::normal, pack.n[index - 1]);
+                    data.append(mesh::type::normal, pack.n[index - 1]);
                 }
             }
         }
     }
 
-    data = pack.mesh;
+    if (!mtlib_path.empty()) {
+        std::ifstream ifs_mtllib {mtlib_path};
+
+        if (ifs_mtllib.is_open()) {
+            this->load_wavefront_object_mtllib(data, ifs_mtllib);
+        } else {
+            util::log("Failed to open mtl lib material '" + mtlib_path + "'");
+        }
+
+        ifs_mtllib.close();
+    }
+
     util::log("Mesh loader collector: Wavefront object faces (" + std::to_string(data.faces) + ")");
 }
 
@@ -187,17 +212,43 @@ void mesh_loader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &
     std::string string_buffer {};
     std::string mtl_string_info {};
     std::vector<std::string> split {};
+    std::string newmtl_segment {};
+    glm::vec3 vector {};
+
+    const uint32_t x {1};
+    const uint32_t y {2};
+    const uint32_t z {3};
 
     while (std::getline(ifs, string_buffer)) {
         if (string_buffer.size() < 2) {
             continue;
         }
 
+        if (string_buffer[0] == '\t') {
+            string_buffer = string_buffer.substr(1, string_buffer.size() - 1);
+            util::log(string_buffer);
+        }
+
         util::split(split, string_buffer, ' ');
-        if (split[0] == "map_Kd") {
+
+        if (split[0] == "illum" || split[0] == "Ns" || split[0] == "Ni" || split[0] == "d" || split[0] == "Tr") {
+            vector.x = std::stof(split[x]);
+            data.wavefront.mtllib_map[newmtl_segment].floats[split[0]] = {vector.x, 0.0f, 0.0f, 0.0f};
+        } else if (split[0] == "newmtl") {
             mtl_string_info = string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
-            data.mtl_texture_list.push_back(mtl_string_info);
-            util::log("Found mtl map_Kd '" + mtl_string_info + "'");
+            newmtl_segment = mtl_string_info;
+
+            if (data.wavefront.mtllib_newmtl_list.empty()) {
+                data.wavefront.mtllib_newmtl_list.push_back(mtl_string_info);
+            }
+        } else if (split[0] == "Ka" || split[0] == "Kd" || split[0] == "Ks" || split[0] == "Ke" || split[0] == "Tf") {
+            vector.x = std::stof(split[x]);
+            vector.y = std::stof(split[y]);
+            vector.z = std::stof(split[z]);
+            data.wavefront.mtllib_map[newmtl_segment].floats[split[0]] = {vector.x, vector.y, vector.z, 0.0f};
+        } else if (split[0] == "bump" || split[0] == "map_bump" || split[0] == "map_Ka" || split[0] == "map_Kd" || split[0] == "map_Ks" || split[0] == "map_Ke") {
+            mtl_string_info = string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
+            data.wavefront.mtllib_map[newmtl_segment].strings[split[0]] = mtl_string_info;
         }
     }
 }

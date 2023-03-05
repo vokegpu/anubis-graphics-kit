@@ -1,95 +1,90 @@
 #include "material.hpp"
 #include "agk.hpp"
 
-material::material(enums::material material_type) {
-    this->type = material_type;
+int32_t material::token {};
+
+material::material() {
+    this->id = ++material::token;
+    agk::world::renderer()->material_list.push_back(this);
+    this->should_reload = true;
 }
 
-material::~material() = default;
+material::~material() {
 
-enums::material material::get_type() {
-    return this->type;
 }
 
-void material::set_color(glm::vec3 color3f) {
-    this->color = color3f;
+material_metadata &material::getmetadata() {
+    return this->metadata;
 }
 
-glm::vec3 material::get_color() {
-    return this->color;
+void material::set_is_metal(bool _is_metal) {
+    this->metadata.metal = _is_metal;
+    if (this->metadata.rough == 0.0f) {
+        this->metadata.rough = 0.43f;
+    }
 }
 
-void material::set_rough_based_type(enums::material material_type) {
-    this->set_rough(material_type == enums::material::metal ? 0.43f : 1.0f);
+bool material::is_metal() {
+    return this->metadata.metal;
 }
 
-void material::set_rough(float rough_value) {
-    this->rough = rough_value;
+void material::set_rough(float _rough) {
+    this->metadata.rough = _rough;
 }
 
 float material::get_rough() {
-    return this->rough;
+    return this->metadata.rough;
 }
 
-void material::append_texture(uint32_t texture) {
-    bool contains {};
-    for (uint32_t &textures : this->texture_list) {
-        contains = textures == texture;
-        if (contains) {
-            break;
+void material::set_color(const glm::vec3 &color) {
+    this->metadata.color = color;
+}
+
+const glm::vec3 &material::get_color() {
+    return this->metadata.color;
+}
+
+void material::invoke(::asset::shader *p_shader) {
+    auto &shaderbuffer {p_shader->shaderbuffer};
+
+    if (this->should_reload) {
+        this->should_reload = false;
+        this->shader_index = p_shader->find(this->id);
+
+        if (this->shader_index == -1) {
+            this->shader_index = p_shader->append(this->id);
         }
+
+        float l_metadata[12] {
+            static_cast<float>(this->metadata.active_sampler_albedo), static_cast<float>(this->metadata.active_sampler_specular), static_cast<float>(this->metadata.active_sampler_normal_map), 0.0f,
+            static_cast<float>(this->metadata.metal), this->metadata.rough, 0.0f, 0.0f,
+            this->metadata.color.x, this->metadata.color.y, this->metadata.color.z, 0.0f
+        };
+
+        int32_t size {static_cast<int32_t>(sizeof(l_metadata) * this->shader_index)};
+
+        shaderbuffer.invoke(0, GL_UNIFORM_BUFFER);
+        shaderbuffer.edit<float>(size, sizeof(l_metadata), l_metadata);
+        shaderbuffer.revoke();
     }
 
-    if (!contains) {
-        this->texture_list.push_back(texture);
-    }
-}
+    p_shader->set_uniform_int("uMaterialIndex", this->shader_index);
 
-void material::remove_texture(uint32_t texture) {
-    int64_t index {-1};
-    for (uint64_t it {}; it < this->texture_list.size(); it++) {
-        if (this->texture_list[it] == texture) {
-            index = (int64_t) it;
-            break;
-        }
+    auto &albedo {this->sampler_map["albedo"]};
+    if (albedo) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, albedo);
     }
 
-    if (index != -1) {
-        this->texture_list.erase(this->texture_list.begin() + index);
-    }
-}
-
-bool material::invoke_all_textures() {
-    if (!this->material_mtl_updated) {
-        this->material_mtl_updated = true;
-
-        ::asset::model *p_asset_model {(::asset::model*) agk::asset::find(this->asset_model_mtl)};
-        ::asset::texture<uint8_t> *p_asset_texture {};
-
-        for (std::string &mtl : p_asset_model->get_linked_mtl_list()) {
-            p_asset_texture = (::asset::texture<uint8_t>*) agk::asset::find(mtl);
-            if (p_asset_texture != nullptr) {
-                this->append_texture(p_asset_texture);
-            }
-        }
+    auto &specular {this->sampler_map["specular"]};
+    if (specular) {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specular);
     }
 
-    if (this->texture_list.empty()) {
-        return false;
+    auto &normal_map {this->sampler_map["normalmap"]};
+    if (normal_map) {
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, normal_map);
     }
-
-    // @TODO Fix multi-active samplers in only one material
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, this->texture_list[0]);
-
-    return true;
-}
-
-void material::append_mtl(::asset::model *p_asset_model) {
-    if (p_asset_model == nullptr) {
-        return;
-    }
-
-    this->asset_model_mtl = p_asset_model->tag;
-    this->material_mtl_updated = false;
 }

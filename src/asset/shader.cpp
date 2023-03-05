@@ -8,6 +8,30 @@ void asset::shader::revoke() {
     glUseProgram(0);
 }
 
+void asset::shader::attach(std::string_view block, uint32_t binding) {
+    this->shaderbuffer.attach(this->program, block, binding);
+}
+
+int32_t asset::shader::append(uint32_t buffer_id) {
+    uint64_t index {this->buffer_id_list.size()};
+    this->buffer_id_list.push_back(buffer_id);
+    return static_cast<int32_t>(index);
+}
+
+std::vector<uint32_t> &asset::shader::buffer_id_data() {
+    return this->buffer_id_list;
+}
+
+int32_t asset::shader::find(uint32_t buffer_id) {
+    for (uint64_t it {}; it < this->buffer_id_list.size(); it++) {
+        if (this->buffer_id_list.at(it) == buffer_id) {
+            return static_cast<int32_t>(it);
+        }
+    }
+
+    return -1;
+}
+
 int32_t &asset::shader::get_program() {
     return this->program;
 }
@@ -66,5 +90,9 @@ void asset::shader::on_create() {
         glGetProgramResourceName(this->program, GL_UNIFORM, it, name_buf_size, nullptr, p_data);
         this->uniform_unordered_map.insert({p_data, it});
         delete[] p_data;
+    }
+
+    if (this->mixin) {
+        this->mixin(this);
     }
 }
