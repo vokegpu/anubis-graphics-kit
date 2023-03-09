@@ -1,6 +1,6 @@
 # AGK
 
-Anubis Graphics Kit (AGK) is a photo-realism rendering engine made in OpenGL 4 for SDL2, the purpose of this engine is to do rendering tests and implement empirical rendering equations, techniques, concepts & specifically the umbrella PBR.  
+Anubis Graphics Kit (AGK) is a photo-realism rendering engine made in OpenGL 4 for SDL2, the purpose of this engine is to do rendering tests and implement empirical rendering equations, techniques, concepts, & specifically the umbrella PBR.  
 There is an official researcher article being write together with this project to investigate a way to connect heightmaps. The research is not linked to any institution, perhaps I will publish here at the ends of article project,  
 but VokeGpu will keep update this engine project.
 
@@ -47,6 +47,32 @@ All detailed process are include in the article writen for this project, called 
 ![img.png](/splash/terrain-1.png)
 ![img.png](/splash/terrain-2.png)
 ![img.png](/splash/terrain-3.png)
+
+# Contributing
+
+We only accept codes with the following case style:
+```
+// file_name.hpp
+
+class foobar {
+public:
+  void do_something();
+};
+
+// impl:
+foobar insane_cat {};
+insane_cat.do_something();
+
+// about {};
+// first thing: it automatically init everything
+// e.g:
+float empty_buffer1[12] {}; // simply initialize everything
+float empty_buffer2[] {}; // also yes
+
+// so I suggest you use a lot, by the simple case of prevent random memory.
+int32_t foo; // without {} you can get something like -48329482349
+```
+Thank you.
 
 # License & credits
 The project is under license MIT.  
