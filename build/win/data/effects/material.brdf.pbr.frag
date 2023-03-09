@@ -16,7 +16,7 @@ struct Material {
 
 // Material buffer
 layout (std140, binding = 0) uniform uniformBufferMaterial {
-    Material ubMaterial[100];
+    Material ubMaterial[512];
 };
 
 in vec3 vPos;

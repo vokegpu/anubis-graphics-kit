@@ -1,8 +1,25 @@
-#include "mesh_loader.hpp"
+#include "meshloader.hpp"
 #include "util/env.hpp"
 #include <fstream>
 
-bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
+mesh::serializer meshloader::convert_wavefront_object_mtllib_to_pbr(mesh::serializer &wavefront_object_mtllib_serializer) {
+    auto &mtllib_metadata {wavefront_object_mtllib_serializer.get_metadata()};
+    mesh::serializer pbr_mtl_serializer {};
+    std::string mtl_name {};
+
+    for (auto it_mtl {mtllib_metadata.begin()}; it_mtl != mtllib_metadata.end(); it_mtl = std::next(it_mtl)) {
+        mtl_name = it_mtl->first;        
+        for (auto it_content {it_mtl->second.begin()}; it_content != it_mtl->second.end(); it_content = std::next(it_content)) {
+            if (it_content->first == "map_Ka" || it_content->first == "map_Kd" || it_content->first == "map_Ks") {
+                pbr_mtl_serializer[mtl_name][this->mtl_pbr_conversions_map[it_content->first]] = it_content->second;
+            }
+        }
+    }
+
+    return pbr_mtl_serializer;
+}
+
+bool meshloader::load_model(mesh::data &data, std::string_view path) {
     if (path.empty() || path.size() < 3) {
         util::log("Failed to load object because there is no path insert");
         return true;
@@ -28,10 +45,12 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 std::string msg {"Failed to open/read OBJ Wavefront file: '"};
                 msg += path;
                 msg += "'";
+                util::log(msg);
                 return true;
             }
 
             this->load_wavefront_object(data, ifs);
+            data.material_serializer = this->convert_wavefront_object_mtllib_to_pbr(this->material_serializer);
             ifs.close();
 
             return false;
@@ -45,6 +64,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
                 std::string msg {"Failed to open/read STL file: '"};
                 msg += path;
                 msg += "'";
+                util::log(msg);
                 return true;
             }
         
@@ -76,7 +96,7 @@ bool mesh_loader::load_object(mesh::data &data, std::string_view path) {
     return true;
 }
 
-void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
+void meshloader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
     std::string string_buffer {};
     std::string find {};
     std::string values {};
@@ -110,7 +130,7 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
             util::split(split_first, this->current_path, '/');
 
             uint64_t size {split_first[std::max((int32_t) split_first.size() - 1, 0)].size()};
-            uint64_t tab_find {6 + 1};
+            uint64_t tab_find {find.size()};
 
             std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
             std::string file {string_buffer.substr(tab_find, string_buffer.size() - tab_find)};
@@ -140,7 +160,7 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
         }
 
         if (find == "o ") {
-            data.wavefront.mtllib_newmtl_list.push_back(split[x]);
+            this->material_serializer.mtllib_newmtl_list.push_back(split[x]);
         } else if (find == "v ") {
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
@@ -208,16 +228,15 @@ void mesh_loader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
     util::log("Mesh loader collector: Wavefront object faces (" + std::to_string(data.faces) + ")");
 }
 
-void mesh_loader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &ifs) {
+void meshloader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &ifs) {
     std::string string_buffer {};
-    std::string mtl_string_info {};
     std::vector<std::string> split {};
     std::string newmtl_segment {};
-    glm::vec3 vector {};
+    std::string metadata {};
 
-    const uint32_t x {1};
-    const uint32_t y {2};
-    const uint32_t z {3};
+    constexpr uint32_t x {1};
+    constexpr uint32_t y {2};
+    constexpr uint32_t z {3};
 
     while (std::getline(ifs, string_buffer)) {
         if (string_buffer.size() < 2) {
@@ -232,28 +251,28 @@ void mesh_loader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &
         util::split(split, string_buffer, ' ');
 
         if (split[0] == "illum" || split[0] == "Ns" || split[0] == "Ni" || split[0] == "d" || split[0] == "Tr") {
-            vector.x = std::stof(split[x]);
-            data.wavefront.mtllib_map[newmtl_segment].floats[split[0]] = {vector.x, 0.0f, 0.0f, 0.0f};
+            this->material_serializer[newmtl_segment][split[0]] = split[x];
         } else if (split[0] == "newmtl") {
-            mtl_string_info = string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
-            newmtl_segment = mtl_string_info;
-
-            if (data.wavefront.mtllib_newmtl_list.empty()) {
-                data.wavefront.mtllib_newmtl_list.push_back(mtl_string_info);
-            }
+            metadata.clear();
+            metadata += string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
+            this->material_serializer[metadata];
         } else if (split[0] == "Ka" || split[0] == "Kd" || split[0] == "Ks" || split[0] == "Ke" || split[0] == "Tf") {
-            vector.x = std::stof(split[x]);
-            vector.y = std::stof(split[y]);
-            vector.z = std::stof(split[z]);
-            data.wavefront.mtllib_map[newmtl_segment].floats[split[0]] = {vector.x, vector.y, vector.z, 0.0f};
+            metadata.clear();
+            metadata += split[x];
+            metadata += '/';
+            metadata += split[y];
+            metadata += '/';
+            metadata += split[z];
+            this->material_serializer[newmtl_segment][split[0]] = metadata;
         } else if (split[0] == "bump" || split[0] == "map_bump" || split[0] == "map_Ka" || split[0] == "map_Kd" || split[0] == "map_Ks" || split[0] == "map_Ke") {
-            mtl_string_info = string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
-            data.wavefront.mtllib_map[newmtl_segment].strings[split[0]] = mtl_string_info;
+            metadata.clear();
+            metadata += string_buffer.substr(split[0].size() + 1, string_buffer.size() - split[0].size() - 1);
+            this->material_serializer[newmtl_segment][split[0]] = metadata;
         }
     }
 }
 
-void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
+void meshloader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
     ifs.seekg(80);
     ifs.read((char*) &data.faces, sizeof(int32_t));
 
@@ -320,13 +339,13 @@ void mesh_loader::load_stl_object(mesh::data &data, std::ifstream &ifs) {
     util::log("Mesh loader collector: STL faces (" + std::to_string(data.faces) + ")");
 }
 
-bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
-    unsigned char r{}, g{}, b{};
-    float f_r{}, f_g{}, f_b{};
+bool meshloader::load_heightmap(mesh::data &data, util::image &resource) {
+    unsigned char r {}, g {}, b {};
+    float f_r {}, f_g {}, f_b {};
     float greyscale{};
 
-    uint32_t width{static_cast<uint32_t>(resource.w)};
-    uint32_t height{static_cast<uint32_t>(resource.h)};
+    const uint32_t width {static_cast<uint32_t>(resource.w)};
+    const uint32_t height {static_cast<uint32_t>(resource.h)};
     glm::vec3 vertex{};
 
     for (uint32_t h{}; h < height; h++) {
@@ -351,10 +370,10 @@ bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
 
     for (uint32_t h{}; h < height - 1; h++) {
         for (uint32_t w{}; w < width - 1; w++) {
-            uint32_t i1{h * width + w};
-            uint32_t i2{h * width + w + 1};
-            uint32_t i3{(h + 1) * width + w};
-            uint32_t i4{(h + 1) * width + w + 1};
+            uint32_t i1 {h * width + w};
+            uint32_t i2 {h * width + w + 1};
+            uint32_t i3 {(h + 1) * width + w};
+            uint32_t i4 {(h + 1) * width + w + 1};
 
             data.append(mesh::type::vertex, i1);
             data.append(mesh::type::vertex, i3);
@@ -371,47 +390,51 @@ bool mesh_loader::load_heightmap(mesh::data &data, util::image &resource) {
     return false;
 }
 
-bool mesh_loader::load_identity_heightmap(mesh::data &data, uint32_t width, uint32_t height) {
+bool meshloader::load_identity_heightmap(mesh::data &data, uint32_t width, uint32_t height) {
     glm::vec3 vertex {};
     data.faces = static_cast<int32_t>(4 * width * height);
 
-    for (uint32_t h {}; h <= height - 1; h++) {
-        for (uint32_t w {}; w <= width - 1; w++) {
+    const float fwf {static_cast<float>(width)};
+    const float fhf {static_cast<float>(height)};
+
+    for (float h {}; h <= static_cast<float>(height - 1); h++) {
+        for (float w {}; w <= static_cast<float>(width - 1); w++) {
             /* first vertex of quad */
-            vertex.x = static_cast<float>(w) / static_cast<float>(width);
+            vertex.x = w / fwf;
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h) / static_cast<float>(height);
+            vertex.z = h / fhf;
 
             data.append(mesh::type::vertex, vertex);
-            data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
-            data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
+            data.append(mesh::type::textcoord, vertex.x);
+            data.append(mesh::type::textcoord, vertex.z);
 
             /* second vertex of quad */
-            vertex.x = static_cast<float>(w + 1) / static_cast<float>(width);
-            vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h) / static_cast<float>(height);
+            vertex.x = (w + 1.0f) / fwf;
+            vertex.z = h / hfh;
 
             data.append(mesh::type::vertex, vertex);
-            data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));
-            data.append(mesh::type::textcoord, static_cast<float>(h) / static_cast<float>(height));
+            data.append(mesh::type::textcoord, vertex.x);
+            data.append(mesh::type::textcoord, vertex.z);
 
             /* third vertex of quad */
-            vertex.x = static_cast<float>(w) / static_cast<float>(width);
+            vertex.x = w / fwf;
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h + 1) / static_cast<float>(height);
+            vertex.z = (h + 1.0f) / hfh;
 
             data.append(mesh::type::vertex, vertex);
-            data.append(mesh::type::textcoord, static_cast<float>(w) / static_cast<float>(width));
-            data.append(mesh::type::textcoord, static_cast<float>(h + 1) / static_cast<float>(height));
+            data.append(mesh::type::textcoord, vertex.x);
+            data.append(mesh::type::textcoord, vertex.z);
 
             /* four vertex of quad */
-            vertex.x = static_cast<float>(w + 1) / static_cast<float>(width);
+
+            /* third vertex of quad */
+            vertex.x = (w 1.0f) / fwf;
             vertex.y = 0.0f;
-            vertex.z = static_cast<float>(h + 1) / static_cast<float>(height);
+            vertex.z = (h + 1.0f) / hfh;
 
             data.append(mesh::type::vertex, vertex);
-            data.append(mesh::type::textcoord, static_cast<float>(w + 1) / static_cast<float>(width));
-            data.append(mesh::type::textcoord, static_cast<float>(h + 1) / static_cast<float>(height));
+            data.append(mesh::type::textcoord, vertex.x);
+            data.append(mesh::type::textcoord, vertex.z);
         }
     }
 

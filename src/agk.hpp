@@ -12,12 +12,22 @@ namespace agk {
     void viewport();
     void setfps(uint32_t fps, bool vsync = agk::app.vsync);
 
+    enum service {
+        updateable = 1,
+        renderable = 2,
+        listenable = 4;
+    }
+
     namespace task {
-        void registry(imodule *p_feature);
+        void registry(imodule *p_feature, uint16_t flags);
         void synchronize(imodule *p_feature);
         void populate();
-    };
+    }
     
+    namespace flags {
+        bool contains(uint16_t &target, uint16_t check);
+    }
+
     namespace scene {
         void load(imodule *p_scene);
         imodule *&current();
@@ -33,7 +43,7 @@ namespace agk {
 
         void create(object *p_object);
         void destroy(object *p_object);
-    };
+    }
 
     namespace asset {
         void load(imodule *p_asset);
@@ -41,7 +51,7 @@ namespace agk {
     }
 
     namespace mesh {
-        mesh_loader &loader();
+        meshloader &loader();
         bool load(::mesh::data&, std::string_view);
     };
 

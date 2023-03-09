@@ -21,21 +21,20 @@ struct material_metadata {
 #include <glm/glm.hpp>
 #include "world/enums/enums.hpp"
 #include "asset/texture.hpp"
-#include "asset/model.hpp"
 #include <vector>
 
 class material {
 private:
     static int32_t token;
+    material *p_material_linked {};
 protected:
     std::map<std::string, uint32_t> sampler_map {};
     bool should_reload {};
+    bool should_reload_textures {};
     int32_t id {};
     int32_t shader_index {};
     material_metadata metadata {};
 public:
-    asset::model *p_model {};
-
     material();
     ~material();
 

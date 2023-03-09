@@ -15,14 +15,23 @@ namespace mesh {
         vertex, textcoord, normal, color
     };
 
-    struct wavefront {
-        struct mtllib {
-            std::map<std::string, glm::vec4> floats {};
-            std::map<std::string, std::string> strings {};
+    struct serializer {
+    protected:
+        std::map<std::string, std::map<std::string, std::string>> metadata {};
+    public:
+        inline std::map<std::string, std::string> &operator[](std::string_view k_string) {
+            return this->metadata[k_string.data()];
         };
 
-        std::map<std::string, mesh::wavefront::mtllib> mtllib_map {};
-        std::vector<std::string> mtllib_newmtl_list {};
+        std::map<std::string, std::map<std::string, std::string>> &get_metadata();
+    };
+
+    struct gltf {
+
+    };
+
+    struct pbr {
+        std::map<std::string, std::string> serialize {};
     };
 
     struct data {
@@ -43,8 +52,7 @@ namespace mesh {
     public:
         mesh::format format {mesh::format::unknown};
         int32_t faces {};
-
-        mesh::wavefront wavefront {};
+        mesh::serializer materialserializer {};
 
         explicit inline data() = default;
         explicit inline data(mesh::format _format) : format(_format) {};

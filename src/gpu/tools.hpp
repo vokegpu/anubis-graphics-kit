@@ -535,6 +535,7 @@ public:
 #ifndef AGK_GPU_TOOLS_PARALLELING_H
 #define AGK_GPU_TOOLS_PARALLELING_H
 
+// @TODO Move paralelling or any include loop to another header file, pragma once is not a good practice.
 #pragma once
 #include "asset/shader.hpp"
 

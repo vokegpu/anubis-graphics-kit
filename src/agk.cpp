@@ -53,19 +53,19 @@ void agk::mainloop(imodule *p_scene_initial) {
     util::log("Asset manager created.");
 
     agk::app.p_input_service = new ::input {};
-    agk::task::synchronize(agk::app.p_input_service);
+    agk::task::registry(agk::app.p_input_service, agk::service::updateable | agk::service::listenable);
     util::log("Input manager created");
 
     agk::app.p_world_service = new ::world {};
-    agk::task::synchronize(agk::app.p_world_service);
+    agk::task::registry(agk::app.p_world_service, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
     util::log("World client created");
 
     agk::app.p_renderer_service = new renderer {};
-    agk::task::synchronize(agk::app.p_renderer_service);
+    agk::task::registry(agk::app.p_renderer_service, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
     util::log("World renderer created");
 
     agk::app.p_curr_camera = new camera {};
-    agk::world::create(agk::app.p_curr_camera);
+    agk::world::registry(agk::app.p_curr_camera);
     util::log("Main camera frustum created");
 
     agk::app.p_curr_player = new entity {};
@@ -73,7 +73,7 @@ void agk::mainloop(imodule *p_scene_initial) {
     util::log("Main world player created");
 
     agk::app.p_sky = new sky {};
-    agk::task::synchronize(agk::app.p_sky);
+    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
     util::log("World time manager created");
 
     /* Flush all object. */
@@ -108,15 +108,13 @@ void agk::mainloop(imodule *p_scene_initial) {
                 }
 
                 default: {
-                    agk::app.p_input_service->on_event(sdl_event);
-                    if (agk::app.p_curr_scene != nullptr) agk::app.p_curr_scene->on_event(sdl_event);
-                    agk::app.p_world_service->on_event(sdl_event);
-                    agk::app.p_renderer_service->on_event(sdl_event);
-
-                    for (imodule *&p_services : agk::app.loaded_service_list) {
+                    for (imodule *&p_services : core::listenablelist) {
                         p_services->on_event(sdl_event);
                     }
 
+                    if (agk::app.p_curr_scene != nullptr) {
+                        agk::app.p_curr_scene->on_event(sdl_event);
+                    }
                     break;
                 }
             }
@@ -127,32 +125,26 @@ void agk::mainloop(imodule *p_scene_initial) {
             ticked_frames = 0;
         }
 
+        for (imodule *&p_services : core::updateablelist) {
+            p_services->on_update();
+        }
+
         if (agk::app.p_curr_scene != nullptr) {
             agk::app.p_curr_scene->on_update();
         }
 
-        for (imodule *&p_services : agk::app.loaded_service_list) {
-            p_services->on_update();
-        }
-
-        agk::app.p_sky->on_update();
-        agk::app.p_world_service->on_update();
-        agk::app.p_input_service->on_update();
-        agk::app.p_asset_manager_service->on_update();
         agk::task::populate();
 
         glViewport(0, 0, agk::app.screen_width, agk::app.screen_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(agk::app.background[0], agk::app.background[1], agk::app.background[2], 1.0f);
 
-        agk::app.p_renderer_service->on_render();
+        for (imodule *&p_services : core::renderablelist) {
+            p_services->on_render();
+        }
 
         if (agk::app.p_curr_scene != nullptr) {
             agk::app.p_curr_scene->on_render();
-        }
-
-        for (imodule *&p_services : agk::app.loaded_service_list) {
-            p_services->on_render();
         }
 
         ticked_frames++;
@@ -245,7 +237,7 @@ bool agk::mesh::load(::mesh::data &data, std::string_view path) {
     return agk::app.mesh_loader_manager.load_object(data, path);
 }
 
-mesh_loader &agk::mesh::loader() {
+meshloader &agk::mesh::loader() {
     return agk::app.mesh_loader_manager;
 }
 
@@ -253,33 +245,46 @@ bool agk::input::pressed(std::string_view input_tag) {
     return agk::app.p_input_service->input_map[input_tag.data()];
 }
 
-void agk::task::registry(imodule *p_service) {
+void agk::task::registry(imodule *p_service, uint16_t flags) {
     if (p_service == nullptr) {
         return;
     }
 
     agk::task::synchronize(p_service);
-    agk::app.loaded_service_list.push_back(p_service);
+    p_service->id = ++core::token;
 
-    p_service->id = (int32_t) agk::app.loaded_service_list.size();
-    util::log("Registered internal service ID (" + std::to_string(p_service->id) + ")");
+    if (agk::flags::contains(flags, agk::service::renderable)) {
+        core::renderablelist.push_back(p_service);
+    }
+
+    if (agk::flags::contains(flags, agk::service::updateable)) {
+        core::updateablelist.push_back(p_service);
+    }
+
+    if (agk::flags::contains(flags, agk::service::listenable)) {
+        core::listenablelist.push_back(p_service);
+    }
 }
 
 void agk::task::populate() {
-    while (!agk::app.task_queue.empty()) {
-        auto &p_feature {agk::app.task_queue.front()};
+    while (!core::taskqueue.empty()) {
+        auto &p_feature {core::taskqueue.front()};
         if (p_feature != nullptr && p_feature->is_dead) {
             p_feature->on_destroy();
         } else if (p_feature != nullptr) {
             p_feature->on_create();
         }
 
-        agk::app.task_queue.pop();
+        core::taskqueue.pop();
     }
 }
 
 void agk::task::synchronize(imodule *p_module) {
-    agk::app.task_queue.push(p_module);
+    core::taskqueue.push(p_module);
+}
+
+void agk::flags::contains(uint16_t &flags, uint16_t check) {
+    return flags & check;
 }
 
 imodule *agk::asset::find(std::string_view asset_name) {

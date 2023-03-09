@@ -4,14 +4,21 @@
 #include <SDL2/SDL.h>
 #include "world/world.hpp"
 #include "world/camera/camera.hpp"
-#include "asset/mesh_loader.hpp"
+#include "mesh/meshloader.hpp"
 #include "ui/input.hpp"
 #include "world/renderer/renderer.hpp"
 #include "world/environment/entity.hpp"
 #include "world/environment/sky.hpp"
-#include "asset/asset_manager.hpp"
+#include "asset/assetmanager.hpp"
+#include "world/pbr/pbrloader.hpp"
 
 class core {
+public:
+    static std::vector<imodule*> renderablelist;
+    static std::vector<imodule*> updateablelist;
+    static std::vector<imodule*> listenablelist;
+    static std::queue<imodule*> taskqueue;
+    static int32_t token {};
 public:
     SDL_Window *p_sdl_window {nullptr};
     int32_t screen_width {1600};
@@ -29,15 +36,12 @@ public:
 
     world *p_world_service {};
     renderer *p_renderer_service {};
-    asset_manager *p_asset_manager_service {};
+    assetmanager *p_asset_manager_service {};
     sky *p_sky {};
     input *p_input_service {};
 
-    mesh_loader mesh_loader_manager {};
-    value_global setting {};
-
-    std::vector<imodule*> loaded_service_list {};
-    std::queue<imodule*> task_queue {};
+    meshloader mesh_loader_manager {};
+    valueglobal setting {};
 };
 
 #endif

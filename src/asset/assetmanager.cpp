@@ -1,20 +1,34 @@
-#include "asset_manager.hpp"
+#include "assetmanager.hpp"
 #include "util/env.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
-#include "model.hpp"
-#include "world/pbr/material.hpp"
 
-void asset_manager::load(imodule *p_asset) {
+void assetmanager::do_create_asset(imodule *&p_asset) {
+    p_asset->on_create();
+
+    std::string msg {"Assets '"};
+    msg += reload_asset_list[it];
+    msg += "' ";
+
+    if (p_asset->is_dead) {
+        msg += "failed to be loaded";
+    } else {
+        msg += "loaded";
+    }
+
+    util::log(msg);
+}
+
+void assetmanager::load(imodule *p_asset) {
     this->asset_map[p_asset->tag] = p_asset;
     this->reload_asset_list.push_back(p_asset->tag);
 }
 
-imodule *asset_manager::find(std::string_view resource) {
+imodule *assetmanager::find(std::string_view resource) {
     return this->asset_map[resource.data()];
 }
 
-void asset_manager::on_create() {
+void assetmanager::on_create() {
     imodule::on_create();
 
     this->load(new asset::shader {"effects.coordinate.debug", {
@@ -26,10 +40,10 @@ void asset_manager::on_create() {
             {"./data/effects/material.brdf.pbr.vert", GL_VERTEX_SHADER},
             {"./data/effects/material.brdf.pbr.frag", GL_FRAGMENT_SHADER}
     }, [](asset::shader *p_shader) {
-        float emptymetadata[12] {};
+        float empty_buffer[12] {};
         p_shader->attach("uniformBufferMaterial", 0);
         p_shader->shaderbuffer.invoke(0, GL_UNIFORM_BUFFER);
-        p_shader->shaderbuffer.send<float>(sizeof(emptymetadata) * 100, nullptr, GL_DYNAMIC_DRAW);
+        p_shader->shaderbuffer.send<float>(sizeof(empty_buffer) * 512, nullptr, GL_DYNAMIC_DRAW);
         p_shader->shaderbuffer.bind(0);
         p_shader->shaderbuffer.revoke();
     }});
@@ -68,43 +82,24 @@ void asset_manager::on_create() {
         mipmap = true;
     }});
 
-    this->load(new asset::model {"vegetation.coconut", "./data/models/Coconut Tree.obj", glm::ivec4(GL_STATIC_DRAW)});
-    this->load(new asset::model {"vegetation.grass", [](buffering &buffer, ::mesh::data &mesh) {
-        buffer.primitive[0] = GL_TRIANGLE_STRIP;
-    }});
-
+    /* flush default assets */
     this->on_update();
 }
 
-void asset_manager::on_destroy() {
+void assetmanager::on_destroy() {
 }
 
-void asset_manager::on_update() {
+void assetmanager::on_update() {
     if (this->reload_asset_list.empty()) {
         return;
     }
 
     util::log("Attempting to reload new assets");
     std::string asset_message {};
-    imodule *p_asset {};
     int32_t extra_asset_list {};
 
     for (const std::string &assets : this->reload_asset_list) {
-        p_asset = this->asset_map[assets];
-        p_asset->on_create();
-
-        asset_message.clear();
-        asset_message += "Assets '";
-        asset_message += assets;
-        asset_message += "' ";
-
-        if (p_asset->is_dead) {
-            asset_message += "failed to be loaded";
-        } else {
-            asset_message += "loaded";
-        }
-
-        util::log(asset_message);
+        this->do_create_asset(this->asset_map[assets]);
         extra_asset_list++;
     }
 
@@ -112,21 +107,7 @@ void asset_manager::on_update() {
     util::log("Assets reloaded: " + std::to_string(extra_asset_list));
 
     for (int32_t it {extra_asset_list}; it < this->reload_asset_list.size(); it++) {
-        p_asset = this->asset_map[reload_asset_list[it]];
-        p_asset->on_create();
-
-        asset_message.clear();
-        asset_message += "Assets '";
-        asset_message += reload_asset_list[it];
-        asset_message += "' ";
-
-        if (p_asset->is_dead) {
-            asset_message += "failed to be loaded";
-        } else {
-            asset_message += "loaded";
-        }
-
-        util::log(asset_message);
+        this->do_create_asset(this->asset_map[this->reload_asset_list[it]]);
     }
 
     this->reload_asset_list.clear();

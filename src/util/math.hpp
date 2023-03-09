@@ -1,7 +1,7 @@
 #ifndef AGK_UTIL_MATH_H
 #define AGK_UTIL_MATH_H
 
-#include "asset/mesh.hpp"
+#include "mesh/mesh.hpp"
 #include <glm/glm.hpp>
 
 namespace util {

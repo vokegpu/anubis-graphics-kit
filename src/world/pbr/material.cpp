@@ -47,6 +47,11 @@ const glm::vec3 &material::get_color() {
 void material::invoke(::asset::shader *p_shader) {
     auto &shaderbuffer {p_shader->shaderbuffer};
 
+    if (this->should_reload_textures) {
+        
+        this->should_reload_textures = false;
+    }
+
     if (this->should_reload) {
         this->should_reload = false;
         this->shader_index = p_shader->find(this->id);

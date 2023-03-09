@@ -8,9 +8,12 @@
 void client::scenes::starter::on_create() {
     asset::model *p_model_dino {new asset::model {"dinossaur", "./data/models/dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
     agk::asset::load(p_model_dino);
-    material *p_material {new material {}};
-    p_material->set_is_metal(true);
-    p_material->p_model = p_model_dino;
+
+    material *p_material {new material()};
+    p_material->set_color({1.0f, 1.0f, 1.0f});
+    asset::model *p_model_car {new asset::model {"car", "./data/models/car.gltf", glm::ivec4(GL_STATIC_DRAW), asset::flags::nomaterial}};
+    p_model_car->set_material(p_material);
+    p_model_car->assign_material("wheel1", p_material);
 
     for (int i {}; i < 1; i++) {
         this->p_object_dino = new object(p_material);

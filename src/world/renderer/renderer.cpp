@@ -126,10 +126,7 @@ void renderer::process_environment() {
             p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
         }
 
-        p_objects->p_material->p_model->buffer.invoke();
-        p_objects->p_material->p_model->buffer.draw();
-        p_objects->p_material->p_model->buffer.revoke();
-
+        p_objects->on_render();
         draw_call_count++;
     }
 
@@ -440,14 +437,6 @@ void renderer::add(chunk *p_chunk) {
 
 void renderer::refresh() {
     this->update_disabled_chunks = true;
-}
-
-void renderer::read_materials_metadata(std::vector<material_metadata> &metadata_list) {
-    for (material *&p_materials : this->material_list) {
-        if (p_materials != nullptr) {
-            metadata_list.push_back(p_materials->getmetadata());
-        }
-    }
 }
 
 void renderer::process_framebuffer(int32_t w, int32_t h) {

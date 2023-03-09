@@ -38,7 +38,7 @@ public:
 #ifndef AGK_CORE_VALUE_GLOBAL_H
 #define AGK_CORE_VALUE_GLOBAL_H
 
-class value_global {
+class valueglobal {
 public:
     /* Post-processing. */
     value<bool> enable_post_processing {};

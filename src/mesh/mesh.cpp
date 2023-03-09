@@ -1,5 +1,9 @@
 #include "mesh.hpp"
 
+std::map<std::string, std::map<std::string, std::string>> &mesh::serializer::get_serialize_data() {
+    return this->serialize;
+}
+
 void mesh::data::append(mesh::type type, const glm::vec4 &vec) {
     switch (type) {
         case mesh::type::vertex: {

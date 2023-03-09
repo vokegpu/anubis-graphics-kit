@@ -40,11 +40,9 @@ protected:
 public:
     std::vector<object*> obj_draw_list {};
     std::vector<chunk*> chunk_draw_list {};
-    std::vector<material*> material_list {};
 
     void add(chunk *p_chunk);
     void refresh();
-    void read_materials_metadata(std::vector<material_metadata> &metadata_list);
 
     void process_terrain();
     void process_environment();

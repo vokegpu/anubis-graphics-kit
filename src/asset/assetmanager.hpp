@@ -6,7 +6,9 @@
 #include <unordered_map>
 #include "core/imodule.hpp"
 
-class asset_manager : public imodule {
+class assetmanager : public imodule {
+private:
+    void do_create_asset(imodule *&p_asset);
 protected:
     std::unordered_map<std::string, imodule*> asset_map {};
     std::vector<std::string> reload_asset_list {};
