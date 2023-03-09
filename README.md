@@ -51,7 +51,7 @@ All detailed process are include in the article writen for this project, called 
 # Contributing
 
 We only accept codes with the following case style:
-```
+```cpp
 // file_name.hpp
 
 class foobar {
@@ -64,11 +64,12 @@ foobar insane_cat {};
 insane_cat.do_something();
 
 // about {};
-// first thing: it automatically init everything
+// First: This automatically init everything
 // e.g:
 float empty_buffer1[12] {}; // simply initialize everything
 float empty_buffer2[] {}; // also yes
 
+// Second:
 // so I suggest you use a lot, by the simple case of prevent random memory.
 int32_t foo; // without {} you can get something like -48329482349
 ```
