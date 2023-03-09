@@ -1,8 +1,8 @@
-#include "input.hpp"
+#include "deviceinput.hpp"
 #include "util/env.hpp"
 #include <algorithm>
 
-void input::on_event(SDL_Event &sdl_event) {
+void deviceinput::on_event(SDL_Event &sdl_event) {
     switch (sdl_event.type) {
         case SDL_KEYDOWN: {
             for (std::string key_string {SDL_GetKeyName(sdl_event.key.keysym.sym)}; !key_string.empty(); key_string) {
@@ -38,10 +38,6 @@ void input::on_event(SDL_Event &sdl_event) {
     }
 }
 
-void input::on_update() {
-
-}
-
-input::~input() {
+void deviceinput::on_update() {
 
 }

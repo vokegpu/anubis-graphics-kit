@@ -1,8 +1,8 @@
-#include "camera_manager.hpp"
+#include "usercamera.hpp"
 #include "agk.hpp"
 #include "util/env.hpp"
 
-void client::services::camera_manager::on_create() {
+void usercamera::on_create() {
     imodule::on_create();
 
     this->bind_m_backward.set_value("s");
@@ -19,11 +19,11 @@ void client::services::camera_manager::on_create() {
     this->p_camera_linked->set_visible(enums::state::disable);
 }
 
-void client::services::camera_manager::on_destroy() {
+void usercamera::on_destroy() {
     imodule::on_destroy();
 }
 
-void client::services::camera_manager::on_event(SDL_Event &sdl_event) {
+void usercamera::on_event(SDL_Event &sdl_event) {
     imodule::on_event(sdl_event);
     if (this->p_camera_linked == nullptr) {
         return;
@@ -37,7 +37,7 @@ void client::services::camera_manager::on_event(SDL_Event &sdl_event) {
     this->p_camera_linked->on_event(sdl_event);
 }
 
-void client::services::camera_manager::on_update() {
+void usercamera::on_update() {
     imodule::on_update();
 
     if (this->p_entity_linked != nullptr && this->camera_movement) {
@@ -108,26 +108,26 @@ void client::services::camera_manager::on_update() {
     }
 }
 
-void client::services::camera_manager::set_editor_enabled(bool enabled) {
+void usercamera::set_editor_enabled(bool enabled) {
     this->camera_editor = enabled;
 }
 
-bool client::services::camera_manager::is_editor_enabled() {
+bool usercamera::is_editor_enabled() {
     return this->camera_editor;
 }
 
-void client::services::camera_manager::set_movement_enabled(bool enabled) {
+void usercamera::set_movement_enabled(bool enabled) {
     this->camera_movement = enabled;
 }
 
-bool client::services::camera_manager::is_movement_enabled() {
+bool usercamera::is_movement_enabled() {
     return this->camera_movement;
 }
 
-void client::services::camera_manager::set_rotation_enabled(bool enabled) {
+void usercamera::set_rotation_enabled(bool enabled) {
     this->camera_rotation = enabled;
 }
 
-bool client::services::camera_manager::is_rotation_enabled() {
+bool usercamera::is_rotation_enabled() {
     return this->camera_rotation;
 }

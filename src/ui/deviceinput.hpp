@@ -5,10 +5,10 @@
 #include <map>
 #include "core/imodule.hpp"
 
-class input : public imodule {
+class deviceinput : public imodule {
 public:
-    input() = default;
-    ~input();
+    deviceinput() = default;
+    ~deviceinput() = default;
 
     std::map<std::string, bool> input_map {};
     void on_event(SDL_Event &sdl_event) override;
