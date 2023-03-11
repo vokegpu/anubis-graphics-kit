@@ -1,11 +1,15 @@
 #include "shader.hpp"
 
+asset::shader *asset::shader::pcurrshader {};
+
 void asset::shader::invoke() {
     glUseProgram(this->program);
+    asset::shader::pcurrshader = this;
 }
 
 void asset::shader::revoke() {
     glUseProgram(0);
+    asset::shader::pcurrshader = nullptr;
 }
 
 void asset::shader::attach(std::string_view block, uint32_t binding) {

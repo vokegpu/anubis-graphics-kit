@@ -55,12 +55,9 @@ namespace agk {
         bool load(::mesh::data&, std::string_view);
     }
 
-    namespace input {
-        bool pressed(std::string_view);
-    }
-
     namespace ui {
-        usercamera *get_user_camera();
+        usercamera *&get_user_camera();
+        bool input(std::string_view);
     }
 }
 

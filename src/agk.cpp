@@ -76,6 +76,10 @@ void agk::mainloop(imodule *p_scene_initial) {
     agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
     util::log("World time manager created");
 
+    agk::app.p_user_camera {new usercamera {}};
+    agk::task::registry(agk::app.p_user_camera, agk::service::updateable | agk::service::listenable);
+    util::log("User camera manager created");
+
     /* Flush all object. */
     agk::task::populate();
     agk::app.p_curr_camera->process_perspective(agk::app.screen_width, agk::app.screen_height);
@@ -241,8 +245,12 @@ meshloader &agk::mesh::loader() {
     return agk::app.mesh_loader_manager;
 }
 
-bool agk::input::pressed(std::string_view input_tag) {
+bool agk::ui::input(std::string_view input_tag) {
     return agk::app.p_input_service->input_map[input_tag.data()];
+}
+
+usercamera *&agk::ui::get_user_camera() {
+    return agk::app.p_user_camera;
 }
 
 void agk::task::registry(imodule *p_service, uint16_t flags) {

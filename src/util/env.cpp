@@ -8,9 +8,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
-void util::log(const std::string &log_message) {
+bool util::log(const std::string &log_message) {
     const std::string full_log_message {"[AGK] " + log_message};
     std::cout << full_log_message.c_str()<< '\n';
+    return true;
 }
 
 bool util::reset(util::timing &timing) {

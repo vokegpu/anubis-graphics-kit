@@ -2,6 +2,67 @@
 #include "util/env.hpp"
 #include <fstream>
 
+bool meshloader::load_material(mesh::data &mesh, std::string_view path) {
+    if (path.empty()) {
+        return util::log("Failed to load material because there is not a path insert");
+    }
+
+    this->check_format(mesh.format, path);
+    this->current_path = path;
+
+    switch (mesh.format) {
+        case mesh::format::wavefrontobj: {
+            std::ifstream ifs {};
+            ifs.open(path.data());
+
+            if (!ifs.is_open()) {
+                std::string msg {"Failed to open/read OBJ Wavefront file: '"};
+                msg += path;
+                msg += "'";
+                return util::log(msg);
+            }
+
+            this->load_wavefront_object_mtllib(data, ifs);
+            data.pbr_serializer = this->convert_wavefront_object_mtllib_to_pbr(this->material_serializer);
+            ifs.close();
+
+            return false;
+        }
+
+        case mesh::format::stl: {
+            return !util::log("STL does not contains material file");
+        }
+
+        case mesh::format::gltf: {
+            std::ifstream ifs(path.data());
+            if (!ifs.is_open()) {
+                std::string msg {"Failed to open/read GLTF file: '"};
+                msg += path;
+                msg += "'";
+                return util::log(msg);
+            }
+
+            return false;
+        }
+
+        default: {
+            return util::log("Failed to load model material, unknown model format '" + file_extension + "'");
+        }
+    }
+}
+
+void meshloader::check_format(mesh::format &format, std::string_view path) {
+    std::string file_extension {};
+
+    if (format == ::mesh::format::unknown) {
+        std::vector<std::string> split_path {};
+        util::split(split_path, path, '.');
+        split_path.emplace_back();
+        file_extension = split_path[std::max((int32_t) split_path.size() - 2, 0)];
+        format = !this->mesh_ext_map.count(file_extension) ? data.format : this->mesh_ext_map[file_extension];
+    }
+}
+
 mesh::serializer meshloader::convert_wavefront_object_mtllib_to_pbr(mesh::serializer &wavefront_object_mtllib_serializer) {
     auto &mtllib_metadata {wavefront_object_mtllib_serializer.get_metadata()};
     mesh::serializer pbr_mtl_serializer {};
@@ -21,20 +82,11 @@ mesh::serializer meshloader::convert_wavefront_object_mtllib_to_pbr(mesh::serial
 
 bool meshloader::load_model(mesh::data &data, std::string_view path) {
     if (path.empty() || path.size() < 3) {
-        util::log("Failed to load object because there is no path insert");
-        return true;
+        return util::log("Failed to load object because there is no path insert");
     }
 
-    std::string file_extension {};
+    this->check_format(data.format, path);
     this->current_path = path;
-
-    if (data.format == ::mesh::format::unknown) {
-        std::vector<std::string> split_path {};
-        util::split(split_path, path, '.');
-        split_path.emplace_back();
-        file_extension = split_path[std::max((int32_t) split_path.size() - 2, 0)];
-        data.format = !this->mesh_ext_map.count(file_extension) ? data.format : this->mesh_ext_map[file_extension];
-    }
 
     switch (data.format) {
         case mesh::format::wavefrontobj: {
@@ -45,12 +97,10 @@ bool meshloader::load_model(mesh::data &data, std::string_view path) {
                 std::string msg {"Failed to open/read OBJ Wavefront file: '"};
                 msg += path;
                 msg += "'";
-                util::log(msg);
-                return true;
+                return util::log(msg);
             }
 
             this->load_wavefront_object(data, ifs);
-            data.material_serializer = this->convert_wavefront_object_mtllib_to_pbr(this->material_serializer);
             ifs.close();
 
             return false;
@@ -64,8 +114,7 @@ bool meshloader::load_model(mesh::data &data, std::string_view path) {
                 std::string msg {"Failed to open/read STL file: '"};
                 msg += path;
                 msg += "'";
-                util::log(msg);
-                return true;
+                return util::log(msg);
             }
         
             this->load_stl_object(data, ifs);
@@ -80,16 +129,14 @@ bool meshloader::load_model(mesh::data &data, std::string_view path) {
                 std::string msg {"Failed to open/read GLTF file: '"};
                 msg += path;
                 msg += "'";
-                util::log(msg);
-                return true;
+                return util::log(msg);
             }
 
             return false;
         }
 
         default: {
-            util::log("Failed to load object mesh, unknown model format '" + file_extension + "'");
-            break;
+            return util::log("Failed to load object mesh, unknown model format '" + file_extension + "'");
         }
     }
 
@@ -116,27 +163,11 @@ void meshloader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
 
     meshpack pack {};
     uint32_t index {}, vsize {};
-    std::string mtlib_path {};
 
     while (std::getline(ifs, string_buffer)) {
         line_size = string_buffer.size();
 
         if (line_size < 1) {
-            continue;
-        }
-
-        find = string_buffer.substr(0, std::min(6, (int32_t) line_size));
-        if (find == "mtllib") {
-            util::split(split_first, this->current_path, '/');
-
-            uint64_t size {split_first[std::max((int32_t) split_first.size() - 1, 0)].size()};
-            uint64_t tab_find {find.size()};
-
-            std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
-            std::string file {string_buffer.substr(tab_find, string_buffer.size() - tab_find)};
-
-            mtlib_path += folder;
-            mtlib_path += file;
             continue;
         }
 
@@ -213,23 +244,40 @@ void meshloader::load_wavefront_object(mesh::data &data, std::ifstream &ifs) {
         }
     }
 
-    if (!mtlib_path.empty()) {
-        std::ifstream ifs_mtllib {mtlib_path};
-
-        if (ifs_mtllib.is_open()) {
-            this->load_wavefront_object_mtllib(data, ifs_mtllib);
-        } else {
-            util::log("Failed to open mtl lib material '" + mtlib_path + "'");
-        }
-
-        ifs_mtllib.close();
-    }
-
     util::log("Mesh loader collector: Wavefront object faces (" + std::to_string(data.faces) + ")");
 }
 
 void meshloader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &ifs) {
+    std::string mtllib_path {};
     std::string string_buffer {};
+
+    while (std::getline(ifs, string_buffer)) {
+        find = string_buffer.substr(0, std::min(6, (int32_t) line_size));
+        if (find == "mtllib") {
+            util::split(split_first, this->current_path, '/');
+
+            uint64_t size {split_first[std::max((int32_t) split_first.size() - 1, 0)].size()};
+            uint64_t tab_find {find.size()};
+
+            std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
+            std::string file {string_buffer.substr(tab_find, string_buffer.size() - tab_find)};
+
+            mtlib_path += folder;
+            mtlib_path += file;
+            break;
+        }
+    }
+
+    if (mtllib_path.empty()) {
+        util::log("Failed to find mtllib");
+        return;
+    }
+
+    std::ifstream ifs_mtllib {mtllib_path.data()};
+    if (!ifs_mtllib.is_open()) {
+        return;
+    }
+
     std::vector<std::string> split {};
     std::string newmtl_segment {};
     std::string metadata {};
@@ -238,7 +286,7 @@ void meshloader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &i
     constexpr uint32_t y {2};
     constexpr uint32_t z {3};
 
-    while (std::getline(ifs, string_buffer)) {
+    while (std::getline(ifs_mtllib, string_buffer)) {
         if (string_buffer.size() < 2) {
             continue;
         }
@@ -270,6 +318,8 @@ void meshloader::load_wavefront_object_mtllib(mesh::data &data, std::ifstream &i
             this->material_serializer[newmtl_segment][split[0]] = metadata;
         }
     }
+
+    ifs_mtllib.close();
 }
 
 void meshloader::load_stl_object(mesh::data &data, std::ifstream &ifs) {

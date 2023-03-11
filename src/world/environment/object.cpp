@@ -54,37 +54,16 @@ enums::priority object::get_priority() {
     return this->priority;
 }
 
-void object::set_material(material *p_material) {
-    for (asset::model::child &childs : this->model_children) {
-        contains = childs->name == key;
-        if (contains) {
-            childs->p_material = p_material;
-            break;
-        }
-    }
-}
-
-void object::assign_material(std::string_view key, material *p_material) {
-    if (this->p_model != nullptr && this->p_model->buffer_map.count(key)) {
-        bool contains {};
-        for (asset::model::child &childs : this->model_children) {
-            contains = childs->name == key;
-            if (contains) {
-                childs->p_material = p_material;
-                break;
-            }
-        }
-
-        if (!contains) {
-            auto &child {this->model_children.emplace_back()};
-            child->name = key;
-            child->p_material = p_material;
-        }
-    }
-}
-
 void object::on_render() {
-    if (model::)
+    for (auto &rendering_pair : this->rendering_pair_list) {
+        if (rendering_pair->p_material != nullptr) {
+            rendering_pair->invoke(asset::shader::pcurrshader);
+        }
+
+        if (rendering_pair->p_model != nullptr) {
+            rendering_pair->p_model->on_render();
+        }
+    }
 }
 
 object::object(material *p_linked_material) {

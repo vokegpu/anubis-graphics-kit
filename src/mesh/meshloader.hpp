@@ -41,6 +41,7 @@ protected:
     void load_wavefront_object_mtllib(mesh::data &data, std::ifstream &ifs);
     void load_wavefront_object(mesh::data &data, std::ifstream &ifs);
     void load_stl_object(mesh::data &data, std::ifstream &ifs);
+    void check_format(mesh::format &format, std::string_view path);
 public:
     mesh::serializer convert_wavefront_object_mtllib_to_pbr(mesh::serializer &serializer);
 

@@ -27,11 +27,6 @@ namespace mesh {
     };
 
     struct gltf {
-
-    };
-
-    struct pbr {
-        std::map<std::string, std::string> serialize {};
     };
 
     struct data {
@@ -50,9 +45,9 @@ namespace mesh {
         uint8_t t_len {2};
         uint8_t n_len {3};
     public:
-        mesh::format format {mesh::format::unknown};
+        mesh::format format {};
+        mesh::serializer pbr_serializer {};
         int32_t faces {};
-        mesh::serializer materialserializer {};
 
         explicit inline data() = default;
         explicit inline data(mesh::format _format) : format(_format) {};

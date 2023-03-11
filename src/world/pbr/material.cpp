@@ -3,54 +3,39 @@
 
 int32_t material::token {};
 
-material::material() {
+material::material(std::map<std::string, std::string> &_metadata) {
     this->id = ++material::token;
     agk::world::renderer()->material_list.push_back(this);
     this->should_reload = true;
+    this->metadata = _metadata;
 }
 
-material::~material() {
-
-}
-
-material_metadata &material::getmetadata() {
+std::vector<std::string, std::string> &material::get_metadata() {
     return this->metadata;
 }
 
-void material::set_is_metal(bool _is_metal) {
-    this->metadata.metal = _is_metal;
-    if (this->metadata.rough == 0.0f) {
-        this->metadata.rough = 0.43f;
-    }
-}
-
-bool material::is_metal() {
-    return this->metadata.metal;
-}
-
-void material::set_rough(float _rough) {
-    this->metadata.rough = _rough;
-}
-
-float material::get_rough() {
-    return this->metadata.rough;
-}
-
-void material::set_color(const glm::vec3 &color) {
-    this->metadata.color = color;
-}
-
-const glm::vec3 &material::get_color() {
-    return this->metadata.color;
-}
-
 void material::invoke(::asset::shader *p_shader) {
-    auto &shaderbuffer {p_shader->shaderbuffer};
-
     if (this->should_reload_textures) {
-        
         this->should_reload_textures = false;
+        asset::texture<uint8_t> *p_texture {};
+
+        if (!this->metadata["albedo"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["albedo"])) != nullptr) {
+            this->sampler_map["albedo"] = p_texture->get_gpu_side().id;
+        }
+
+        if (!this->metadata["specular"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["specular"])) != nullptr) {
+            this->sampler_map["specular"] = p_texture->get_gpu_side().id;
+        }
+
+        if (!this->metadata["normalMap"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["normalMap"])) != nullptr) {
+            this->sampler_map["normalMap"] = p_texture->get_gpu_side().id;
+        }
     }
+
+    auto &shaderbuffer {p_shader->shaderbuffer};
+    auto &albedo {this->sampler_map["albedo"]};
+    auto &specular {this->sampler_map["specular"]};
+    auto &normal_map {this->sampler_map["normalMap"]};
 
     if (this->should_reload) {
         this->should_reload = false;
@@ -60,34 +45,50 @@ void material::invoke(::asset::shader *p_shader) {
             this->shader_index = p_shader->append(this->id);
         }
 
-        float l_metadata[12] {
-            static_cast<float>(this->metadata.active_sampler_albedo), static_cast<float>(this->metadata.active_sampler_specular), static_cast<float>(this->metadata.active_sampler_normal_map), 0.0f,
-            static_cast<float>(this->metadata.metal), this->metadata.rough, 0.0f, 0.0f,
-            this->metadata.color.x, this->metadata.color.y, this->metadata.color.z, 0.0f
+        std::vector<std::string> color_split {};
+        util::split(color_split, this->metadata["color"], ' ');
+
+        const float rough {std::stof(this->metadata["rough"])};
+        const float is_metal {std::stof(this->metadata["metal"])};
+        const glm::vec3 color {std::stof(color_split[0]), std::stof(color_split[1]), std::stof(color_split[2])};
+
+        float buffer_database[12] {
+            static_cast<float>(!(!(albedo))), static_cast<float>(!(!(specular))), static_cast<float>(!(!(normal_map))), 0.0f,
+            is_metal, rough, 0.0f, 0.0f,
+            color.x, color.y, color.z, 0.0f
         };
 
-        int32_t size {static_cast<int32_t>(sizeof(l_metadata) * this->shader_index)};
-
+        int32_t size {static_cast<int32_t>(sizeof(buffer_database)*this->shader_index)};
         shaderbuffer.invoke(0, GL_UNIFORM_BUFFER);
-        shaderbuffer.edit<float>(size, sizeof(l_metadata), l_metadata);
+        shaderbuffer.edit<float>(size, sizeof(buffer_database), buffer_database);
         shaderbuffer.revoke();
     }
 
     p_shader->set_uniform_int("uMaterialIndex", this->shader_index);
+    int32_t face_cull_mode {};
+    glGetIntegerv(GL_CULL_FACE_MODE, &face_culling_enable);
+    int32_t face_culling_enable {glIsEnabled(GL_CULL_FACE)};
 
-    auto &albedo {this->sampler_map["albedo"]};
+    if (this->double_sided && face_culling_enable) {
+        glDisable(GL_CULL_FACE);
+    } else if (face_cull_mode != GL_BACK) {
+        if (!face_culling_enable) {
+            glEnable(GL_ENABLE);
+        }
+
+        glCullFace(GL_BACK);
+    }
+
     if (albedo) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, albedo);
     }
 
-    auto &specular {this->sampler_map["specular"]};
     if (specular) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specular);
     }
 
-    auto &normal_map {this->sampler_map["normalmap"]};
     if (normal_map) {
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, normal_map);

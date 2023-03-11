@@ -29,7 +29,6 @@ void camera::on_event(SDL_Event &sdl_event) {
 
             this->transform.rotation.y += delta[0];
             this->transform.rotation.x -= delta[1];
-
             this->update_rotation();
             break;
         }

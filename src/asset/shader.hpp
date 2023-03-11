@@ -26,6 +26,7 @@ namespace asset {
         std::vector<uint32_t> buffer_id_list {};
         std::function<void(asset::shader*)> mixin {};
     public:
+        static shader *pcurrshader;
         shaderbuffering shaderbuffer {};
 
         explicit shader(std::string_view shader_tag, const std::vector<asset::shader_resource> &resource_list, const std::function<void(asset::shader*)> &injection_mixin = [](asset::shader*) {}) : program(glCreateProgram()) {

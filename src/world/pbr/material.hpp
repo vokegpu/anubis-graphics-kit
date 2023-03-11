@@ -1,20 +1,3 @@
-#ifndef AGK_WORLD_PBR_MATERIAL_METADATA_H
-#define AGK_WORLD_PBR_MATERIAL_METADATA_H
-
-#include <glm/glm.hpp>
-
-struct material_metadata {
-    glm::vec3 color {};
-    float rough {};
-
-    int32_t metal {};
-    int32_t active_sampler_albedo {};
-    int32_t active_sampler_specular {};
-    int32_t active_sampler_normal_map {};
-};
-
-#endif
-
 #ifndef AGK_WORLD_PBR_MATERIAL_H
 #define AGK_WORLD_PBR_MATERIAL_H
 
@@ -23,36 +6,29 @@ struct material_metadata {
 #include "asset/texture.hpp"
 #include <vector>
 
-class material {
+class material : public imodule {
 private:
     static int32_t token;
     material *p_material_linked {};
 protected:
+    std::map<std::string, std::string> metadata {};
     std::map<std::string, uint32_t> sampler_map {};
+
+    bool double_sided {};
     bool should_reload {};
     bool should_reload_textures {};
+
     int32_t id {};
     int32_t shader_index {};
-    material_metadata metadata {};
 public:
-    material();
-    ~material();
+    material(std::map<std::string, std::string> &_metadata);
+    ~material() = default;
 
-    uint32_t &operator[](std::string_view k_sampler) {
+    inline uint32_t &operator[](std::string_view k_sampler) {
         return this->sampler_map[k_sampler.data()];
     }
 
-    material_metadata &getmetadata();
-
-    void set_is_metal(bool _is_metal);
-    bool is_metal();
-
-    void set_rough(float _rough);
-    float get_rough();
-
-    void set_color(const glm::vec3 &color);
-    const glm::vec3 &get_color();
-
+    std::map<std::string, std::string> &get_metadata(); 
     void invoke(::asset::shader *p_shader);
 };
 

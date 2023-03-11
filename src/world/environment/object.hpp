@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-struct object_transform {
+struct objectransform {
 public:
     glm::mat4 mat4x4 {};
     glm::vec3 position {};
@@ -16,32 +16,41 @@ public:
 
 #endif
 
+#ifndef AGK_WORLD_ENVIRONMENT_OBJECT_RENDERING_PAIR_H
+#define AGK_WORLD_ENVIRONMENT_OBJECT_RENDERING_PAIR_H
+
+struct renderingpair {
+    model *p_linked_model {};
+    material *p_linked_material {};
+};
+
+#endif
+
 #ifndef AGK_WORLD_ENVIRONMENT_OBJECT_H
 #define AGK_WORLD_ENVIRONMENT_OBJECT_H
 
-#include "core/imodule.hpp"
 #include "world/enums/enums.hpp"
 #include "world/pbr/material.hpp"
-#include "asset/model.hpp"
+#include "world/pbr/model.hpp"
 
 class object : public imodule {
+private:
+    std::vector<model*> linked_model_list {};
+    std::vector<material*> linked_material_list {};
 protected:
-    enums::state visible {enums::state::none};
-    enums::priority priority {enums::priority::none};
+    enums::state visible {};
+    enums::priority priority {};
 public:
     explicit object(material *p_linked_material = nullptr);
     ~object();
 
-    std::vector<asset::model::child> model_children {};
-    asset::model *p_model {};
+    std::vector<std::string> model_group {};
+    std::vector<std::string> material_group {};
 
-    enums::type type {enums::type::object};
+    enums::type type {};
     buffering *p_instance {};
-    object_transform transform {};
+    objectransform transform {};
     util::aabb aabb {};
-
-    void set_material(material *p_material);
-    void assign_material(std::string_view name, material *p_material);
 
     void set_visible(enums::state enum_state, bool dispatch_event = true);
     enums::state get_visible();

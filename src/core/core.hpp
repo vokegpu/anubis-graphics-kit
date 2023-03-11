@@ -39,6 +39,7 @@ public:
     assetmanager *p_asset_manager_service {};
     sky *p_sky {};
     input *p_input_service {};
+    usercamera *p_user_camera {};
 
     meshloader mesh_loader_manager {};
     valueglobal setting {};

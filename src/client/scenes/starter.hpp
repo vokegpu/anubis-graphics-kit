@@ -3,7 +3,6 @@
 
 #include "core/imodule.hpp"
 #include "gpu/tools.hpp"
-#include "client/services/camera_manager.hpp"
 #include "world/environment/light.hpp"
 #include "world/environment/object.hpp"
 #include <ekg/ekg.hpp>
@@ -16,8 +15,6 @@ namespace client::scenes {
     public:
         light *p_light_spot {};
         object *p_object_dino {};
-
-        client::services::camera_manager *p_camera_manager {};
         uint64_t last_display_fps {};
 
         ekg::ui::slider *p_light_intensity {};
