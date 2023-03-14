@@ -68,7 +68,6 @@ public:
             }
         }
 
-
         glm::vec4 index {};
         for (uint32_t w {}; w < static_cast<uint32_t>(fwf) - 1; w++) {
             for (uint32_t h {}; h < static_cast<uint32_t>(fhf) - 1; h++) {
