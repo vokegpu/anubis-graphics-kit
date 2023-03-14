@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include "world/world.hpp"
 #include "world/camera/camera.hpp"
-#include "mesh/meshloader.hpp"
+#include "stream/streamparser.hpp"
 #include "ui/input.hpp"
 #include "world/renderer/renderer.hpp"
 #include "world/environment/entity.hpp"
@@ -33,7 +33,6 @@ public:
     imodule *p_curr_scene {};
     camera *p_curr_camera {};
     entity *p_curr_player {};
-
     world *p_world_service {};
     renderer *p_renderer_service {};
     assetmanager *p_asset_manager_service {};
@@ -41,7 +40,7 @@ public:
     input *p_input_service {};
     usercamera *p_user_camera {};
 
-    meshloader mesh_loader_manager {};
+    streamparser parser {};
     valueglobal setting {};
 };
 

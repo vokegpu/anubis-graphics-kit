@@ -237,12 +237,12 @@ sky *&agk::world::sky() {
     return agk::app.p_sky;
 }
 
-bool agk::mesh::load(::mesh::data &data, std::string_view path) {
-    return agk::app.mesh_loader_manager.load_object(data, path);
+bool agk::stream::load(::stream::mesh &mesh, std::string_view path) {
+    return agk::app.parser.load_mesh(mesh, path);
 }
 
-meshloader &agk::mesh::loader() {
-    return agk::app.mesh_loader_manager;
+bool agk::stream::load(::stream::mtl &mtl, std::string_view path) {
+    return agk::app.parser.load_material(mtl, path);
 }
 
 bool agk::ui::input(std::string_view input_tag) {

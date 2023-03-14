@@ -7,11 +7,11 @@
 #include <map>
 
 namespace stream {
-    enum format {
+    enum class format {
         unknown, wavefrontobj, stl, gltf
     };
 
-    enum type {
+    enum class type {
         vertex, texcoord, normal, index
     };
 
@@ -26,6 +26,20 @@ namespace stream {
         stream::format format {};
         typedef struct pack { glm::vec3 v {}, t {}, n {}; } pack;
     public:
+        bool contains(stream::type _type) {
+            switch (_type) {
+            case stream::type::vertex:
+                return !this->v_list.empty();
+            case stream::type::texcoord:
+                return !this->t_list.empty();
+            case stream::type::normal:
+                return !this->n_list.empty();
+            case stream::type::index:
+                return !this->i_list.empty();
+            }
+            return false;
+        }
+
         void append(const glm::vec4 &vec, stream::type _type) {
             switch (_type) {
                 case stream::type::vertex:
@@ -106,7 +120,7 @@ namespace stream {
                 case stream::type::vertex:
                     this->v_list.push_back(val);
                     break;
-                case stream::type::textcoord:
+                case stream::type::texcoord:
                     this->t_list.push_back(val);
                     break;
                 case stream::type::normal:
@@ -132,7 +146,7 @@ namespace stream {
             switch (_type) {
                 case stream::type::vertex:
                     return this->v_list;
-                case stream::type::textcoord:
+                case stream::type::texcoord:
                     return this->t_list;
                 case stream::type::normal:
                     return this->n_list;

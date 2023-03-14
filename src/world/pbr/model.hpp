@@ -8,15 +8,14 @@
 
 class model : public imodule {
 protected:
-	mesh::data mesh_data {};
 	bool compiled {};
-	std::function<void(buffering&, mesh::data&)> mixin {};
+	std::function<void(buffering&, stream::mesh&)> mixin {};
 public:
 	buffering buffer {};
 	bool static_buffers {true};
 	util::aabb aabb {};
 
-	void load(std::string_view path, const std::function<void(buffering&, mesh::data&)> &injection_mixin = {});
+	void load(std::string_view path, const std::function<void(buffering&, stream::mesh&)> &injection_mixin = {});
 	void recompile();
 	bool is_compiled();
 

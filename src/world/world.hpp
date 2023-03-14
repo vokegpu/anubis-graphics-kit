@@ -54,7 +54,7 @@ public:
 
     util::timing chunk_checker_timing {};
     util::timing chunk_poll_chunking {};
-    mesh::data chunk_mesh_data {};
+    stream::mesh chunk_mesh_data {};
     texturing texture_chunk {};
     util::aabb aabb_chunk {};
 
@@ -68,7 +68,7 @@ public:
     /* Start of world sky segment. */
     util::timing sky_cloud_timing {};
     texturing sky_cloud_texture {};
-    std::vector<::mesh::data> sky_cloud_mesh {};
+    std::vector<stream::mesh> sky_cloud_mesh {};
     /* End of world sky segment. */
 
     void on_create() override;

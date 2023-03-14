@@ -13,8 +13,8 @@ void model::recompile() {
         return;
     }
 
-    this->mesh_data = {};
-    if (akg::mesh::loader()->load_model(this->mesh_data, this->path)) {
+    stream::mesh mesh {};
+    if (akg::stream::load(mesh, this->path)) {
         /* keep flag compiled to false */
         return;
     }
@@ -22,41 +22,41 @@ void model::recompile() {
     uint32_t buffers_driver_read_mode {this->static_buffers ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW};
     this->buffer.invoke();
 
-    if (this->mesh_data.contains(mesh::type::vertex)) {
-        auto &list {this->mesh_data.get_float_list(mesh::type::vertex)};
+    if (mesh.contains(stream::type::vertex)) {
+        auto &list {mesh.get<float>(stream::type::vertex)};
         this->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), this->size.data(), buffers_driver_read_mode);
         this->buffer.attach(0, 3);
 
         this->buffer.stride[0] = 0;
         this->buffer.stride[1] = static_cast<int32_t>(list.size()) / 3;
-        util::generate_aabb(this->aabb, this->mesh_data);
+        util::generate_aabb(this->aabb, mesh);
     }
 
-    if (this->mesh_data.contains(mesh::type::textcoord)) {
-        auto &list {this->mesh_data.get_float_list(mesh::type::textcoord)};
+    if (mesh.contains(stream::type::texcoord)) {
+        auto &list {mesh.get<float>(stream::type::texcoord)};
         this->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), this->size.data(), buffers_driver_read_mode);
         this->buffer.attach(1, 2);
     }
 
-    if (this->mesh_data.contains(mesh::type::normal)) {
-        auto &list {this->mesh_data.get_float_list(mesh::type::normal)};
+    if (mesh.contains(stream::type::normal)) {
+        auto &list {mesh.get<float>(stream::type::normal)};
         this->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), this->size.data(), buffers_driver_read_mode);
         this->buffer.attach(2, 3);
     }
 
-    if (this->mesh_data.contains(mesh::type::vertex, true)) {
-        auto &list {this->mesh_data.get_uint_list()};
+    if (mesh.contains(stream::type::index)) {
+        auto &list {mesh.get<uint32_t>(stream::type::index)};
         this->buffer.bind(3, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         this->buffer.send<uint32_t>(sizeof(uint32_t)*list.size(), list.data(), buffers_driver_read_mode);
 
         this->buffer.stride[0] = 0;
-        this->buffer.stride[1] = this->mesh_data.faces;
+        this->buffer.stride[1] = mesh.faces;
     }
 
-    if (this->mixin) this->mixin(this->buffer, this->mesh_data);
+    if (this->mixin) this->mixin(this->buffer, mesh);
     this->buffer.revoke();
     this->compiled = true;
 }

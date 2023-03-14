@@ -255,22 +255,27 @@ void renderer::process_editor() {
 }
 
 void renderer::on_create() {
-    float mesh[] {
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            1.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 1.0f,
-            0.0f, 0.0f
+    float vertex_quad_buffer[8] {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f
+    };
+
+    uint8_t index_quad_buffer[6] {
+        0, 1, 3, 3, 2, 0
     };
 
     this->buffer_post_processing.invoke();
     this->buffer_post_processing.stride[1] = 6;
 
-    /* Vertices. */
+    /* setup buffers to post-rendering quad */
     this->buffer_post_processing.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
-    this->buffer_post_processing.send<float>(sizeof(mesh), mesh, GL_STATIC_DRAW);
+    this->buffer_post_processing.send<float>(sizeof(vertex_quad_buffer), vertex_quad_buffer, GL_STATIC_DRAW);
     this->buffer_post_processing.attach(0, 2);
+
+    this->buffer_post_processing.bind(1, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_BYTE});
+    this->buffer_post_processing.send<uint8_t>(sizeof(index_quad_buffer), index_quad_buffer, GL_STATIC_DRAW);
     this->buffer_post_processing.revoke();
 
     /* Link to immediate shape. */
@@ -282,16 +287,16 @@ void renderer::on_create() {
 
     /* Process chunking buffer. */
     auto &mesh_chunk {agk::world::get()->chunk_mesh_data};
-    auto &v {mesh_chunk.get_float_list(mesh::type::vertex)};
-    auto &t {mesh_chunk.get_float_list(mesh::type::textcoord)};
+    auto &v {mesh_chunk.get<float>(stream::type::vertex)};
+    auto &t {mesh_chunk.get<float>(stream::type::texcoord)};
 
     this->buffer_chunk.invoke();
     this->buffer_chunk.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
-    this->buffer_chunk.send<float>(sizeof(float) * v.size(), v.data(), GL_STATIC_DRAW);
+    this->buffer_chunk.send<float>(sizeof(float)*v.size(), v.data(), GL_STATIC_DRAW);
     this->buffer_chunk.attach(0, 3);
 
     this->buffer_chunk.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
-    this->buffer_chunk.send<float>(sizeof(float) * t.size(), t.data(), GL_STATIC_DRAW);
+    this->buffer_chunk.send<float>(sizeof(float)*t.size(), t.data(), GL_STATIC_DRAW);
     this->buffer_chunk.attach(1, 2);
 
     this->buffer_chunk.stride[0] = 0;

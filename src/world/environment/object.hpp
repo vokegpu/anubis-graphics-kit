@@ -34,15 +34,11 @@ struct renderingpair {
 #include "world/pbr/model.hpp"
 
 class object : public imodule {
-private:
-    std::vector<renderingpair> rendering_pair_list {};
 protected:
+    std::vector<renderingpair> rendering_pair_list {};
     enums::state visible {};
     enums::priority priority {};
 public:
-    explicit object(material *p_linked_material = nullptr);
-    ~object();
-
     std::vector<std::string> model_group {};
     std::vector<std::string> material_group {};
 
@@ -50,6 +46,9 @@ public:
     buffering *p_instance {};
     objectransform transform {};
     util::aabb aabb {};
+public:
+    explicit object(material *p_linked_material = nullptr);
+    ~object();
 
     void set_visible(enums::state enum_state, bool dispatch_event = true);
     enums::state get_visible();

@@ -50,9 +50,11 @@ namespace agk {
         imodule *find(std::string_view asset_name);
     }
 
-    namespace mesh {
-        meshloader &loader();
-        bool load(::mesh::data&, std::string_view);
+    namespace stream {
+        streamparser &parser();
+
+        bool load(::stream::mtl &mtl, std::string_view path);
+        bool load(::stream::mesh &mesh, std::string_view path);
     }
 
     namespace ui {

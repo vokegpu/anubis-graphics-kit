@@ -75,7 +75,7 @@ public:
                 index.y = (w + 1) * h * 3;
                 index.x = w * (h + 1) * 3;
                 index.w = (w + 1) * (h + 1) * 3;
-                mesh.append(index, stream::typpe::index);
+                mesh.append(index, stream::type::index);
                 mesh.faces++;
             }
         }

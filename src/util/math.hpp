@@ -1,7 +1,7 @@
 #ifndef AGK_UTIL_MATH_H
 #define AGK_UTIL_MATH_H
 
-#include "mesh/mesh.hpp"
+#include "stream/stream.hpp"
 #include <glm/glm.hpp>
 
 namespace util {
@@ -10,7 +10,7 @@ namespace util {
         glm::vec3 max {};
     };
 
-    void generate_aabb(util::aabb &aabb, mesh::data &mesh);
+    void generate_aabb(util::aabb &aabb, stream::mesh &mesh);
     float clamp(float val, float min, float max);
     float min(float val, float min);
     float max(float val, float max);

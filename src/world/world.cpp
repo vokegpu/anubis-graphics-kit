@@ -14,7 +14,7 @@ void world::on_create() {
     agk::app.setting.chunk_dimension.set_value(256);
     agk::app.setting.chunk_terrain_height.set_value(256);
 
-    agk::mesh::loader().load_identity_heightmap(this->chunk_mesh_data, 20, 20);
+    agk::core.parser.load_heightmap_mesh<float>(this->chunk_mesh_data, nullptr, {20, 20});
     this->vegetation_memory_list.reserve((128 * 128) * 4);
     util::generate_aabb(this->aabb_chunk, this->chunk_mesh_data);
     this->aabb_chunk.max.y = agk::app.setting.chunk_terrain_height.get_value();

@@ -1,9 +1,9 @@
-#ifndef AGK_WORLD_TERRAIN_CHUNK_DATA_H
-#define AGK_WORLD_TERRAIN_CHUNK_DATA_H
+#ifndef AGK_WORLD_TERRAIN_CHUNK_METADATA_H
+#define AGK_WORLD_TERRAIN_CHUNK_METADATA_H
 
 #include <iostream>
 
-struct chunk_metadata {
+struct chunkmetadata {
     float frequency {};
     float amplitude {};
     float persistence {};
@@ -11,9 +11,9 @@ struct chunk_metadata {
     int32_t octaves {};
 };
 
-const chunk_metadata EMPTY_CHUNK_METADATA {0.0f, 0.0f, 0.0f, 0.0f, 0};
+const chunkmetadata EMPTY_CHUNK_METADATA {0.0f, 0.0f, 0.0f, 0.0f, 0};
 
-inline bool operator==(const chunk_metadata &chunk_metadata1, const chunk_metadata &chunk_metadata2) {
+inline bool operator==(const chunkmetadata &chunk_metadata1, const chunkmetadata &chunk_metadata2) {
     return (
             chunk_metadata1.octaves == chunk_metadata2.octaves &&
             chunk_metadata1.frequency == chunk_metadata2.frequency &&
@@ -22,7 +22,7 @@ inline bool operator==(const chunk_metadata &chunk_metadata1, const chunk_metada
     );
 }
 
-inline bool operator!=(const chunk_metadata &chunk_metadata1, const chunk_metadata &chunk_metadata2) {
+inline bool operator!=(const chunkmetadata &chunk_metadata1, const chunkmetadata &chunk_metadata2) {
     return !(chunk_metadata1 == chunk_metadata2);
 }
 
@@ -32,7 +32,6 @@ inline bool operator!=(const chunk_metadata &chunk_metadata1, const chunk_metada
 #define AGK_WORLD_TERRAIN_CHUNK_H
 
 #include "gpu/tools.hpp"
-#include "asset/mesh.hpp"
 #include "world/environment/object.hpp"
 #include "util/math.hpp"
 
@@ -41,7 +40,7 @@ protected:
     bool processed {};
 public:
     buffering buffer {};
-    chunk_metadata metadata {};
+    chunkmetadata metadata {};
     uint32_t texture {};
 
     explicit chunk();
