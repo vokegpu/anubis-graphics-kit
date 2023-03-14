@@ -93,7 +93,7 @@ namespace asset {
             return this->gpu_side;
         }
 
-        t &cpu_side_data() {
+        t *&cpu_side_data() {
             return this->cpu_side;
         }
 

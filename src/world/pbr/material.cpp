@@ -66,7 +66,7 @@ void material::invoke(::asset::shader *p_shader) {
 
     p_shader->set_uniform_int("uMaterialIndex", this->shader_index);
     int32_t face_cull_mode {};
-    glGetIntegerv(GL_CULL_FACE_MODE, &face_culling_enable);
+    glGetIntegerv(GL_CULL_FACE_MODE, &face_cull_mode);
     int32_t face_culling_enable {glIsEnabled(GL_CULL_FACE)};
 
     if (this->double_sided && face_culling_enable) {

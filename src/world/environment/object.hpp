@@ -35,8 +35,7 @@ struct renderingpair {
 
 class object : public imodule {
 private:
-    std::vector<model*> linked_model_list {};
-    std::vector<material*> linked_material_list {};
+    std::vector<renderingpair> rendering_pair_list {};
 protected:
     enums::state visible {};
     enums::priority priority {};

@@ -93,6 +93,7 @@ void renderer::process_environment() {
     p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_mat4("uPerspectiveView", &this->mat4x4_perspective_view[0][0]);
 
+    glCullFace(GL_BACK);
     uint32_t draw_call_count {};
 
     for (object *&p_objects : this->obj_draw_list) {
