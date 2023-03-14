@@ -3,14 +3,15 @@
 
 #include "stream.hpp"
 #include "asset/texture.hpp"
+#include <fstream>
 
 class streamparser {
 protected:
-    stream::serializer current_serialiazer {};
+    stream::serializer current_serializer {};
     std::string current_path {};
 
-    std::map<std::string, mesh::format> mesh_ext_map {
-            {"stl", mesh::format::stl}, {"obj", mesh::format::wavefrontobj}, {"gltf", mesh::format::gltf}
+    std::map<std::string, stream::format> mesh_ext_map {
+            {"stl", stream::format::stl}, {"obj", stream::format::wavefrontobj}, {"gltf", stream::format::gltf}
     };
 
     std::map<std::string, std::string> mtl_pbr_conversions_map {
@@ -45,38 +46,50 @@ public:
             const float fhf {size.y == 0 ? static_cast<float>(gpu_side.h) : static_cast<float>(size.y)};
             const int64_t channels {gpu::channels(gpu_side)};
 
-            for (float w {}; w < fwf; w++) {
-                for (float h {}; h < fhf; h++) {
+            for (int32_t w {}; w < static_cast<uint32_t>(fwf); w++) {
+                for (int32_t h {}; h < static_cast<uint32_t>(fhf); h++) {
                     const t *p_vec {&p_data[static_cast<int64_t>(w) * static_cast<int64_t>(h) * channels]};
-                    vertex.x = w / fwf;
+                    vertex.x = static_cast<float>(w) / fwf;
                     vertex.y = (static_cast<float>(p_vec[0]) + static_cast<float>(p_vec[1]) + static_cast<float>(p_vec[2])) / static_cast<float>(divider);
-                    vertex.z = h / fhf;
+                    vertex.z = static_cast<float>(h) / fhf;
                     mesh.append(vertex, stream::type::vertex);
+                }
+            }
+
+            glm::vec4 index {};
+            for (uint32_t w {}; w < static_cast<uint32_t>(fwf) - 1; w++) {
+                for (uint32_t h {}; h < static_cast<uint32_t>(fhf) - 1; h++) {
+                    index.x = static_cast<float>(w * h * 3);
+                    index.y = static_cast<float>((w + 1) * h * 3);
+                    index.x = static_cast<float>(w * (h + 1) * 3);
+                    index.w = static_cast<float>((w + 1) * (h + 1) * 3);
+                    mesh.append(index, stream::type::index);
+                    mesh.faces++;
                 }
             }
         } else {
             const float fwf {static_cast<float>(size.x)};
             const float fhf {static_cast<float>(size.y)};
+            vertex.y = 0.0f;
 
-            for (float w {}; w < fwf - 1.0f; w++) {
-                for (float h {}; h < fhf - 1.0f; h++) {
-                    vertex.x = w / fwf;
-                    vertex.y = 0.0f;
-                    vertex.z = h / fhf;
+            for (int32_t w {}; w < static_cast<uint32_t>(fwf); w++) {
+                for (int32_t h {}; h < static_cast<uint32_t>(fhf); h++) {
+                    vertex.x = static_cast<float>(w) / fwf;
+                    vertex.z = static_cast<float>(h) / fhf;
                     mesh.append(vertex, stream::type::vertex);
                 }
             }
-        }
 
-        glm::vec4 index {};
-        for (uint32_t w {}; w < static_cast<uint32_t>(fwf) - 1; w++) {
-            for (uint32_t h {}; h < static_cast<uint32_t>(fhf) - 1; h++) {
-                index.x = w * h * 3;
-                index.y = (w + 1) * h * 3;
-                index.x = w * (h + 1) * 3;
-                index.w = (w + 1) * (h + 1) * 3;
-                mesh.append(index, stream::type::index);
-                mesh.faces++;
+            glm::vec4 index {};
+            for (uint32_t w {}; w < static_cast<uint32_t>(fwf) - 1; w++) {
+                for (uint32_t h {}; h < static_cast<uint32_t>(fhf) - 1; h++) {
+                    index.x = static_cast<float>(w * h * 3);
+                    index.y = static_cast<float>((w + 1) * h * 3);
+                    index.x = static_cast<float>(w * (h + 1) * 3);
+                    index.w = static_cast<float>((w + 1) * (h + 1) * 3);
+                    mesh.append(index, stream::type::index);
+                    mesh.faces++;
+                }
             }
         }
     }

@@ -24,7 +24,7 @@ namespace stream {
     public:
         int32_t faces {};
         stream::format format {};
-        typedef struct pack { glm::vec3 v {}, t {}, n {}; } pack;
+        typedef struct pack { std::vector<glm::vec3> v {}, n {}; std::vector<glm::vec2> t {}; } pack;
     public:
         bool contains(stream::type _type) {
             switch (_type) {
@@ -55,10 +55,10 @@ namespace stream {
                     this->t_list.push_back(vec.w);
                     break;
                 case stream::type::normal:
-                    this->t_list.push_back(vec.x);
-                    this->t_list.push_back(vec.y);
-                    this->t_list.push_back(vec.z);
-                    this->t_list.push_back(vec.w);
+                    this->n_list.push_back(vec.x);
+                    this->n_list.push_back(vec.y);
+                    this->n_list.push_back(vec.z);
+                    this->n_list.push_back(vec.w);
                     break;
                 case stream::type::index:
                     this->i_list.push_back(static_cast<uint32_t>(vec.x));
@@ -82,9 +82,9 @@ namespace stream {
                     this->t_list.push_back(vec.z);
                     break;
                 case stream::type::normal:
-                    this->t_list.push_back(vec.x);
-                    this->t_list.push_back(vec.y);
-                    this->t_list.push_back(vec.z);
+                    this->n_list.push_back(vec.x);
+                    this->n_list.push_back(vec.y);
+                    this->n_list.push_back(vec.z);
                     break;
                 case stream::type::index:
                     this->i_list.push_back(static_cast<uint32_t>(vec.x));
@@ -105,8 +105,8 @@ namespace stream {
                     this->t_list.push_back(vec.y);
                     break;
                 case stream::type::normal:
-                    this->t_list.push_back(vec.x);
-                    this->t_list.push_back(vec.y);
+                    this->n_list.push_back(vec.x);
+                    this->n_list.push_back(vec.y);
                     break;
                 case stream::type::index:
                     this->i_list.push_back(static_cast<uint32_t>(vec.x));
@@ -126,7 +126,8 @@ namespace stream {
                 case stream::type::normal:
                     this->n_list.push_back(val);
                     break;
-                default:
+                case stream::type::index:
+                    this->i_list.push_back(static_cast<uint32_t>(val));
                     break;
             };
         }
@@ -134,9 +135,16 @@ namespace stream {
         void append(uint32_t val, stream::type _type) {
             switch (_type) {
                 case stream::type::vertex:
-                    this->i_list.push_back(val);
+                    this->v_list.push_back(static_cast<float>(val));
                     break;
-                default:
+                case stream::type::texcoord:
+                    this->t_list.push_back(static_cast<float>(val));
+                    break;
+                case stream::type::normal:
+                    this->n_list.push_back(static_cast<float>(val));
+                    break;
+                case stream::type::index:
+                    this->i_list.push_back(val);
                     break;
             };
         }
@@ -150,9 +158,9 @@ namespace stream {
                     return this->t_list;
                 case stream::type::normal:
                     return this->n_list;
+                case stream::type::index:
+                    return this->i_list;
             };
-            
-            return this->i_list;
         }
     };
 
@@ -171,13 +179,9 @@ namespace stream {
     protected:
         stream::serializer serializer {};
     public:
-        stream::format fomrat {};
+        stream::format format {};
     public:
-        inline explicit &operator stream::serializer() {
-            return this->serializer;
-        }
-
-        void stream::serializer &set_serialiazer(const stream::serializer &_serialiazer);
+        void set_serializer(const stream::serializer &_serializer);
         stream::serializer &get_serializer();
     };
 };

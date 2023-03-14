@@ -7,7 +7,7 @@ void assetmanager::do_create_asset(imodule *&p_asset) {
     p_asset->on_create();
 
     std::string msg {"Assets '"};
-    msg += reload_asset_list[it];
+    msg += p_asset->tag;
     msg += "' ";
 
     if (p_asset->is_dead) {

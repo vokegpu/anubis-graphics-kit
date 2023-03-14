@@ -45,6 +45,10 @@ void pbrloader::registry(material *p_material) {
     }
 }
 
-imodule *pbrloader::get(std::string_view k_name) {
-    return this->element_map[k_name];
+material *pbrloader::find_material(std::string_view k_name) {
+    return nullptr;
+}
+
+model *pbrloader::find_model(std::string_view k_name) {
+    return nullptr;
 }

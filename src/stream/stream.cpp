@@ -4,8 +4,8 @@ std::map<std::string, std::map<std::string, std::string>> &stream::serializer::g
     return this->metadata;
 }
 
-void stream::serializer::set_serialiazer(const stream::serialiazer &_serialiazer) {
-    this->serialiazer = _serialiazer;
+void stream::mtl::set_serializer(const stream::serializer &_serializer) {
+    this->serializer = _serializer;
 }
 
 stream::serializer &stream::mtl::get_serializer() {

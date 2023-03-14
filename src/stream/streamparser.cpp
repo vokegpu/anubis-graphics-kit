@@ -6,7 +6,7 @@ stream::format streamparser::get_model_format(std::string_view path) {
     split_path.emplace_back();
 
     const std::string file_extension {split_path[std::max((int32_t) split_path.size() - 2, 0)]};
-    const stream::format format {!this->mesh_ext_map.count(file_extension) ? mesh.format : this->mesh_ext_map[file_extension]};
+    const stream::format format {!this->mesh_ext_map.count(file_extension) ? stream::format::unknown : this->mesh_ext_map[file_extension]};
     return format;
 }
 
@@ -21,7 +21,7 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
     std::string values {};
     std::vector<std::string> split {}, split_first {}, split_second {}, split_third {};
 
-    const size_t line_size {};
+    size_t line_size {};
     const size_t x {1};
     const size_t y {2};
     const size_t z {3};
@@ -119,7 +119,7 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
 }
 
 bool streamparser::process_stl(stream::mesh &mesh) {
-    std::ifstream ifs {mesh.data(), std::ifstream::in | std::ifstream::binary};
+    std::ifstream ifs {this->current_path.data(), std::ifstream::in | std::ifstream::binary};
     if (!ifs.is_open()) {
         return util::log("Failed to read STL at '" + this->current_path + '\'');
     }
@@ -127,31 +127,32 @@ bool streamparser::process_stl(stream::mesh &mesh) {
     ifs.seekg(80);
     ifs.read((char*) &mesh.faces, sizeof(int32_t));
     stream::mesh::pack pack {};
-    glm::vec3 normal {};
+    glm::vec3 t {}, r {}, s {}, n {};
 
     /*
-     * Triangle vertexes are represent as: v, t, & n.
+     * triangle vertices are represented as: t, r, & s
+     * faces normals is represented by n
      */
     for (int32_t it {}; it < mesh.faces; it++) {
-        ifs.read((char*) &normal.x, sizeof(float));
-        ifs.read((char*) &normal.y, sizeof(float));
-        ifs.read((char*) &normal.z, sizeof(float));
-        mesh.append(normal, stream::type::normal);
+        ifs.read((char*) &n.x, sizeof(float));
+        ifs.read((char*) &n.y, sizeof(float));
+        ifs.read((char*) &n.z, sizeof(float));
+        mesh.append(n, stream::type::normal);
 
-        ifs.read((char*) &pack.v.x, sizeof(float));
-        ifs.read((char*) &pack.v.y, sizeof(float));
-        ifs.read((char*) &pack.v.z, sizeof(float));
-        mesh.append(pack.v, stream::type::vertex);
+        ifs.read((char*) &t.x, sizeof(float));
+        ifs.read((char*) &t.y, sizeof(float));
+        ifs.read((char*) &t.z, sizeof(float));
+        mesh.append(t, stream::type::vertex);
 
-        ifs.read((char*) &pack.t.x, sizeof(float));
-        ifs.read((char*) &pack.t.y, sizeof(float));
-        ifs.read((char*) &pack.t.z, sizeof(float));
-        mesh.append(pack.t, stream::type::vertex);
+        ifs.read((char*) &r.x, sizeof(float));
+        ifs.read((char*) &r.y, sizeof(float));
+        ifs.read((char*) &r.z, sizeof(float));
+        mesh.append(r, stream::type::vertex);
 
-        ifs.read((char*) &pack.n.y, sizeof(float));
-        ifs.read((char*) &pack.n.y, sizeof(float));
-        ifs.read((char*) &pack.n.y, sizeof(float));
-        mesh.append(pack.n, stream::type::vertex);
+        ifs.read((char*) &s.y, sizeof(float));
+        ifs.read((char*) &s.y, sizeof(float));
+        ifs.read((char*) &s.y, sizeof(float));
+        mesh.append(s, stream::type::vertex);
     }
 
     ifs.close();
@@ -182,7 +183,7 @@ bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
 
 stream::serializer streamparser::get_pbr_from_wavefront_object_mtllib(stream::serializer &serializer) {
     auto &mtllib_metadata {serializer.get_metadata()};
-    mesh::serializer pbr_mtl_serializer {};
+    stream::serializer pbr_mtl_serializer {};
     std::string mtl_name {};
 
     for (auto it_mtl {mtllib_metadata.begin()}; it_mtl != mtllib_metadata.end(); it_mtl = std::next(it_mtl)) {
@@ -204,17 +205,17 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
     }
 
     std::string string_buffer {};
-    std::string substr {};
+    std::string find {};
     std::vector<std::string> strings {};
-    std::strng mtllib_path {};
+    std::string mtllib_path {};
 
     while (std::getline(ifs_wavefront_object, string_buffer)) {
         if (string_buffer.size() < 6) {
             continue;
         }
 
-        substr = string_buffer.substr(0, 6);
-        if (substr == "mtllib") {
+        find = string_buffer.substr(0, 6);
+        if (find == "mtllib") {
             util::split(strings, this->current_path, '/');
 
             const uint64_t size {strings[std::max((int32_t) strings.size() - 1, 0)].size()};
@@ -252,11 +253,11 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
         util::split(strings, string_buffer, ' ');
 
         if (strings[0] == "illum" || strings[0] == "Ns" || strings[0] == "Ni" || strings[0] == "d" || strings[0] == "Tr") {
-            this->current_serialiazer[newmtl_segment][strings[0]] = strings[x];
+            this->current_serializer[newmtl_segment][strings[0]] = strings[x];
         } else if (strings[0] == "newmtl") {
             metadata.clear();
             metadata += string_buffer.substr(strings[0].size() + 1, string_buffer.size() - strings[0].size() - 1);
-            this->current_serialiazer[metadata];
+            this->current_serializer[metadata];
         } else if (strings[0] == "Ka" || strings[0] == "Kd" || strings[0] == "Ks" || strings[0] == "Ke" || strings[0] == "Tf") {
             metadata.clear();
             metadata += strings[x];
@@ -264,16 +265,16 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
             metadata += strings[y];
             metadata += '/';
             metadata += strings[z];
-            this->current_serialiazer[newmtl_segment][strings[0]] = metadata;
+            this->current_serializer[newmtl_segment][strings[0]] = metadata;
         } else if (strings[0] == "bump" || strings[0] == "map_bump" || strings[0] == "map_Ka" || strings[0] == "map_Kd" || strings[0] == "map_Ks" || strings[0] == "map_Ke") {
             metadata.clear();
             metadata += string_buffer.substr(strings[0].size() + 1, string_buffer.size() - strings[0].size() - 1);
-            this->current_serialiazer[newmtl_segment][strings[0]] = metadata;
+            this->current_serializer[newmtl_segment][strings[0]] = metadata;
         }
     }
 
     ifs_mtllib.close();
-    mtl.set_serialiazer(this->get_pbr_from_wavefront_object_mtllib(this->current_serialiazer));
+    mtl.set_serializer(this->get_pbr_from_wavefront_object_mtllib(this->current_serializer));
 }
 
 bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {

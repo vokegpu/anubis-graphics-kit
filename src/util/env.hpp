@@ -1,4 +1,4 @@
-p#ifndef AGK_UTIL_RUNTIME_H
+#ifndef AGK_UTIL_RUNTIME_H
 #define AGK_UTIL_RUNTIME_H
 
 #include <vector>
@@ -15,8 +15,8 @@ namespace util {
     bool reset(util::timing&);
     bool reach(util::timing&, uint64_t);
     bool reset_when(util::timing&, uint64_t);
-    void log(const std::string &log_message);
-    void split(std::vector<std::string>&, std::string_view, const char);
+    bool log(const std::string &log_message);
+    void split(std::vector<std::string>&, std::string_view, const char&);
 }
 
 #endif

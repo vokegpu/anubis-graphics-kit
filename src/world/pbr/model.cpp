@@ -1,31 +1,33 @@
 #include "model.hpp"
+#include "agk.hpp"
 
-void model::load(std::string_view path) {
+void model::load(std::string_view path, const std::function<void(buffering&, stream::mesh&)> &injection_mixin) {
     if (this->tag != path) {
         this->compiled = true;
         this->tag = path;
+        this->mixin = injection_mixin;
         this->recompile();
     }
 }
 
 void model::recompile() {
-    if (!this->compile) {
+    if (!this->compiled) {
         return;
     }
 
     stream::mesh mesh {};
-    if (akg::stream::load(mesh, this->path)) {
+    if (agk::stream::load(mesh, this->tag)) {
         /* keep flag compiled to false */
         return;
     }
 
-    uint32_t buffers_driver_read_mode {this->static_buffers ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW};
+    int32_t buffers_driver_read_mode {this->static_buffers ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW};
     this->buffer.invoke();
 
     if (mesh.contains(stream::type::vertex)) {
         auto &list {mesh.get<float>(stream::type::vertex)};
         this->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
-        this->buffer.send<float>(sizeof(float)*list.size(), this->size.data(), buffers_driver_read_mode);
+        this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(0, 3);
 
         this->buffer.stride[0] = 0;
@@ -36,14 +38,14 @@ void model::recompile() {
     if (mesh.contains(stream::type::texcoord)) {
         auto &list {mesh.get<float>(stream::type::texcoord)};
         this->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
-        this->buffer.send<float>(sizeof(float)*list.size(), this->size.data(), buffers_driver_read_mode);
+        this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(1, 2);
     }
 
     if (mesh.contains(stream::type::normal)) {
         auto &list {mesh.get<float>(stream::type::normal)};
         this->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
-        this->buffer.send<float>(sizeof(float)*list.size(), this->size.data(), buffers_driver_read_mode);
+        this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(2, 3);
     }
 

@@ -41,7 +41,7 @@ bool util::reset_when(util::timing &timing, uint64_t ms) {
     return false;
 }
 
-void util::split(std::vector<std::string> &list, std::string_view str, const char divisor) {
+void util::split(std::vector<std::string> &list, std::string_view str, const char &divisor) {
     std::string string_buffer {};
     std::stringstream ss(str.data());
     list.clear();
