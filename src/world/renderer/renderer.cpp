@@ -126,7 +126,18 @@ void renderer::process_environment() {
             p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
         }
 
-        p_objects->on_render();
+        for (renderingpair &rendering_pairs : p_objects->rendering_pair_list) {
+            if (rendering_pairs.p_linked_material != nullptr) {
+                rendering_pairs.p_linked_material->invoke(p_program_pbr);
+            }
+
+            íf (rendering_pairs.p_linked_model != nullptr) {
+                rendering_pairs.p_linked_model->buffer.invoke();
+                rendering_pairs.p_linked_model->buffer.draw();
+                rendering_pairs.p_linked_model->buffer.revoke();
+            }
+        }
+
         draw_call_count++;
     }
 

@@ -68,9 +68,5 @@ bool model::is_compiled() {
 }
 
 void model::on_destroy() {
-
-}
-
-void model::on_render() {
-
+    this->buffer.delete_buffers();
 }

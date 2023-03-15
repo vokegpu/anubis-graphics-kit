@@ -18,9 +18,7 @@ public:
 	void load(std::string_view path, const std::function<void(buffering&, stream::mesh&)> &injection_mixin = {});
 	void recompile();
 	bool is_compiled();
-
 	void on_destroy() override;
-	void on_render() override;
 };
 
 #endif

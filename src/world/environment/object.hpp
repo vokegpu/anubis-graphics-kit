@@ -35,10 +35,10 @@ struct renderingpair {
 
 class object : public imodule {
 protected:
-    std::vector<renderingpair> rendering_pair_list {};
     enums::state visible {};
     enums::priority priority {};
 public:
+    std::vector<renderingpair> rendering_pair_list {};
     std::vector<std::string> model_group {};
     std::vector<std::string> material_group {};
 
@@ -57,7 +57,6 @@ public:
     enums::priority get_priority();
 
     virtual void on_low_update();
-    void on_render() override;
 };
 
 #endif

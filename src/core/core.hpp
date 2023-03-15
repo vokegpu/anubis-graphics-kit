@@ -20,7 +20,7 @@ public:
     static std::queue<imodule*> taskqueue;
     static int32_t token {};
 public:
-    SDL_Window *p_sdl_window {nullptr};
+    SDL_Window *p_sdl_window {};
     int32_t screen_width {1600};
     int32_t screen_height {900};
 

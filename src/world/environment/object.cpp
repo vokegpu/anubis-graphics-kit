@@ -54,18 +54,6 @@ enums::priority object::get_priority() {
     return this->priority;
 }
 
-void object::on_render() {
-    for (auto &rendering_pair : this->rendering_pair_list) {
-        if (rendering_pair->p_material != nullptr) {
-            rendering_pair->invoke(asset::shader::pcurrshader);
-        }
-
-        if (rendering_pair->p_model != nullptr) {
-            rendering_pair->p_model->on_render();
-        }
-    }
-}
-
 object::object(material *p_linked_material) {
     this->id = imodule::token++;
     this->set_priority(enums::priority::high);
