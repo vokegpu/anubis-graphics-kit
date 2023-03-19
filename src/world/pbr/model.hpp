@@ -9,16 +9,18 @@
 class model : public imodule {
 protected:
 	bool compiled {};
-	std::function<void(buffering&, stream::mesh&)> mixin {};
+	stream::mesh mesh {};
 public:
 	buffering buffer {};
 	bool static_buffers {true};
 	util::aabb aabb {};
+public:
+	explicit model(stream::mesh &_mesh);
+	~model();
 
-	void load(std::string_view path, const std::function<void(buffering&, stream::mesh&)> &injection_mixin = {});
+	void load(stream::mesh &_mesh);
 	void recompile();
 	bool is_compiled();
-	void on_destroy() override;
 };
 
 #endif

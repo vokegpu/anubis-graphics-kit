@@ -3,6 +3,10 @@
 
 #include "core/core.hpp"
 
+/*
+ * Main Anubis Graphics Kit namespace contains incorrect case style -
+ * "soon it should be fixed".
+ */
 namespace agk {
     extern core app;
     extern float dt;
@@ -55,6 +59,13 @@ namespace agk {
 
         bool load(::stream::mtl &mtl, std::string_view path);
         bool load(::stream::mesh &mesh, std::string_view path);
+    }
+
+    namespace pbr {
+        bool loadmaterial(std::vector<std::string> &loaded_material_list, std::string_view path);
+        bool loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path);
+        material *findmaterial(std::string_view k_name);
+        model *findmodel(std::string_view k_name);
     }
 
     namespace ui {

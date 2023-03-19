@@ -36,6 +36,7 @@ public:
     world *p_world_service {};
     renderer *p_renderer_service {};
     assetmanager *p_asset_manager_service {};
+    pbrloader *p_pbr_loader_service {};
     sky *p_sky {};
     input *p_input_service {};
     usercamera *p_user_camera {};

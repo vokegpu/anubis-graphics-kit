@@ -54,6 +54,10 @@ We only accept codes with the following case style:
 ```cpp
 // file_name.hpp
 
+namespace agk::cat {
+  bool checksomethingcat();
+}
+
 class foobar {
 public:
   void do_something();

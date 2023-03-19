@@ -126,6 +126,10 @@ void renderer::process_environment() {
             p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
         }
 
+        /*
+            Rendering pairs can solve the issue with rendering glTF models,
+            glTF models contains transform for each model.
+         */
         for (renderingpair &rendering_pairs : p_objects->rendering_pair_list) {
             if (rendering_pairs.p_linked_material != nullptr) {
                 rendering_pairs.p_linked_material->invoke(p_program_pbr);
@@ -345,8 +349,8 @@ void renderer::on_create() {
     this->buffer_coordinate_debug.invoke();
     this->buffer_coordinate_debug.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
     this->buffer_coordinate_debug.send<float>(sizeof(coordinates), coordinates, GL_STATIC_DRAW);
-    this->buffer_coordinate_debug.attach(0, 3, {sizeof(float) * 6, 0});
-    this->buffer_coordinate_debug.attach(1, 3, {sizeof(float) * 6, sizeof(float) * 3});
+    this->buffer_coordinate_debug.attach(0, 3, {sizeof(float)*6, 0});
+    this->buffer_coordinate_debug.attach(1, 3, {sizeof(float)*6, sizeof(float)*3});
     this->buffer_coordinate_debug.revoke();
 
     glm::vec2 terrain_atlas {512, 512};

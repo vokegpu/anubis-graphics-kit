@@ -6,28 +6,14 @@
 #include "world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    asset::model *p_model_dino {new asset::model {"dinossaur", "./data/models/dinossaur.stl", glm::ivec4(GL_STATIC_DRAW)}};
-    agk::asset::load(p_model_dino);
-
-    material *p_material {new material()};
-    p_material->set_color({1.0f, 1.0f, 1.0f});
-    asset::model *p_model_car {new asset::model {"car", "./data/models/car.gltf", glm::ivec4(GL_STATIC_DRAW), asset::flags::nomaterial}};
-    p_model_car->set_material(p_material);
-    p_model_car->assign_material("wheel1", p_material);
-
-    for (int i {}; i < 1; i++) {
-        this->p_object_dino = new object(p_material);
-        p_material->set_color({1.0f, 215.0f / 255.0f, 0.0f});
-        this->p_object_dino->transform.scale = {1.0f, 1.0f, 1.0f};
-        agk::world::create(this->p_object_dino);
-    }
+    agk::pbr::loadmodel("Dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
 
     this->p_light_spot = new light(nullptr);
     this->p_light_spot->intensity = {300, 300, 300};
     this->p_light_spot->transform.position = {0, 300, 0};
     this->p_light_spot->update();
 
-    auto p_light_spot2 = new light(nullptr);
+    auto *p_light_spot2 = new light(nullptr);
     p_light_spot2->intensity = {50, 50, 50};
     p_light_spot2->transform.position = {0, 15, 0};
     p_light_spot2->update();

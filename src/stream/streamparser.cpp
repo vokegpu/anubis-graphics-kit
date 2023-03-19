@@ -1,11 +1,11 @@
 #include "streamparser.hpp"
 
 stream::format streamparser::get_model_format(std::string_view path) {
-    std::vector<std::string> split_path {};
-    util::split(split_path, path, '.');
-    split_path.emplace_back();
+    std::vector<std::string> strings {};
+    util::split(strings, path, '.');
+    strings.emplace_back();
 
-    const std::string file_extension {split_path[std::max((int32_t) split_path.size() - 2, 0)]};
+    const std::string file_extension {strings[std::max((int32_t) strings.size() - 2, 0)]};
     const stream::format format {!this->mesh_ext_map.count(file_extension) ? stream::format::unknown : this->mesh_ext_map[file_extension]};
     return format;
 }
@@ -131,7 +131,7 @@ bool streamparser::process_stl(stream::mesh &mesh) {
 
     /*
      * triangle vertices are represented as: t, r, & s
-     * faces normals is represented by n
+     * face normals are represented by n
      */
     for (int32_t it {}; it < mesh.faces; it++) {
         ifs.read((char*) &n.x, sizeof(float));
@@ -159,13 +159,18 @@ bool streamparser::process_stl(stream::mesh &mesh) {
     return false;
 }
 
+bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::string_view path) {
+    // @TODO Read binary bytes from glTF model file and parser to a mesh stream
+}
+
 bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
-    if (path.empty() || path.size() < 3) {
+    if ((path.empty() || path.size() < 3) && mesh.format == stream::format::gltf) {
         return util::log("Failed to load object because there is no path insert");
     }
 
     mesh.format = mesh.format != stream::format::unknown ? mesh.format : this->get_model_format(path);
     this->current_path = path;
+    mesh.tag = this->get_model_filename();
 
     switch (mesh.format) {
     case stream::format::wavefrontobj:
@@ -175,7 +180,7 @@ bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
     case stream::format::gltf:
         return util::log("Not implemented!");
     case stream::format::unknown:
-        return util::log("Unknown model format, please try: wavefrontobj, stl, or gltf");
+        return util::log("Unknown model format, please try: *.obj *.stl *.gltf");
     }
 
     return true;
@@ -293,8 +298,34 @@ bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {
     case stream::format::gltf:
         return util::log("Not implemented!");
     case stream::format::unknown:
-        return util::log("Unknown model format, pleasetry: wavefrontobj, stl, or gltf");
+        return util::log("Unknown model format, please try: *.obj *.stl *.gltf");
     }
 
     return true;
+}
+
+bool streamparser::load_mesh_filename(std::string &filename, std::string_view path) {
+    if (path.empty() || path.size() < 3) {
+        return util::log("Failed to read model filename because there is no path insert");
+    }
+
+    std::vector<std::string> strings {};
+    util::split(strings, path, '.');
+    strings.emplace_back();
+
+    if (strings.size() == 1 || strings.empty()) {
+        return util::log("Empty filename \".*\", please rename to: \"*.*\"");
+    }
+
+    filename = strings[strings.size() - 1];
+    int64_t it {};
+
+    for (it = the_filename.size(); it > 0; --it) {
+        if (the_filename[it] == '\\' || the_filename[it] == '/') {
+            break;
+        }
+    }
+
+    filename = filename.substr(it, filename.size());
+    return false;
 }

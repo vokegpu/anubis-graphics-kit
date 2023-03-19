@@ -12,6 +12,27 @@ void objecttransform::set_scale(float x, float y, float z) {
 
 }
 
+void object::append(std::string_view model, std::string_view material) {
+    if (model.empty() || material.empty()) {
+        return;
+    }
+
+    std::string ref_name {};
+    ref_name += model;
+    ref_name += material;
+
+    if (this->ref_rendering_pair_map[ref_name] == nullptr) {
+        auto *p_model {};
+        auto *p_material {};
+
+        auto &rendering_pair {this->rendering_pair_list.emplace_back()};
+        this->ref_rendering_pair_map[ref_name] = &rendering_pair;
+
+        rendering_pair.p_linked_model = ;
+        rendering_pair.p_linked_material = ;
+    }
+}
+
 void object::on_low_update() {
 
 }

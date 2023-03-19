@@ -39,11 +39,12 @@ void agk::mainloop(imodule *p_scene_initial) {
     util::timing reduce_cpu_ticks_timing {};
     agk::app.setting.init();
 
-    uint64_t cpu_ticks_interval {1000 / agk::app.fps}, cpu_ticks_now {SDL_GetPerformanceCounter()}, cpu_ticks_last {};
+    uint64_t cpu_ticks_interval {1000 / agk::app.fps};
+    uint64_t cpu_ticks_now {SDL_GetPerformanceCounter()};
+    uint64_t cpu_ticks_last {};
     uint64_t fps_interval {1000};
     uint64_t ticked_frames {};
     uint64_t cpu_performance_frequency {1};
-    cpu_ticks_interval = 0;
 
     SDL_Event sdl_event {};
     glm::vec3 previous_camera_rotation {2, 2, 2};
@@ -55,6 +56,10 @@ void agk::mainloop(imodule *p_scene_initial) {
     agk::app.p_input_service = new ::input {};
     agk::task::registry(agk::app.p_input_service, agk::service::updateable | agk::service::listenable);
     util::log("Input manager created");
+
+    agk::app.p_pbr_loader_service = new pbrloader {};
+    agk::task::registry(agk::app.p_pbr_loader_service, agk::service::updateable);
+    util::log("PBR loader created");
 
     agk::app.p_world_service = new ::world {};
     agk::task::registry(agk::app.p_world_service, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
@@ -301,4 +306,20 @@ imodule *agk::asset::find(std::string_view asset_name) {
 
 void agk::asset::load(imodule *p_asset) {
     agk::app.p_asset_manager_service->load(p_asset);
+}
+
+bool agk::pbr::loadmaterial(std::vector<std::string> &loaded_material_list, std::string_view path) {
+    return agk::app.p_pbr_loader_service->load_material(loaded_material_list, path);
+}
+
+bool agk::pbr::loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path) {
+    return agk::app.p_pbr_loader_service->load_model(path, loaded_material_list, path);
+}
+
+bool agk::pbr::findmaterial(std::string_view tag) {
+    return agk::app.p_pbr_loader_service->find_material(tag);
+}
+
+bool agk::pbr::findmodel(std::string_view tag) {
+    return agk::app.p_pbr_loader_service->find_model(tag);
 }

@@ -1,11 +1,18 @@
 #include "model.hpp"
 #include "agk.hpp"
 
-void model::load(std::string_view path, const std::function<void(buffering&, stream::mesh&)> &injection_mixin) {
+model::model(stream::mesh &_mesh) {
+    this->mesh = _mesh;
+}
+
+model::~model() {
+    this->buffer.delete_buffers();
+}
+
+void model::load(const stream::mesh &_mesh) {
     if (this->tag != path) {
         this->compiled = true;
-        this->tag = path;
-        this->mixin = injection_mixin;
+        this->mesh = _mesh;
         this->recompile();
     }
 }
@@ -15,58 +22,48 @@ void model::recompile() {
         return;
     }
 
-    stream::mesh mesh {};
-    if (agk::stream::load(mesh, this->tag)) {
-        /* keep flag compiled to false */
-        return;
-    }
-
     int32_t buffers_driver_read_mode {this->static_buffers ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW};
     this->buffer.invoke();
 
-    if (mesh.contains(stream::type::vertex)) {
-        auto &list {mesh.get<float>(stream::type::vertex)};
+    if (this->mesh.contains(stream::type::vertex)) {
+        auto &list {this->mesh.get<float>(stream::type::vertex)};
         this->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(0, 3);
 
         this->buffer.stride[0] = 0;
         this->buffer.stride[1] = static_cast<int32_t>(list.size()) / 3;
-        util::generate_aabb(this->aabb, mesh);
+        util::generate_aabb(this->aabb, this->mesh);
     }
 
-    if (mesh.contains(stream::type::texcoord)) {
-        auto &list {mesh.get<float>(stream::type::texcoord)};
+    if (this->mesh.contains(stream::type::texcoord)) {
+        auto &list {this->mesh.get<float>(stream::type::texcoord)};
         this->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(1, 2);
     }
 
-    if (mesh.contains(stream::type::normal)) {
-        auto &list {mesh.get<float>(stream::type::normal)};
+    if (this->mesh.contains(stream::type::normal)) {
+        auto &list {this->mesh.get<float>(stream::type::normal)};
         this->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(2, 3);
     }
 
-    if (mesh.contains(stream::type::index)) {
-        auto &list {mesh.get<uint32_t>(stream::type::index)};
+    if (this->mesh.contains(stream::type::index)) {
+        auto &list {this->mesh.get<uint32_t>(stream::type::index)};
         this->buffer.bind(3, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         this->buffer.send<uint32_t>(sizeof(uint32_t)*list.size(), list.data(), buffers_driver_read_mode);
 
         this->buffer.stride[0] = 0;
-        this->buffer.stride[1] = mesh.faces;
+        this->buffer.stride[1] = this->mesh.faces;
     }
 
-    if (this->mixin) this->mixin(this->buffer, mesh);
     this->buffer.revoke();
     this->compiled = true;
+    this->mesh = {};
 }
 
 bool model::is_compiled() {
     return this->compiled;
-}
-
-void model::on_destroy() {
-    this->buffer.delete_buffers();
 }

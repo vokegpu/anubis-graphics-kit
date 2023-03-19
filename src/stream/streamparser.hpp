@@ -18,7 +18,6 @@ protected:
         {"map_Ka", "ambientMap"}, {"map_Kd", "albedoMap"}, {"map_Ks", "specularMap"}
     };
 protected:
-    stream::format get_model_format(std::string_view path);
     stream::serializer get_pbr_from_wavefront_object_mtllib(stream::serializer &serializer);
 
     bool process_wavefront_object(stream::mesh &mesh);
@@ -27,7 +26,10 @@ protected:
     bool process_gltf(stream::mesh &mesh);
     bool process_gltf_mtl(stream::mtl &mtl);
 public:
+    stream::format get_model_format(std::string_view path);
+    bool read_mesh_filename(std::string &filename, std::string_view path);
     bool load_mesh(stream::mesh &mesh, std::string_view path);
+    bool load_gltf_meshes(std::vector<stream::mesh> &meshes, std::string_view path);
     bool load_mtl(stream::mtl &mtl, std::string_view path);
 
     template<typename t>
