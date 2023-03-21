@@ -23,7 +23,7 @@ The location of executables are on `./build/`, choose your system and run Anubis
 * High dynamic range (HDR).
 * Dynamic input system.
 * Frustum culling.
-* ~~Motion blur~~.
+* Motion blur.
 * ~~Screen space occlusion ambient (SSAO)~~.
 * Connected heightmaps.
 * ~~Subsurface scattering~~.
