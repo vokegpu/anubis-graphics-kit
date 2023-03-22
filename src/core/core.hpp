@@ -5,12 +5,13 @@
 #include "world/world.hpp"
 #include "world/camera/camera.hpp"
 #include "stream/streamparser.hpp"
-#include "ui/input.hpp"
+#include "ui/deviceinput.hpp"
 #include "world/renderer/renderer.hpp"
 #include "world/environment/entity.hpp"
 #include "world/environment/sky.hpp"
 #include "asset/assetmanager.hpp"
 #include "world/pbr/pbrloader.hpp"
+#include "ui/usercamera.hpp"
 
 class core {
 public:
@@ -18,7 +19,8 @@ public:
     static std::vector<imodule*> updateablelist;
     static std::vector<imodule*> listenablelist;
     static std::queue<imodule*> taskqueue;
-    static int32_t token {};
+    static int32_t token;
+    static std::string version;
 public:
     SDL_Window *p_sdl_window {};
     int32_t screen_width {1600};
@@ -38,7 +40,7 @@ public:
     assetmanager *p_asset_manager_service {};
     pbrloader *p_pbr_loader_service {};
     sky *p_sky {};
-    input *p_input_service {};
+    deviceinput *p_input_service {};
     usercamera *p_user_camera {};
 
     streamparser parser {};

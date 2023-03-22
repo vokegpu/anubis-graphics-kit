@@ -3,14 +3,13 @@
 
 int32_t material::token {};
 
-material::material(std::map<std::string, std::string> &_metadata) {
+material::material(const std::map<std::string, std::string> &_metadata) {
     this->id = ++material::token;
-    agk::world::renderer()->material_list.push_back(this);
     this->should_reload = true;
     this->metadata = _metadata;
 }
 
-std::vector<std::string, std::string> &material::get_metadata() {
+std::map<std::string, std::string> &material::get_metadata() {
     return this->metadata;
 }
 
@@ -20,15 +19,15 @@ void material::invoke(::asset::shader *p_shader) {
         asset::texture<uint8_t> *p_texture {};
 
         if (!this->metadata["albedo"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["albedo"])) != nullptr) {
-            this->sampler_map["albedo"] = p_texture->get_gpu_side().id;
+            this->sampler_map["albedo"] = p_texture->gpu_side_data().id;
         }
 
         if (!this->metadata["specular"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["specular"])) != nullptr) {
-            this->sampler_map["specular"] = p_texture->get_gpu_side().id;
+            this->sampler_map["specular"] = p_texture->gpu_side_data().id;
         }
 
         if (!this->metadata["normalMap"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["normalMap"])) != nullptr) {
-            this->sampler_map["normalMap"] = p_texture->get_gpu_side().id;
+            this->sampler_map["normalMap"] = p_texture->gpu_side_data().id;
         }
     }
 
@@ -73,7 +72,7 @@ void material::invoke(::asset::shader *p_shader) {
         glDisable(GL_CULL_FACE);
     } else if (face_cull_mode != GL_BACK) {
         if (!face_culling_enable) {
-            glEnable(GL_ENABLE);
+            glEnable(GL_CULL_FACE);
         }
 
         glCullFace(GL_BACK);

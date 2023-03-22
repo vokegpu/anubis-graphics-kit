@@ -12,6 +12,8 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include "gpu/gpu_parallel.hpp"
+#include "gpu/gpu_texture.hpp"
 
 static float agk_perspective_clip_distance {8096.0f * 8096.0f};
 static const float AGK_WORLD_SCALE_FACTOR {6.40000000000000000f};

@@ -41,9 +41,9 @@ public:
             p_texture->revoke();
 
             const t divider = !std::is_same<t, float>::value ? 255 : 1.0f;
-            t *&p_data {p_texture->get_cpu_side()};
+            t *&p_data {p_texture->cpu_side_data()};
 
-            auto &gpu_side {p_texture->get_gpu_side()};
+            auto &gpu_side {p_texture->gpu_side_data()};
             const float fwf {size.x == 0 ? static_cast<float>(gpu_side.w) : static_cast<float>(size.x)};
             const float fhf {size.y == 0 ? static_cast<float>(gpu_side.h) : static_cast<float>(size.y)};
             const int64_t channels {gpu::channels(gpu_side)};
@@ -94,7 +94,9 @@ public:
                 }
             }
         }
-    }
+
+        return false;
+    };
 };
 
 #endif

@@ -97,7 +97,7 @@ void renderer::process_environment() {
     uint32_t draw_call_count {};
 
     for (object *&p_objects : this->obj_draw_list) {
-        if (p_objects == nullptr || p_objects->p_material == nullptr || p_objects->p_material->p_model == nullptr || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
+        if (p_objects == nullptr || p_objects->object_assign_list.empty() || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
             continue;
         }
 
@@ -108,12 +108,11 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        p_objects->aabb = p_objects->p_material->p_model->aabb;
+        p_objects->aabb = p_objects->aabb;
         if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->aabb)) {
             continue;
         }
 
-        p_objects->p_material->invoke(p_program_pbr);
         p_program_pbr->set_uniform_bool("uInstanced", p_objects->p_instance != nullptr);
         mat4x4_mvp = this->mat4x4_perspective_view * mat4x4_model;
 
@@ -127,18 +126,18 @@ void renderer::process_environment() {
         }
 
         /*
-            Rendering pairs can solve the issue with rendering glTF models,
-            glTF models contains transform for each model.
+         * Rendering pairs can solve the issue with rendering glTF models,
+         * glTF models contains transform for each model.
          */
-        for (renderingpair &rendering_pairs : p_objects->rendering_pair_list) {
-            if (rendering_pairs.p_linked_material != nullptr) {
-                rendering_pairs.p_linked_material->invoke(p_program_pbr);
+        for (objectassign &object_assign : p_objects->object_assign_list) {
+            if (object_assign.p_linked_material != nullptr) {
+                object_assign.p_linked_material->invoke(p_program_pbr);
             }
 
-            íf (rendering_pairs.p_linked_model != nullptr) {
-                rendering_pairs.p_linked_model->buffer.invoke();
-                rendering_pairs.p_linked_model->buffer.draw();
-                rendering_pairs.p_linked_model->buffer.revoke();
+            if (object_assign.p_linked_model != nullptr) {
+                object_assign.p_linked_model->buffer.invoke();
+                object_assign.p_linked_model->buffer.draw();
+                object_assign.p_linked_model->buffer.revoke();
             }
         }
 
@@ -302,8 +301,8 @@ void renderer::on_create() {
 
     /* Process chunking buffer. */
     auto &mesh_chunk {agk::world::get()->chunk_mesh_data};
-    auto &v {mesh_chunk.get<float>(stream::type::vertex)};
-    auto &t {mesh_chunk.get<float>(stream::type::texcoord)};
+    auto &v {mesh_chunk.get_float_list(stream::type::vertex)};
+    auto &t {mesh_chunk.get_float_list(stream::type::texcoord)};
 
     this->buffer_chunk.invoke();
     this->buffer_chunk.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});

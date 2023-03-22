@@ -1,5 +1,3 @@
-#include "gpu/tools.hpp"
-
 #ifndef AGK_ASSET_SHADER_H
 #define AGK_ASSET_SHADER_H
 
@@ -11,6 +9,7 @@
 #include "core/imodule.hpp"
 #include <vector>
 #include <functional>
+#include "gpu/gpu_programbuffer.hpp"
 
 namespace asset {
     typedef struct shader_resource {

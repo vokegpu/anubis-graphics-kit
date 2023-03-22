@@ -16,12 +16,16 @@ private:
 
 #endif
 
-#ifndef AGK_WORLD_ENVIRONMENT_OBJECT_RENDER_H
-#define AGK_WORLD_ENVIRONMENT_OBJECT_RENDER_H
+#ifndef AGK_WORLD_ENVIRONMENT_OBJECT_ASSIGN_H
+#define AGK_WORLD_ENVIRONMENT_OBJECT_ASSIGN_H
 
-struct objectrender {
+#include "world/pbr/model.hpp"
+#include "world/pbr/material.hpp"
+
+struct objectassign {
     model *p_linked_model {};
     material *p_linked_material {};
+    glm::mat4 mat4x4 {};
 };
 
 #endif
@@ -38,8 +42,8 @@ protected:
     enums::state visible {};
     enums::priority priority {};
 public:
-    std::map<std::string, objectrender> object_render_map {};
-    std::vector<objectrender*> ref_object_render_list {};
+    std::map<std::string, objectassign*> ref_object_assign_map {};
+    std::vector<objectassign> object_assign_list {};
 public:
     enums::type type {};
     buffering *p_instance {};
@@ -49,19 +53,12 @@ public:
     explicit object();
     ~object();
 
-    void append();    
-
-    void append(scene::string_view) {}
-    void append(scene::string_view);
-    void append(model *p_model);
-    void append(std::string_view model, std::string_view material);
-
+    bool contains_assign(std::string_view model, std::string_view material = "");
+    void assign(std::string_view model, std::string_view material);
     void set_visible(enums::state enum_state, bool dispatch_event = true);
     enums::state get_visible();
-
     void set_priority(enums::priority enum_priority, bool dispatch_event = true);
     enums::priority get_priority();
-
     virtual void on_low_update();
 };
 

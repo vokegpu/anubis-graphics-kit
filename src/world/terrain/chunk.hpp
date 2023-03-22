@@ -31,7 +31,7 @@ inline bool operator!=(const chunkmetadata &chunk_metadata1, const chunkmetadata
 #ifndef AGK_WORLD_TERRAIN_CHUNK_H
 #define AGK_WORLD_TERRAIN_CHUNK_H
 
-#include "gpu/tools.hpp"
+#include "gpu/gpu_buffer.hpp"
 #include "world/environment/object.hpp"
 #include "util/math.hpp"
 

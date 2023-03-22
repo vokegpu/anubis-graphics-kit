@@ -1,10 +1,11 @@
 #ifndef AGK_ASSET_TEXTURE_H
 #define AGK_ASSET_TEXTURE_H
 
-#include "gpu/tools.hpp"
+#include "gpu/gpu.hpp"
 #include <functional>
 #include "stb/stb_image.h"
 #include "core/imodule.hpp"
+#include "asset/shader.hpp"
 #include <map>
 
 namespace asset {

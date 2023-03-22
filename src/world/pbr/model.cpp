@@ -9,12 +9,10 @@ model::~model() {
     this->buffer.delete_buffers();
 }
 
-void model::load(const stream::mesh &_mesh) {
-    if (this->tag != path) {
-        this->compiled = true;
-        this->mesh = _mesh;
-        this->recompile();
-    }
+void model::load(stream::mesh &_mesh) {
+    this->compiled = true;
+    this->mesh = _mesh;
+    this->recompile();
 }
 
 void model::recompile() {
@@ -26,7 +24,7 @@ void model::recompile() {
     this->buffer.invoke();
 
     if (this->mesh.contains(stream::type::vertex)) {
-        auto &list {this->mesh.get<float>(stream::type::vertex)};
+        auto &list {this->mesh.get_float_list(stream::type::vertex)};
         this->buffer.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(0, 3);
@@ -37,21 +35,21 @@ void model::recompile() {
     }
 
     if (this->mesh.contains(stream::type::texcoord)) {
-        auto &list {this->mesh.get<float>(stream::type::texcoord)};
+        auto &list {this->mesh.get_float_list(stream::type::texcoord)};
         this->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(1, 2);
     }
 
     if (this->mesh.contains(stream::type::normal)) {
-        auto &list {this->mesh.get<float>(stream::type::normal)};
+        auto &list {this->mesh.get_float_list(stream::type::normal)};
         this->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(2, 3);
     }
 
     if (this->mesh.contains(stream::type::index)) {
-        auto &list {this->mesh.get<uint32_t>(stream::type::index)};
+        auto &list {this->mesh.get_uint_list(stream::type::index)};
         this->buffer.bind(3, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         this->buffer.send<uint32_t>(sizeof(uint32_t)*list.size(), list.data(), buffers_driver_read_mode);
 

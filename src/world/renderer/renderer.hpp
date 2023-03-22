@@ -1,13 +1,16 @@
 #ifndef AGK_WORLD_RENDERER_H
 #define AGK_WORLD_RENDERER_H
 
-#include "asset/mesh.hpp"
+#include "stream/stream.hpp"
 #include "world/terrain/chunk.hpp"
 #include "core/value.hpp"
 #include "ui/shape.hpp"
 #include <vector>
 #include <map>
 #include <array>
+#include "gpu/gpu_framebuffer.hpp"
+#include "gpu/gpu_texture.hpp"
+#include "gpu/gpu_parallel.hpp"
 
 class renderer : public imodule {
 protected:

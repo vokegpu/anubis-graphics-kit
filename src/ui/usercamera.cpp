@@ -30,7 +30,7 @@ void usercamera::on_event(SDL_Event &sdl_event) {
     }
 
     bool should_rotate {
-            this->camera_rotation && (!this->camera_editor || agk::input::pressed(this->bind_editor_rotate.get_value()))
+        this->camera_rotation && (!this->camera_editor || agk::ui::input(this->bind_editor_rotate.get_value()))
     };
 
     this->p_camera_linked->set_mouse_locked(should_rotate);
@@ -44,46 +44,46 @@ void usercamera::on_update() {
         glm::vec3 motion {};
         bool rotated {};
 
-        if (agk::input::pressed(this->bind_m_forward.get_value())) {
+        if (agk::ui::input(this->bind_m_forward.get_value())) {
             motion.z += 1;
         }
 
-        if (agk::input::pressed(this->bind_m_backward.get_value())) {
+        if (agk::ui::input(this->bind_m_backward.get_value())) {
             motion.z -= 1;
         }
 
-        if (agk::input::pressed(this->bind_m_strafe_left.get_value())) {
+        if (agk::ui::input(this->bind_m_strafe_left.get_value())) {
             motion.x += 1;
         }
 
-        if (agk::input::pressed(this->bind_m_strafe_right.get_value())) {
+        if (agk::ui::input(this->bind_m_strafe_right.get_value())) {
             motion.x -= 1;
         }
 
-        if (agk::input::pressed(this->bind_m_jump.get_value())) {
+        if (agk::ui::input(this->bind_m_jump.get_value())) {
             motion.y += 1;
         }
 
-        if (agk::input::pressed(this->bind_m_crouch.get_value())) {
+        if (agk::ui::input(this->bind_m_crouch.get_value())) {
             motion.y -= 1;
         }
 
-        if (agk::input::pressed("left")) {
+        if (agk::ui::input("left")) {
             this->p_camera_linked->transform.rotation.y -= 0.9f;
             rotated = true;
         }
 
-        if (agk::input::pressed("right")) {
+        if (agk::ui::input("right")) {
             this->p_camera_linked->transform.rotation.y += 0.9f;
             rotated = true;
         }
 
-        if (agk::input::pressed("up")) {
+        if (agk::ui::input("up")) {
             this->p_camera_linked->transform.rotation.x += 0.9f;
             rotated = true;
         }
 
-        if (agk::input::pressed("down")) {
+        if (agk::ui::input("down")) {
             this->p_camera_linked->transform.rotation.x -= 0.9f;
             rotated = true;
         }

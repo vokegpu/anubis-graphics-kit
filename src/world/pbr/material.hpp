@@ -21,7 +21,7 @@ protected:
     int32_t id {};
     int32_t shader_index {};
 public:
-    material(std::map<std::string, std::string> &_metadata);
+    material(const std::map<std::string, std::string> &_metadata);
     ~material() = default;
 
     inline uint32_t &operator[](std::string_view k_sampler) {

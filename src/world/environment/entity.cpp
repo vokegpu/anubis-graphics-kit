@@ -1,8 +1,7 @@
 #include "entity.hpp"
 #include "agk.hpp"
 
-entity::entity(::asset::model *p_model_linked) {
-    this->p_model = p_model_linked;
+entity::entity() {
     this->id = imodule::token++;
     this->type = enums::type::entity;
 

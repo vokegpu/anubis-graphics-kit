@@ -24,7 +24,7 @@ namespace stream {
     public:
         int32_t faces {};
         stream::format format {};
-        std::string name {};
+        std::string tag {};
         typedef struct pack { std::vector<glm::vec3> v {}, n {}; std::vector<glm::vec2> t {}; } pack;
     public:
         bool contains(stream::type _type) {
@@ -150,18 +150,21 @@ namespace stream {
             };
         }
 
-        template<typename t>
-        std::vector<t> &get(stream::type _type) {
+        std::vector<uint32_t> &get_uint_list(stream::type _type) {
+            return this->i_list;
+        }
+
+        std::vector<float> &get_float_list(stream::type _type) {
             switch (_type) {
                 case stream::type::vertex:
                     return this->v_list;
                 case stream::type::texcoord:
                     return this->t_list;
-                case stream::type::normal:
-                    return this->n_list;
-                case stream::type::index:
-                    return this->i_list;
-            };
+                default:
+                    break;
+            }
+
+            return this->n_list;
         }
     };
 

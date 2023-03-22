@@ -12,7 +12,8 @@ void agk::path(const char *p_arg_path) {
 }
 
 void agk::mainloop(imodule *p_scene_initial) {
-    util::log("Initialising");
+    util::log("Initialising Anubis Graphics Kit version: " + agk::app.version);
+    util::log("Written by Rina from @VokeGpu :)");
 
     if (SDL_Init(SDL_INIT_EVERYTHING)) {
         util::log("Failed to init SDL");
@@ -49,11 +50,11 @@ void agk::mainloop(imodule *p_scene_initial) {
     SDL_Event sdl_event {};
     glm::vec3 previous_camera_rotation {2, 2, 2};
 
-    agk::app.p_asset_manager_service = new asset_manager {};
+    agk::app.p_asset_manager_service = new assetmanager {};
     agk::task::synchronize(agk::app.p_asset_manager_service);
     util::log("Asset manager created.");
 
-    agk::app.p_input_service = new ::input {};
+    agk::app.p_input_service = new deviceinput {};
     agk::task::registry(agk::app.p_input_service, agk::service::updateable | agk::service::listenable);
     util::log("Input manager created");
 
@@ -62,15 +63,15 @@ void agk::mainloop(imodule *p_scene_initial) {
     util::log("PBR loader created");
 
     agk::app.p_world_service = new ::world {};
-    agk::task::registry(agk::app.p_world_service, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
+    agk::task::registry(agk::app.p_world_service, agk::service::updateable | agk::service::listenable | agk::service::renderable);
     util::log("World client created");
 
     agk::app.p_renderer_service = new renderer {};
-    agk::task::registry(agk::app.p_renderer_service, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
+    agk::task::registry(agk::app.p_renderer_service, agk::service::updateable | agk::service::listenable | agk::service::renderable);
     util::log("World renderer created");
 
     agk::app.p_curr_camera = new camera {};
-    agk::world::registry(agk::app.p_curr_camera);
+    agk::task::registry(agk::app.p_curr_camera, agk::service::updateable | agk::service::listenable);
     util::log("Main camera frustum created");
 
     agk::app.p_curr_player = new entity {};
@@ -78,10 +79,10 @@ void agk::mainloop(imodule *p_scene_initial) {
     util::log("Main world player created");
 
     agk::app.p_sky = new sky {};
-    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service:::renderable);
+    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service::renderable);
     util::log("World time manager created");
 
-    agk::app.p_user_camera {new usercamera {}};
+    agk::app.p_user_camera = new usercamera {};
     agk::task::registry(agk::app.p_user_camera, agk::service::updateable | agk::service::listenable);
     util::log("User camera manager created");
 
@@ -247,7 +248,7 @@ bool agk::stream::load(::stream::mesh &mesh, std::string_view path) {
 }
 
 bool agk::stream::load(::stream::mtl &mtl, std::string_view path) {
-    return agk::app.parser.load_material(mtl, path);
+    return agk::app.parser.load_mtl(mtl, path);
 }
 
 bool agk::ui::input(std::string_view input_tag) {
@@ -296,7 +297,7 @@ void agk::task::synchronize(imodule *p_module) {
     core::taskqueue.push(p_module);
 }
 
-void agk::flags::contains(uint16_t &flags, uint16_t check) {
+bool agk::flags::contains(uint16_t &flags, uint16_t check) {
     return flags & check;
 }
 
@@ -313,13 +314,13 @@ bool agk::pbr::loadmaterial(std::vector<std::string> &loaded_material_list, std:
 }
 
 bool agk::pbr::loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path) {
-    return agk::app.p_pbr_loader_service->load_model(path, loaded_material_list, path);
+    return agk::app.p_pbr_loader_service->load_model(path, loaded_model_list, path);
 }
 
-bool agk::pbr::findmaterial(std::string_view tag) {
-    return agk::app.p_pbr_loader_service->find_material(tag);
+imodule *agk::pbr::find(std::string_view pbr_tag) {
+    return agk::app.p_pbr_loader_service->find(pbr_tag);
 }
 
-bool agk::pbr::findmodel(std::string_view tag) {
-    return agk::app.p_pbr_loader_service->find_model(tag);
+bool agk::pbr::loadmaterial(std::string_view tag, material *p_material) {
+    return agk::app.p_pbr_loader_service->load_material(tag, p_material);
 }

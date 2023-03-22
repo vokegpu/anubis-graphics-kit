@@ -3,8 +3,7 @@
 #include "event/event.hpp"
 #include "util/env.hpp"
 
-light::light(asset::model *p_model_linked) {
-    this->p_model = p_model_linked;
+light::light() {
     this->id = imodule::token++;
     this->type = enums::type::light;
 

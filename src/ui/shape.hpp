@@ -1,7 +1,8 @@
 #ifndef AGK_UI_IMMEDIATE_SHAPE
 #define AGK_UI_IMMEDIATE_SHAPE
 
-#include "gpu/tools.hpp"
+#include "gpu/gpu_buffer.hpp"
+#include "asset/shader.hpp"
 
 class shape {
 public:

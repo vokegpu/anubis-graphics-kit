@@ -6,14 +6,23 @@
 #include "world/environment/light.hpp"
 
 void client::scenes::starter::on_create() {
-    agk::pbr::loadmodel("Dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
+    agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
+    agk::pbr::loadmaterial("dinossaur", new material {{
+        {"color", "0.342 0.234324 0.13342"}, {"metal", "1"}, {"rough", "0.43"}
+    }});
 
-    this->p_light_spot = new light(nullptr);
+    auto *p_dinossaur {new object {}};
+    p_dinossaur->assign("model.dinossaur", "material.dinossaur");
+    p_dinossaur->transform.position.y = 90.0f;
+    p_dinossaur->transform.scale = glm::vec3 {3.0f};
+    agk::world::create(p_dinossaur);
+
+    this->p_light_spot = new light {};
     this->p_light_spot->intensity = {300, 300, 300};
     this->p_light_spot->transform.position = {0, 300, 0};
     this->p_light_spot->update();
 
-    auto *p_light_spot2 = new light(nullptr);
+    auto *p_light_spot2 = new light {};
     p_light_spot2->intensity = {50, 50, 50};
     p_light_spot2->transform.position = {0, 15, 0};
     p_light_spot2->update();
@@ -22,10 +31,11 @@ void client::scenes::starter::on_create() {
     agk::world::create(p_light_spot2);
     agk::world::current_player()->speed_base = 0.9540f;
 
-    this->p_camera_manager->set_editor_enabled(true);
-    this->p_camera_manager->set_movement_enabled(true);
-    this->p_camera_manager->set_rotation_enabled(true);
-    this->p_camera_manager->bind_editor_rotate.set_value("mouse-2");
+    auto &p_user_camera {agk::ui::get_user_camera()};
+    p_user_camera->set_editor_enabled(true);
+    p_user_camera->set_movement_enabled(true);
+    p_user_camera->set_rotation_enabled(true);
+    p_user_camera->bind_editor_rotate.set_value("mouse-2");
 
     ekg::gl_version = "#version 450";
     ekg::init(agk::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
@@ -169,11 +179,11 @@ void client::scenes::starter::on_event(SDL_Event &sdl_event) {
 }
 
 void client::scenes::starter::on_update() {
-    if (agk::input::pressed("x")) {
+    if (agk::ui::input("x")) {
         agk::world::current_player()->speed_base += 0.5f;
     }
 
-    if (agk::input::pressed("z")) {
+    if (agk::ui::input("z")) {
         agk::world::current_player()->speed_base -= 0.5f;
     }
 

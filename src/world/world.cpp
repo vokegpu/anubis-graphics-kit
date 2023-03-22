@@ -14,14 +14,14 @@ void world::on_create() {
     agk::app.setting.chunk_dimension.set_value(256);
     agk::app.setting.chunk_terrain_height.set_value(256);
 
-    agk::core.parser.load_heightmap_mesh<float>(this->chunk_mesh_data, nullptr, {20, 20});
+    agk::app.parser.load_heightmap_mesh<float>(this->chunk_mesh_data, nullptr, {20, 20});
     this->vegetation_memory_list.reserve((128 * 128) * 4);
     util::generate_aabb(this->aabb_chunk, this->chunk_mesh_data);
-    this->aabb_chunk.max.y = agk::app.setting.chunk_terrain_height.get_value();
+    this->aabb_chunk.max.y = static_cast<float>(agk::app.setting.chunk_terrain_height.get_value());
 
-    this->p_material_vegetation_coconut = new material {};
-    this->p_material_vegetation_coconut->set_color({0.2, 0.2f, 0.2f});
-    this->p_material_vegetation_coconut->p_model = (asset::model*) agk::asset::find("models/vegetation.coconut");
+    this->p_material_vegetation_coconut = new material {
+        {{"color", "0.2 0.2 0.2"}, {"metal", "0"}, {"rough", "0.43"}}
+    };
 
     /* Generate texture for parallel vegetation spawn. */
     this->texture_vegetation.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
@@ -293,16 +293,14 @@ void world::on_update() {
         glm::mat4 mat4x4_vegetation_model = glm::scale(glm::mat4(1.0f), p_chunk->transform.scale);
         glm::mat4 mat4x4_model {};
 
-        auto *p_tree_instance {new object {this->p_material_vegetation_coconut}};
+        auto *p_tree_instance {new object {}};
         p_tree_instance->p_instance = p_buffer_instance;
-
-        p_chunk->p_material = this->p_material_vegetation_coconut;
-        p_chunk->p_material->p_model->aabb = this->aabb_chunk;
+        p_chunk->aabb = this->aabb_chunk;
 
         // Set the instance model for chunk position.
         p_tree_instance->transform.position = p_chunk->transform.position;
         p_tree_instance->transform.scale = p_chunk->transform.scale;
-        ::asset::model *p_model_coconut_tree {this->p_material_vegetation_coconut->p_model};
+        model *p_model_coconut_tree {(model*) agk::pbr::find("model.coconut.tree")};
 
         this->registry(p_tree_instance);
         p_chunk->add(p_tree_instance);

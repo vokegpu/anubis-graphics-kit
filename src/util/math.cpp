@@ -31,7 +31,7 @@ float util::lerp(float a, float b, float delta) {
 }
 
 void util::generate_aabb(util::aabb &aabb, stream::mesh &mesh) {
-    auto &list {mesh.get<float>(mesh::type::vertex)};
+    auto &list {mesh.get_float_list(stream::type::vertex)};
     glm::vec3 min {glm::vec3(std::numeric_limits<float>::max())};
     glm::vec3 max {glm::vec3(std::numeric_limits<float>::min())};
 

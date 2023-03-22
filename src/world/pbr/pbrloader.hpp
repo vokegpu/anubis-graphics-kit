@@ -9,21 +9,18 @@
 
 class pbrloader : public imodule {
 private:
-	std::unordered_map<std::string, material*> material_map {};
-	std::unordered_map<std::string, model*> model_map {};
+    std::unordered_map<std::string, imodule*> pbr_map {};
 protected:
-	std::vector<model*> uncompiled_model_list {};
-	int32_t find_equals_material(std::map<std::string, std::string> &metadata);
+    std::vector<model*> uncompiled_model_list {};
+    int32_t find_equals_material(std::map<std::string, std::string> &metadata);
 public:
-	static std::vector<std::string> dontcare;
+    static std::vector<std::string> dontcare;
 public:
-	bool load_model(std::string_view name, std::string<std::string> &loaded_model_list, std::string_view path);
-	bool load_material(std::vector<std::string> &loaded_material_list, std::string_view path);
-
-	material *&find_material(std::string_view k_name);
-	model *&find_model(std::string_view k_name);
-
-	void on_update() override;
+    bool load_material(std::string_view tag, material *p_material);
+    bool load_model(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path);
+    bool load_material(std::vector<std::string> &loaded_material_list, std::string_view path);
+    imodule *&find(std::string_view pbr_tag);
+    void on_update() override;
 };
 
 #endif

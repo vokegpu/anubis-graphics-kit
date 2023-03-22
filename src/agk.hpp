@@ -19,8 +19,8 @@ namespace agk {
     enum service {
         updateable = 1,
         renderable = 2,
-        listenable = 4;
-    }
+        listenable = 4
+    };
 
     namespace task {
         void registry(imodule *p_feature, uint16_t flags);
@@ -62,10 +62,10 @@ namespace agk {
     }
 
     namespace pbr {
+        bool loadmaterial(std::string_view tag, material *p_material);
         bool loadmaterial(std::vector<std::string> &loaded_material_list, std::string_view path);
         bool loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path);
-        material *findmaterial(std::string_view k_name);
-        model *findmodel(std::string_view k_name);
+        imodule *find(std::string_view pbr_tag);
     }
 
     namespace ui {

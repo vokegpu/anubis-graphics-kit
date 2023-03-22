@@ -161,6 +161,7 @@ bool streamparser::process_stl(stream::mesh &mesh) {
 
 bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::string_view path) {
     // @TODO Read binary bytes from glTF model file and parser to a mesh stream
+    return util::log("Not implemented!");
 }
 
 bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
@@ -170,7 +171,7 @@ bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
 
     mesh.format = mesh.format != stream::format::unknown ? mesh.format : this->get_model_format(path);
     this->current_path = path;
-    mesh.tag = this->get_model_filename();
+    this->read_mesh_filename(mesh.tag, path);
 
     switch (mesh.format) {
     case stream::format::wavefrontobj:
@@ -280,6 +281,7 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
 
     ifs_mtllib.close();
     mtl.set_serializer(this->get_pbr_from_wavefront_object_mtllib(this->current_serializer));
+    return false;
 }
 
 bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {
@@ -287,7 +289,7 @@ bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {
         return util::log("Failed to load material from the model because there is no path insert");
     }
 
-    mesh.format = mtl.format != stream::format::unknown ? mtl.format ? this->get_model_format(path);
+    mtl.format = mtl.format != stream::format::unknown ? mtl.format : this->get_model_format(path);
     this->current_path = path;
 
     switch (mtl.format) {
@@ -304,7 +306,7 @@ bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {
     return true;
 }
 
-bool streamparser::load_mesh_filename(std::string &filename, std::string_view path) {
+bool streamparser::read_mesh_filename(std::string &filename, std::string_view path) {
     if (path.empty() || path.size() < 3) {
         return util::log("Failed to read model filename because there is no path insert");
     }
@@ -314,14 +316,14 @@ bool streamparser::load_mesh_filename(std::string &filename, std::string_view pa
     strings.emplace_back();
 
     if (strings.size() == 1 || strings.empty()) {
-        return util::log("Empty filename \".*\", please rename to: \"*.*\"");
+        return util::log(R"(Empty filename ".*", please rename to: "*.*")");
     }
 
     filename = strings[strings.size() - 1];
     int64_t it {};
 
-    for (it = the_filename.size(); it > 0; --it) {
-        if (the_filename[it] == '\\' || the_filename[it] == '/') {
+    for (it = filename.size(); it > 0; --it) {
+        if (filename[it] == '\\' || filename[it] == '/') {
             break;
         }
     }

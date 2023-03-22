@@ -103,10 +103,6 @@ bool frustum::viewing(glm::mat4 &mat4x4_model, util::aabb &aabb) {
 glm::mat4 &frustum::get_mvp() {
     this->mvp = this->perspective * this->view;
 
-    if (!agk::input::pressed("f")) {
-        return this->mvp;
-    }
-
     float m0 {this->mvp[0][0]};
     float m1 {this->mvp[0][1]};
     float m2 {this->mvp[0][2]};
