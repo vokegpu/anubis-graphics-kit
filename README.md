@@ -5,7 +5,7 @@ There is an official researcher article being write together with this project t
 but VokeGpu will keep update this engine project.
 
 If you are on Windows, please replace `"Unix Makefiles"` with `"MinGW Makefiles"`, run the command:  
-`cmake -S . -B ./cmake-build-debug/ -G "Unix Makefiles" && cmake --build ./cmake-build-debug/"`
+`cmake -S . -B ./cmake-build-debug/ -G "Unix Makefiles" && cmake --build ./cmake-build-debug/`
 
 The location of executables are on `./build/`, choose your system and run Anubis Graphics Kit.
 
