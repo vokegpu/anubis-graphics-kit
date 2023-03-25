@@ -1,6 +1,6 @@
 #version 450 core
 
-layout (local_size_x = 32, local_size_y = 32) in;
+layout (local_size_x = 64, local_size_y = 64) in;
 layout (rgba32f, binding = 0) uniform readonly image2D uTextureInput;
 layout (r16f, binding = 1) uniform writeonly image2D uAverageLuminanceOutput;
 

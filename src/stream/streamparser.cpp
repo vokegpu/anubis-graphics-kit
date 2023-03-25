@@ -128,6 +128,7 @@ bool streamparser::process_stl(stream::mesh &mesh) {
     ifs.read((char*) &mesh.faces, sizeof(int32_t));
     stream::mesh::pack pack {};
     glm::vec3 t {}, r {}, s {}, n {};
+    char buf[2] {};
 
     /*
      * triangle vertices are represented as: t, r, & s
@@ -137,6 +138,8 @@ bool streamparser::process_stl(stream::mesh &mesh) {
         ifs.read((char*) &n.x, sizeof(float));
         ifs.read((char*) &n.y, sizeof(float));
         ifs.read((char*) &n.z, sizeof(float));
+        mesh.append(n, stream::type::normal);
+        mesh.append(n, stream::type::normal);
         mesh.append(n, stream::type::normal);
 
         ifs.read((char*) &t.x, sizeof(float));
@@ -149,10 +152,11 @@ bool streamparser::process_stl(stream::mesh &mesh) {
         ifs.read((char*) &r.z, sizeof(float));
         mesh.append(r, stream::type::vertex);
 
+        ifs.read((char*) &s.x, sizeof(float));
         ifs.read((char*) &s.y, sizeof(float));
-        ifs.read((char*) &s.y, sizeof(float));
-        ifs.read((char*) &s.y, sizeof(float));
+        ifs.read((char*) &s.z, sizeof(float));
         mesh.append(s, stream::type::vertex);
+        ifs.read(buf, 2);
     }
 
     ifs.close();

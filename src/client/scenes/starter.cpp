@@ -8,7 +8,7 @@
 void client::scenes::starter::on_create() {
     agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
-        {"color", "0.342 0.234324 0.13342"}, {"metal", "1"}, {"rough", "0.43"}, {"doubleSided", "1"}
+        {"color", "0.342 0.234324 0.13342"}, {"metal", "0"}, {"rough", "0.20"}, {"doubleSided", "0"}
     }});
 
     auto *p_dinossaur {new object {}};

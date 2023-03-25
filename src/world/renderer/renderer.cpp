@@ -108,7 +108,7 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->aabb)) {
+        if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->get_current_aabb())) {
             continue;
         }
 
@@ -160,8 +160,8 @@ void renderer::process_post_processing() {
         int32_t size {agk::app.screen_width * agk::app.screen_height};
 
         this->parallel_post_processing.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-        this->parallel_post_processing.dispatch_groups[0] = 32;
-        this->parallel_post_processing.dispatch_groups[1] = 32;
+        this->parallel_post_processing.dispatch_groups[0] = 64;
+        this->parallel_post_processing.dispatch_groups[1] = 64;
         this->parallel_post_processing.dimension[0] = agk::app.screen_width;
         this->parallel_post_processing.dimension[1] = agk::app.screen_height;
 

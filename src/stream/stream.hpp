@@ -168,6 +168,8 @@ namespace stream {
         }
 
         inline void operator+=(stream::mesh &mesh) {
+            this->faces += mesh.faces;
+
             if (mesh.contains(stream::type::vertex)) {
                 auto &list {mesh.get_float_list(stream::type::vertex)};
                 this->v_list.insert(this->v_list.end(), list.begin(), list.end());

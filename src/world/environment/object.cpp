@@ -62,6 +62,7 @@ util::aabb &object::get_current_aabb() {
             }
         }
 
+        this->aabb = {};
         util::generateaabb(this->aabb, final_mesh);
         this->rendering_aabb_check = false;
     }
