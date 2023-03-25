@@ -1,12 +1,8 @@
 #include "env.hpp"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <sstream>
 #include <string>
 #include "GL/glew.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
 
 bool util::log(const std::string &log_message) {
     const std::string full_log_message {"[AGK] " + log_message};

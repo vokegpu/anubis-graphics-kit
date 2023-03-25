@@ -12,11 +12,12 @@ void usercamera::on_create() {
     this->bind_editor_rotate.set_value("mouse-1");
     this->bind_m_crouch.set_value("c");
     this->bind_m_jump.set_value("space");
-    this->m_speed.set_value(0.2867f);
+    this->m_speed.set_value(3.2867f);
 
-    this->p_camera_linked = agk::world::current_camera();
-    this->p_entity_linked = agk::world::current_player();
-    this->p_camera_linked->set_visible(enums::state::disable);
+    this->p_camera_linked = agk::world::currentcamera();
+    this->p_entity_linked = agk::world::currentplayer();
+    this->p_camera_linked->set_visible(enums::state::disable, false);
+    this->p_camera_linked->set_priority(enums::priority::none);
 }
 
 void usercamera::on_destroy() {

@@ -86,9 +86,9 @@ public:
         msg += std::to_string(framebuffering::current_frame_info);
 
         if (enums == GL_FRAMEBUFFER_COMPLETE) {
-            msg += " complete.";
+            msg += " complete";
         } else {
-            msg += " incomplete.";
+            msg += " incomplete";
         }
 
         util::log(msg);

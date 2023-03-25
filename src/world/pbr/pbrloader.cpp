@@ -28,6 +28,8 @@ bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loade
         if (agk::app.parser.load_mesh(mesh, path)) {
             return true;
         }
+
+        mesh.tag.clear();
         break;
     }
 
@@ -37,10 +39,8 @@ bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loade
      */
 
     std::string ref_model_tag {};
-    std::string model_tag {id_tag};
-
     for (stream::mesh &mesh : meshes) {
-        ref_model_tag = model_tag + "." + mesh.tag;
+        ref_model_tag = id_tag + (mesh.tag.empty() ? "" : ("." + mesh.tag));
         if (this->pbr_map[ref_model_tag] != nullptr) {
             continue;
         }
@@ -50,6 +50,7 @@ bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loade
 
         this->uncompiled_model_list.push_back(p_model);
         this->pbr_map[ref_model_tag] = p_model;
+        util::log("PBR model loaded '" + p_model->tag + "'");
     }
 
     return false;
@@ -63,7 +64,7 @@ bool pbrloader::load_material(std::string_view tag, material *p_material) {
 
     this->pbr_map[id_tag] = p_material;
     p_material->tag = id_tag;
-    return false;
+    return !util::log("PBR material loaded '" + p_material->tag + "'");
 }
 
 bool pbrloader::load_material(std::vector<std::string> &loaded_material_list, std::string_view path) {
@@ -96,7 +97,7 @@ bool pbrloader::load_material(std::vector<std::string> &loaded_material_list, st
     return false;
 }
 
-imodule *&pbrloader::find(std::string_view pbr_tag) {
+imodule *pbrloader::find(std::string_view pbr_tag) {
     return this->pbr_map[pbr_tag.data()];
 }
 

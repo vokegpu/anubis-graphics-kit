@@ -5,7 +5,7 @@
 #include <iostream>
 
 namespace gpu {
-    struct texture {
+    typedef struct texture {
         unsigned int w {};
         unsigned int h {};
         unsigned int d {};
@@ -14,9 +14,9 @@ namespace gpu {
         unsigned int channel {};
         unsigned int id {};
         unsigned int primitive {};
-    };
+    } texture;
 
-    struct frame {
+    typedef struct frame {
         int w {};
         int h {};
         int z {};
@@ -26,7 +26,7 @@ namespace gpu {
         unsigned int id_fbo {};
         unsigned int id_renderbuffer {};
         unsigned int id_depth {};
-    };
+    } frame;
 
     int64_t channels(gpu::texture &texture);
 

@@ -13,7 +13,7 @@ void asset::shader::revoke() {
 }
 
 void asset::shader::attach(std::string_view block, uint32_t binding) {
-    this->shaderbuffer.attach(this->program, block, binding);
+    this->programbuffer.attach(this->program, block, binding);
 }
 
 int32_t asset::shader::append(uint32_t buffer_id) {

@@ -28,7 +28,7 @@ namespace agk {
         void populate();
     }
     
-    namespace flags {
+    namespace flag {
         bool contains(uint16_t &target, uint16_t check);
     }
 
@@ -38,8 +38,8 @@ namespace agk {
     }
 
     namespace world {
-        camera *&current_camera();
-        entity *&current_player();
+        camera *&currentcamera();
+        entity *&currentplayer();
 
         ::world *&get();
         renderer *&renderer();
@@ -69,7 +69,7 @@ namespace agk {
     }
 
     namespace ui {
-        usercamera *&get_user_camera();
+        usercamera *&getusercamera();
         bool input(std::string_view);
     }
 }

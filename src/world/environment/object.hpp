@@ -41,6 +41,7 @@ class object : public imodule {
 protected:
     enums::state visible {};
     enums::priority priority {};
+    bool rendering_aabb_check {};
 public:
     std::map<std::string, objectassign*> ref_object_assign_map {};
     std::vector<objectassign> object_assign_list {};
@@ -50,9 +51,10 @@ public:
     objecttransform transform {};
     util::aabb aabb {};
 public:
-    explicit object();
+    explicit object(enums::state visibility = enums::state::enable);
     ~object();
 
+    util::aabb &get_current_aabb();
     bool contains_assign(std::string_view model, std::string_view material = "");
     void assign(std::string_view model, std::string_view material);
     void set_visible(enums::state enum_state, bool dispatch_event = true);
@@ -60,6 +62,7 @@ public:
     void set_priority(enums::priority enum_priority, bool dispatch_event = true);
     enums::priority get_priority();
     virtual void on_low_update();
+    void on_render();
 };
 
 #endif

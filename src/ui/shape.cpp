@@ -1,13 +1,13 @@
 #include <SDL2/SDL_events.h>
 #include "shape.hpp"
 
-glm::mat4 shape::mat4x4_orthographic {};
+glm::mat4 shape::mat4x4ortho {};
 
 void shape::invoke() const {
     this->p_program->invoke();
     glDisable(GL_DEPTH_TEST);
 
-    this->p_program->set_uniform_mat4("uOrthographicMatrix", &shape::mat4x4_orthographic[0][0]);
+    this->p_program->set_uniform_mat4("uOrthographicMatrix", &shape::mat4x4ortho[0][0]);
     this->p_buffer->invoke();
 }
 

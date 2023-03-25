@@ -313,17 +313,17 @@ bool streamparser::read_mesh_filename(std::string &filename, std::string_view pa
 
     std::vector<std::string> strings {};
     util::split(strings, path, '.');
-    strings.emplace_back();
 
-    if (strings.size() == 1 || strings.empty()) {
+    if (strings.size() <= 1 || strings.empty()) {
         return util::log(R"(Empty filename ".*", please rename to: "*.*")");
     }
 
-    filename = strings[strings.size() - 1];
+    filename = strings[strings.size() - 2];
     int64_t it {};
 
     for (it = filename.size(); it > 0; --it) {
         if (filename[it] == '\\' || filename[it] == '/') {
+            it++;
             break;
         }
     }

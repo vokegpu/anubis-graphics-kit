@@ -12,12 +12,12 @@ float util::max(float val, float max) {
     return val > max ? max : val;
 }
 
-void util::to_grid_pos(glm::ivec2 &grid_pos, const glm::vec3 &world_pos, const glm::ivec2 &grid_size) {
+void util::togridpos(glm::ivec2 &grid_pos, const glm::vec3 &world_pos, const glm::ivec2 &grid_size) {
     grid_pos.x = static_cast<int32_t>(world_pos.x / static_cast<float>(grid_size.x));
     grid_pos.y = static_cast<int32_t>(world_pos.z / static_cast<float>(grid_size.y));
 }
 
-void util::to_world_pos(glm::vec3 &world_pos, const glm::ivec2 &grid_pos, const glm::ivec2 &grid_size) {
+void util::toworldpos(glm::vec3 &world_pos, const glm::ivec2 &grid_pos, const glm::ivec2 &grid_size) {
     world_pos.x = static_cast<float>(grid_pos.x * grid_size.x);
     world_pos.z = static_cast<float>(grid_pos.y * grid_size.y);
 }
@@ -30,7 +30,7 @@ float util::lerp(float a, float b, float delta) {
     return a + (b - a) * delta;
 }
 
-void util::generate_aabb(util::aabb &aabb, stream::mesh &mesh) {
+void util::generateaabb(util::aabb &aabb, stream::mesh &mesh) {
     auto &list {mesh.get_float_list(stream::type::vertex)};
     glm::vec3 min {glm::vec3(std::numeric_limits<float>::max())};
     glm::vec3 max {glm::vec3(std::numeric_limits<float>::min())};

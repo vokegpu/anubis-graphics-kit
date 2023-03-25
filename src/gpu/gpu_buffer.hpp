@@ -69,6 +69,15 @@ public:
         glVertexAttribPointer(location, vec, this->current_buffer_info[1], GL_FALSE, attrib_stride.x, p_hack);
     }
 
+    template<typename t>
+    void attach(uint32_t location, int32_t vec, int32_t len, int32_t div = 1) {
+        int32_t size {len / vec};
+        for (uint32_t it {}; it < size; it++) {
+            this->attach(location+it, vec, {sizeof(t)*len, sizeof(t)*(it*vec)});
+            this->divisor(location+it, div);
+        }
+    }
+
     void divisor(int32_t location, int32_t divisor) const {
         glVertexAttribDivisor(location, divisor);
     }

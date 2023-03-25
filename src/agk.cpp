@@ -20,8 +20,13 @@ void agk::mainloop(imodule *p_scene_initial) {
         return;
     }
 
+    SDL_DisplayMode sdl_display_mode {};
+    SDL_GetCurrentDisplayMode(0, &sdl_display_mode);
+    agk::app.screen_width = sdl_display_mode.w - (sdl_display_mode.w / 10);
+    agk::app.screen_height = sdl_display_mode.h - (sdl_display_mode.h / 10);
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
 
     agk::app.p_sdl_window = SDL_CreateWindow("Anubis Graphics Kit", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, agk::app.screen_width, agk::app.screen_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     SDL_GL_CreateContext(agk::app.p_sdl_window);
@@ -52,7 +57,7 @@ void agk::mainloop(imodule *p_scene_initial) {
 
     agk::app.p_asset_manager_service = new assetmanager {};
     agk::task::synchronize(agk::app.p_asset_manager_service);
-    util::log("Asset manager created.");
+    util::log("Asset manager created");
 
     agk::app.p_input_service = new deviceinput {};
     agk::task::registry(agk::app.p_input_service, agk::service::updateable | agk::service::listenable);
@@ -182,30 +187,28 @@ void agk::setfps(uint32_t fps, bool vsync) {
 }
 
 void agk::scene::load(imodule *p_scene) {
-    auto &current_scene {agk::scene::current()};
-
-    if (p_scene == nullptr && current_scene != nullptr) {
-        current_scene->on_destroy();
-        delete current_scene;
+    if (p_scene == nullptr && agk::app.p_curr_scene != nullptr) {
+        agk::app.p_curr_scene->on_destroy();
+        delete agk::app.p_curr_scene;
         agk::app.p_curr_scene = nullptr;
         return;
     }
 
-    if (p_scene != nullptr && current_scene != nullptr && current_scene == p_scene) {
-        current_scene->on_destroy();
-        delete current_scene;
+    if (p_scene != nullptr && agk::app.p_curr_scene != nullptr && agk::app.p_curr_scene == p_scene) {
+        agk::app.p_curr_scene->on_destroy();
+        delete agk::app.p_curr_scene;
         return;
     }
 
-    if (p_scene != nullptr && current_scene != nullptr && current_scene != p_scene) {
-        current_scene->on_destroy();
-        delete current_scene;
+    if (p_scene != nullptr && agk::app.p_curr_scene != nullptr && agk::app.p_curr_scene != p_scene) {
+        agk::app.p_curr_scene->on_destroy();
+        delete agk::app.p_curr_scene;
         p_scene->on_create();
         agk::app.p_curr_scene = p_scene;
         return;
     }
 
-    if (p_scene != nullptr && current_scene == nullptr) {
+    if (p_scene != nullptr && agk::app.p_curr_scene == nullptr) {
         p_scene->on_create();
         agk::app.p_curr_scene = p_scene;
     }
@@ -215,7 +218,7 @@ imodule *&agk::scene::current() {
     return agk::app.p_curr_scene;
 }
 
-camera *&agk::world::current_camera() {
+camera *&agk::world::currentcamera() {
     return agk::app.p_curr_camera;
 }
 
@@ -235,7 +238,7 @@ void agk::world::destroy(object *p_object) {
     agk::app.p_world_service->erase(p_object);
 }
 
-entity *&agk::world::current_player() {
+entity *&agk::world::currentplayer() {
     return agk::app.p_curr_player;
 }
 
@@ -255,7 +258,7 @@ bool agk::ui::input(std::string_view input_tag) {
     return agk::app.p_input_service->input_map[input_tag.data()];
 }
 
-usercamera *&agk::ui::get_user_camera() {
+usercamera *&agk::ui::getusercamera() {
     return agk::app.p_user_camera;
 }
 
@@ -267,15 +270,15 @@ void agk::task::registry(imodule *p_service, uint16_t flags) {
     agk::task::synchronize(p_service);
     p_service->id = ++core::token;
 
-    if (agk::flags::contains(flags, agk::service::renderable)) {
+    if (agk::flag::contains(flags, agk::service::renderable)) {
         core::renderablelist.push_back(p_service);
     }
 
-    if (agk::flags::contains(flags, agk::service::updateable)) {
+    if (agk::flag::contains(flags, agk::service::updateable)) {
         core::updateablelist.push_back(p_service);
     }
 
-    if (agk::flags::contains(flags, agk::service::listenable)) {
+    if (agk::flag::contains(flags, agk::service::listenable)) {
         core::listenablelist.push_back(p_service);
     }
 }
@@ -297,7 +300,7 @@ void agk::task::synchronize(imodule *p_module) {
     core::taskqueue.push(p_module);
 }
 
-bool agk::flags::contains(uint16_t &flags, uint16_t check) {
+bool agk::flag::contains(uint16_t &flags, uint16_t check) {
     return flags & check;
 }
 
@@ -314,7 +317,7 @@ bool agk::pbr::loadmaterial(std::vector<std::string> &loaded_material_list, std:
 }
 
 bool agk::pbr::loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path) {
-    return agk::app.p_pbr_loader_service->load_model(path, loaded_model_list, path);
+    return agk::app.p_pbr_loader_service->load_model(tag, loaded_model_list, path);
 }
 
 imodule *agk::pbr::find(std::string_view pbr_tag) {

@@ -166,6 +166,28 @@ namespace stream {
 
             return this->n_list;
         }
+
+        inline void operator+=(stream::mesh &mesh) {
+            if (mesh.contains(stream::type::vertex)) {
+                auto &list {mesh.get_float_list(stream::type::vertex)};
+                this->v_list.insert(this->v_list.end(), list.begin(), list.end());
+            }
+
+            if (mesh.contains(stream::type::texcoord)) {
+                auto &list {mesh.get_float_list(stream::type::texcoord)};
+                this->t_list.insert(this->t_list.end(), list.begin(), list.end());
+            }
+
+            if (mesh.contains(stream::type::normal)) {
+                auto &list {mesh.get_float_list(stream::type::normal)};
+                this->n_list.insert(this->n_list.end(), list.begin(), list.end());
+            }
+
+            if (mesh.contains(stream::type::index)) {
+                auto &list {mesh.get_uint_list(stream::type::index)};
+                this->i_list.insert(this->i_list.end(), list.begin(), list.end());
+            }
+        } 
     };
 
     struct serializer {

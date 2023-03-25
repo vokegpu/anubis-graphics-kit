@@ -14,7 +14,7 @@ void renderer::process_terrain() {
 
     auto *&p_time_manager {agk::world::sky()};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
-    auto *&p_camera {agk::world::current_camera()};
+    auto *&p_camera {agk::world::currentcamera()};
     float dist_render {agk::app.setting.fog_bounding.get_value().y};
     dist_render += dist_render * 0.5f;
     float dist {};
@@ -72,7 +72,7 @@ void renderer::process_terrain() {
     this->texture_chunk.revoke();
     this->buffer_chunk.revoke();
 
-    glUseProgram(0);
+    p_program_pbr->revoke();
     glCullFace(GL_BACK);
 }
 
@@ -108,7 +108,6 @@ void renderer::process_environment() {
         mat4x4_model = glm::rotate(mat4x4_model, p_objects->transform.rotation.z, {0, 0, 1});
         mat4x4_model = glm::scale(mat4x4_model, p_objects->transform.scale);
 
-        p_objects->aabb = p_objects->aabb;
         if (!agk::app.p_curr_camera->viewing(mat4x4_model, p_objects->aabb)) {
             continue;
         }
@@ -125,22 +124,7 @@ void renderer::process_environment() {
             p_program_pbr->set_uniform_mat4("uMVP", &mat4x4_mvp[0][0]);
         }
 
-        /*
-         * Rendering pairs can solve the issue with rendering glTF models,
-         * glTF models contains transform for each model.
-         */
-        for (objectassign &object_assign : p_objects->object_assign_list) {
-            if (object_assign.p_linked_material != nullptr) {
-                object_assign.p_linked_material->invoke(p_program_pbr);
-            }
-
-            if (object_assign.p_linked_model != nullptr) {
-                object_assign.p_linked_model->buffer.invoke();
-                object_assign.p_linked_model->buffer.draw();
-                object_assign.p_linked_model->buffer.revoke();
-            }
-        }
-
+        p_objects->on_render();
         draw_call_count++;
     }
 
@@ -154,7 +138,7 @@ void renderer::process_environment() {
         p_program_pbr->set_uniform_int("uLightAmount", (int32_t) light_amount);
     };
 
-    glUseProgram(0);
+    p_program_pbr->revoke();
     glEnable(GL_CULL_FACE);
 }
 
@@ -314,7 +298,7 @@ void renderer::on_create() {
     this->buffer_chunk.attach(1, 2);
 
     this->buffer_chunk.stride[0] = 0;
-    this->buffer_chunk.stride[1] = mesh_chunk.faces;
+    this->buffer_chunk.stride[1] = mesh_chunk.faces*4;
 
     this->buffer_chunk.tessellation(4);
     this->buffer_chunk.revoke();
@@ -376,7 +360,7 @@ void renderer::on_render() {
     }
 
     /* Prepare matrices to render the world. */
-    auto &p_camera {agk::world::current_camera()};
+    auto &p_camera {agk::world::currentcamera()};
     this->mat4x4_perspective = p_camera->get_perspective();
     this->mat4x4_view = p_camera->get_view();
     this->mat4x4_perspective_view = p_camera->get_mvp();

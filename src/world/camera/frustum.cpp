@@ -64,7 +64,7 @@ void frustum::process_perspective(int32_t width, int32_t height) {
     this->near = 0.03f;
 
     this->perspective = glm::perspective(glm::radians(this->fov), this->aspect, this->near, this->far);
-    shape::mat4x4_orthographic = glm::ortho(0.0f, size[0], size[1], 0.0f);
+    shape::mat4x4ortho = glm::ortho(0.0f, size[0], size[1], 0.0f);
 
     if (this->w != size[0] || this->h != size[1]) {
         std::string msg{"Window resized ("};

@@ -6,7 +6,7 @@
 
 class shape {
 public:
-    static glm::mat4 mat4x4_orthographic;
+    static glm::mat4 mat4x4ortho;
 
     buffering *p_buffer {};
     ::asset::shader *p_program {};

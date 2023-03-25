@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <map>
 
-class shaderbuffering {
+class programbuffering {
 protected:
     uint32_t current_buffer_info[3] {};
     std::map<uint32_t, uint32_t> buffer_map {};

@@ -31,7 +31,7 @@ void material::invoke(::asset::shader *p_shader) {
         }
     }
 
-    auto &shaderbuffer {p_shader->shaderbuffer};
+    auto &programbuffer {p_shader->programbuffer};
     auto &albedo {this->sampler_map["albedo"]};
     auto &specular {this->sampler_map["specular"]};
     auto &normal_map {this->sampler_map["normalMap"]};
@@ -39,6 +39,7 @@ void material::invoke(::asset::shader *p_shader) {
     if (this->should_reload) {
         this->should_reload = false;
         this->shader_index = p_shader->find(this->id);
+        this->double_sided = std::stoi(this->metadata["doubleSided"]);
 
         if (this->shader_index == -1) {
             this->shader_index = p_shader->append(this->id);
@@ -58,19 +59,19 @@ void material::invoke(::asset::shader *p_shader) {
         };
 
         int32_t size {static_cast<int32_t>(sizeof(buffer_database)*this->shader_index)};
-        shaderbuffer.invoke(0, GL_UNIFORM_BUFFER);
-        shaderbuffer.edit<float>(size, sizeof(buffer_database), buffer_database);
-        shaderbuffer.revoke();
+        programbuffer.invoke(0, GL_UNIFORM_BUFFER);
+        programbuffer.edit<float>(size, sizeof(buffer_database), buffer_database);
+        programbuffer.revoke();
     }
 
     p_shader->set_uniform_int("uMaterialIndex", this->shader_index);
-    int32_t face_cull_mode {};
-    glGetIntegerv(GL_CULL_FACE_MODE, &face_cull_mode);
+    int32_t face_cull_mode[1] {};
+    glGetIntegerv(GL_CULL_FACE_MODE, face_cull_mode);
     int32_t face_culling_enable {glIsEnabled(GL_CULL_FACE)};
 
     if (this->double_sided && face_culling_enable) {
         glDisable(GL_CULL_FACE);
-    } else if (face_cull_mode != GL_BACK) {
+    } else if (face_cull_mode[0] == GL_NONE) {
         if (!face_culling_enable) {
             glEnable(GL_CULL_FACE);
         }

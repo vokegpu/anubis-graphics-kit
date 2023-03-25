@@ -16,7 +16,7 @@ void model::load(stream::mesh &_mesh) {
 }
 
 void model::recompile() {
-    if (!this->compiled) {
+    if (this->compiled) {
         return;
     }
 
@@ -31,7 +31,7 @@ void model::recompile() {
 
         this->buffer.stride[0] = 0;
         this->buffer.stride[1] = static_cast<int32_t>(list.size()) / 3;
-        util::generate_aabb(this->aabb, this->mesh);
+        util::generateaabb(this->aabb, this->mesh);
     }
 
     if (this->mesh.contains(stream::type::texcoord)) {
@@ -59,7 +59,7 @@ void model::recompile() {
 
     this->buffer.revoke();
     this->compiled = true;
-    this->mesh = {};
+    util::log("Compiled model buffers: " + std::to_string(this->mesh.faces) + " faces");
 }
 
 bool model::is_compiled() {

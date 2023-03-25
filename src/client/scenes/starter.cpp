@@ -8,7 +8,7 @@
 void client::scenes::starter::on_create() {
     agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
-        {"color", "0.342 0.234324 0.13342"}, {"metal", "1"}, {"rough", "0.43"}
+        {"color", "0.342 0.234324 0.13342"}, {"metal", "1"}, {"rough", "0.43"}, {"doubleSided", "1"}
     }});
 
     auto *p_dinossaur {new object {}};
@@ -29,9 +29,9 @@ void client::scenes::starter::on_create() {
 
     agk::world::create(this->p_light_spot);
     agk::world::create(p_light_spot2);
-    agk::world::current_player()->speed_base = 0.9540f;
+    agk::world::currentplayer()->speed_base = 0.9540f;
 
-    auto &p_user_camera {agk::ui::get_user_camera()};
+    auto &p_user_camera {agk::ui::getusercamera()};
     p_user_camera->set_editor_enabled(true);
     p_user_camera->set_movement_enabled(true);
     p_user_camera->set_rotation_enabled(true);
@@ -46,13 +46,13 @@ void client::scenes::starter::on_create() {
 
     ekg::button("Reset light-spot", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback", this, [](void *p_data) {
         auto starter {static_cast<client::scenes::starter*>(p_data)};
-        starter->p_light_spot->transform.position = agk::world::current_player()->transform.position;
+        starter->p_light_spot->transform.position = agk::world::currentplayer()->transform.position;
         starter->p_light_spot->update();
     }});
 
     ekg::button("Reset Mascote", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
         auto starter {static_cast<client::scenes::starter*>(p_data)};
-        auto &p {agk::world::current_player()};
+        auto &p {agk::world::currentplayer()};
 
         starter->p_object_dino->transform.position = p->transform.position;
         starter->p_object_dino->transform.rotation = p->transform.rotation;
@@ -146,7 +146,7 @@ void client::scenes::starter::on_create() {
     }});
 
     agk::world::sky()->set_time(8, 0);
-    agk::world::current_player()->transform.position.y += 90;
+    agk::world::currentplayer()->transform.position.y += 90;
 }
 
 void client::scenes::starter::on_destroy() {
@@ -154,37 +154,16 @@ void client::scenes::starter::on_destroy() {
 }
 
 void client::scenes::starter::on_event(SDL_Event &sdl_event) {
-    auto camera {agk::world::current_camera()};
     ekg::event(sdl_event);
-
-    switch (sdl_event.type) {
-        case SDL_MOUSEBUTTONDOWN: {
-            break;
-        }
-
-        case SDL_MOUSEBUTTONUP: {
-
-            break;
-        }
-
-        case SDL_KEYDOWN: {
-
-            break;
-        }
-
-        case SDL_MOUSEMOTION: {
-            break;
-        }
-    }
 }
 
 void client::scenes::starter::on_update() {
     if (agk::ui::input("x")) {
-        agk::world::current_player()->speed_base += 0.5f;
+        agk::world::currentplayer()->speed_base += 0.5f;
     }
 
     if (agk::ui::input("z")) {
-        agk::world::current_player()->speed_base -= 0.5f;
+        agk::world::currentplayer()->speed_base -= 0.5f;
     }
 
     if (this->last_display_fps != agk::app.display_fps) {

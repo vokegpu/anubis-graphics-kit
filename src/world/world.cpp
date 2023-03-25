@@ -14,9 +14,9 @@ void world::on_create() {
     agk::app.setting.chunk_dimension.set_value(256);
     agk::app.setting.chunk_terrain_height.set_value(256);
 
-    agk::app.parser.load_heightmap_mesh<float>(this->chunk_mesh_data, nullptr, {20, 20});
+    agk::app.parser.load_heightmap_mesh<float>(this->chunk_mesh_data, nullptr, {20, 20, 4});
     this->vegetation_memory_list.reserve((128 * 128) * 4);
-    util::generate_aabb(this->aabb_chunk, this->chunk_mesh_data);
+    util::generateaabb(this->aabb_chunk, this->chunk_mesh_data);
     this->aabb_chunk.max.y = static_cast<float>(agk::app.setting.chunk_terrain_height.get_value());
 
     this->p_material_vegetation_coconut = new material {
@@ -92,7 +92,7 @@ void world::on_update() {
     /* World terrain statement. */
     if (util::reset_when(this->chunk_checker_timing, agk::app.setting.chunk_generation_interval.get_value())) {
         glm::vec3 sub {};
-        auto &p_player {agk::world::current_player()};
+        auto &p_player {agk::world::currentplayer()};
         std::vector<chunk*> current_loaded_chunk {};
 
         int32_t chunk_size {agk::app.setting.chunk_dimension.get_value()};
@@ -104,7 +104,7 @@ void world::on_update() {
         glm::ivec2 player_grid {};
         player_grid.x = static_cast<int32_t>(p_player->transform.position.x);
         player_grid.y = static_cast<int32_t>(p_player->transform.position.z);
-        util::to_grid_pos(player_grid, p_player->transform.position, vec_chunk_size);
+        util::togridpos(player_grid, p_player->transform.position, vec_chunk_size);
 
         float div {static_cast<float>(chunk_size) / 2};
         float distance_toward_generator {(static_cast<float>(chunk_gen_dist * 2) * static_cast<float>(chunk_size))};
@@ -112,7 +112,7 @@ void world::on_update() {
         bool should_refresh_renderer {};
 
         for (chunk *&p_chunks : this->loaded_chunk_list) {
-            util::to_grid_pos(grid_pos, p_chunks->transform.position, vec_chunk_size);
+            util::togridpos(grid_pos, p_chunks->transform.position, vec_chunk_size);
             std::string chunk_tag {std::to_string(grid_pos.x)};
 
             chunk_tag += 'x';
@@ -197,7 +197,7 @@ void world::on_update() {
         float terrain_height {static_cast<float>(agk::app.setting.chunk_terrain_height.get_value())};
 
         int32_t chunk_size {agk::app.setting.chunk_dimension.get_value()};
-        util::to_grid_pos(grid_pos, p_chunk->transform.position, {chunk_size, chunk_size});
+        util::togridpos(grid_pos, p_chunk->transform.position, {chunk_size, chunk_size});
         global_uv = grid_pos;
 
         /* Invoke parallel computation to randomize map. */
@@ -340,15 +340,15 @@ void world::on_update() {
             p_buffer_instance->edit<float>(it * sizeof(glm::mat4), sizeof(glm::mat4), &mat4x4_model[0][0]);
         }
 
-        p_buffer_instance->attach(3, 4, {sizeof(glm::mat4), 0});
-        p_buffer_instance->attach(4, 4, {sizeof(glm::mat4), sizeof(glm::vec4)});
-        p_buffer_instance->attach(5, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 2});
-        p_buffer_instance->attach(6, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 3});
-
-        p_buffer_instance->divisor(3, 1);
-        p_buffer_instance->divisor(4, 1);
-        p_buffer_instance->divisor(5, 1);
-        p_buffer_instance->divisor(6, 1);
+        // p_buffer_instance->attach(3, 4, {sizeof(glm::mat4), 0});
+        // p_buffer_instance->attach(4, 4, {sizeof(glm::mat4), sizeof(glm::vec4)});
+        // p_buffer_instance->attach(5, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 2});
+        // p_buffer_instance->attach(6, 4, {sizeof(glm::mat4), sizeof(glm::vec4) * 3});
+        // p_buffer_instance->divisor(3, 1);
+        // p_buffer_instance->divisor(4, 1);
+        // p_buffer_instance->divisor(5, 1);
+        // p_buffer_instance->divisor(6, 1);
+        p_buffer_instance->attach<float>(3, 4, 16);
         p_buffer_instance->revoke();
     }
 

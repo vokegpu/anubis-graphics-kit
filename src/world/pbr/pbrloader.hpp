@@ -19,7 +19,7 @@ public:
     bool load_material(std::string_view tag, material *p_material);
     bool load_model(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path);
     bool load_material(std::vector<std::string> &loaded_material_list, std::string_view path);
-    imodule *&find(std::string_view pbr_tag);
+    imodule *find(std::string_view pbr_tag);
     void on_update() override;
 };
 

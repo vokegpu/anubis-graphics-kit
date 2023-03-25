@@ -3,7 +3,6 @@
 
 #include "gpu/gpu.hpp"
 #include <functional>
-#include "stb/stb_image.h"
 #include "core/imodule.hpp"
 #include "asset/shader.hpp"
 #include <map>
@@ -27,10 +26,11 @@ namespace asset {
             this->gpu_side.format = texture_info.z;
             this->gpu_side.channel = texture_info.w;
 
-            int32_t channel {};
             int32_t w {}, h {};
+            void *p_data {};
+            util::readimage(path, w, h, p_data);
+            this->cpu_side = (t*) p_data;
 
-            this->cpu_side = stbi_load(path.data(), &w, &h, &channel, 0);
             this->gpu_side.w = w;
             this->gpu_side.h = h;
 

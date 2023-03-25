@@ -35,7 +35,7 @@ void object::assign(std::string_view model, std::string_view material) {
     ref_tag += model;
     ref_tag += material;
 
-    if (!this->contains_assign(model)) {
+    if (this->contains_assign(model)) {
         return;
     }
 
@@ -50,10 +50,45 @@ void object::assign(std::string_view model, std::string_view material) {
     object_assign.p_linked_model = p_model;
     object_assign.p_linked_material = p_material;
     this->ref_object_assign_map[ref_tag] = &object_assign;
+    this->rendering_aabb_check = true;
+}
+
+util::aabb &object::get_current_aabb() {
+    if (this->rendering_aabb_check) {
+        stream::mesh final_mesh {};
+        for (objectassign &object_assign : this->object_assign_list) {
+            if (object_assign.p_linked_model != nullptr) {
+                final_mesh += object_assign.p_linked_model->mesh;
+            }
+        }
+
+        util::generateaabb(this->aabb, final_mesh);
+        this->rendering_aabb_check = false;
+    }
+
+    return this->aabb;
 }
 
 void object::on_low_update() {
 
+}
+
+void object::on_render() {
+    /*
+     * Model-material assign can solve the issue with rendering glTF models,
+     * glTF models contains different models (while wavefront you do not have).
+     */
+    for (objectassign &object_assign : this->object_assign_list) {
+        if (object_assign.p_linked_material != nullptr) {
+            object_assign.p_linked_material->invoke(asset::shader::pcurrshader);
+        }
+
+        if (object_assign.p_linked_model != nullptr) {
+            object_assign.p_linked_model->buffer.invoke();
+            object_assign.p_linked_model->buffer.draw();
+            object_assign.p_linked_model->buffer.revoke();
+        }
+    }
 }
 
 void object::set_visible(enums::state enum_state, bool dispatch_event) {
@@ -94,10 +129,10 @@ enums::priority object::get_priority() {
     return this->priority;
 }
 
-object::object() {
+object::object(enums::state visibility) {
     this->id = imodule::token++;
     this->set_priority(enums::priority::high);
-    this->set_visible(enums::state::enable);
+    this->set_visible(visibility);
 }
 
 object::~object() {

@@ -26,7 +26,7 @@ namespace asset {
         std::function<void(asset::shader*)> mixin {};
     public:
         static shader *pcurrshader;
-        shaderbuffering shaderbuffer {};
+        programbuffering programbuffer {};
 
         explicit shader(std::string_view shader_tag, const std::vector<asset::shader_resource> &resource_list, const std::function<void(asset::shader*)> &injection_mixin = [](asset::shader*) {}) : program(glCreateProgram()) {
             this->tag += "gpu/";
@@ -45,7 +45,7 @@ namespace asset {
                 if (resource.is_src_the_in) {
                     shader_source = resource.in;
                 } else {
-                    flag = util::read_file(resource.in.data(), shader_source);
+                    flag = util::readfile(resource.in.data(), shader_source);
                 }
 
                 if (shader_source.empty()) {

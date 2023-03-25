@@ -33,7 +33,7 @@ public:
     bool load_mtl(stream::mtl &mtl, std::string_view path);
 
     template<typename t>
-    bool load_heightmap_mesh(stream::mesh &mesh, asset::texture<t> *p_texture, const glm::ivec2 &size = {0, 0}) {
+    bool load_heightmap_mesh(stream::mesh &mesh, asset::texture<t> *p_texture, const glm::ivec3 &size = {0, 0, 0}) {
         glm::vec3 vertex {};
         if (p_texture != nullptr) {
             p_texture->invoke();
@@ -69,7 +69,7 @@ public:
                     mesh.faces++;
                 }
             }
-        } else {
+        } else if (size.z == 0) {
             const float fwf {static_cast<float>(size.x)};
             const float fhf {static_cast<float>(size.y)};
             vertex.y = 0.0f;
@@ -79,6 +79,7 @@ public:
                     vertex.x = static_cast<float>(w) / fwf;
                     vertex.z = static_cast<float>(h) / fhf;
                     mesh.append(vertex, stream::type::vertex);
+                    mesh.append({vertex.x, vertex.z}, stream::type::texcoord);
                 }
             }
 
@@ -91,6 +92,35 @@ public:
                     index.w = static_cast<float>((w + 1) * (h + 1) * 3);
                     mesh.append(index, stream::type::index);
                     mesh.faces++;
+                }
+            }
+        } else {
+            const float fwf {static_cast<float>(size.x)};
+            const float fhf {static_cast<float>(size.y)};
+            vertex.y = 0.0f;
+            mesh.faces = size.x * size.y;
+
+            for (int32_t w {}; w < static_cast<uint32_t>(fwf); w++) {
+                for (int32_t h {}; h < static_cast<uint32_t>(fhf); h++) {
+                    vertex.x = static_cast<float>(w) / fwf;
+                    vertex.z = static_cast<float>(h) / fhf;
+                    mesh.append(vertex, stream::type::vertex);
+                    mesh.append({vertex.x, vertex.z}, stream::type::texcoord);
+
+                    vertex.x = static_cast<float>(w + 1) / fwf;
+                    vertex.z = static_cast<float>(h) / fhf;
+                    mesh.append(vertex, stream::type::vertex);
+                    mesh.append({vertex.x, vertex.z}, stream::type::texcoord);
+                
+                    vertex.x = static_cast<float>(w) / fwf;
+                    vertex.z = static_cast<float>(h + 1) / fhf;
+                    mesh.append(vertex, stream::type::vertex);
+                    mesh.append({vertex.x, vertex.z}, stream::type::texcoord);
+
+                    vertex.x = static_cast<float>(w + 1) / fwf;
+                    vertex.z = static_cast<float>(h + 1) / fhf;
+                    mesh.append(vertex, stream::type::vertex);
+                    mesh.append({vertex.x, vertex.z}, stream::type::texcoord);
                 }
             }
         }

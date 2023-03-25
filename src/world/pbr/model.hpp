@@ -9,15 +9,16 @@
 class model : public imodule {
 protected:
     bool compiled {};
-    stream::mesh mesh {};
 public:
     buffering buffer {};
     bool static_buffers {true};
     util::aabb aabb {};
+    stream::mesh mesh {};
 public:
     explicit model(stream::mesh &_mesh);
     ~model();
 
+    stream::mesh &get_mesh();
     void load(stream::mesh &_mesh);
     void recompile();
     bool is_compiled();
