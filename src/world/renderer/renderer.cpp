@@ -207,6 +207,8 @@ void renderer::process_post_processing() {
 
     this->shape_post_processing.p_program->set_uniform_bool("uMotionBlur.uEnabled", agk::app.setting.enable_motion_blur.get_value());
     if (agk::app.setting.enable_motion_blur.get_value()) {
+        // @TODO Should make the HDR luminance calc better.
+
         this->mat4x4_inverse_perspective_view = glm::inverse(this->mat4x4_perspective_view);
         this->shape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uInversePerspectiveView", &this->mat4x4_inverse_perspective_view[0][0]);
         this->shape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);

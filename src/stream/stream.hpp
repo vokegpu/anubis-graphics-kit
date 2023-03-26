@@ -7,6 +7,12 @@
 #include <map>
 
 namespace stream {
+    std::string f(float value);
+    std::string i(int32_t value);
+    std::string vec(float x, float y, float z, float w);
+    std::string vec(float x, float y, float z);
+    std::string vec(float x, float y);
+
     enum class format {
         unknown, wavefrontobj, stl, gltf
     };

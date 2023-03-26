@@ -1,4 +1,5 @@
 #include "streamparser.hpp"
+#include <nlohmann/json.hpp>
 
 stream::format streamparser::get_model_format(std::string_view path) {
     std::vector<std::string> strings {};
@@ -163,13 +164,94 @@ bool streamparser::process_stl(stream::mesh &mesh) {
     return false;
 }
 
+bool streamparser::process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node) {
+    auto &primitives = gltf_node["primitives"];
+    auto &attributes = primitives["attributes"];
+
+    if (attributes.count("POSITION")) {
+
+    }
+
+    if (attributes.count("NORMAL")) {
+
+    }
+
+    if (attributes.count("TANGENT")) {
+
+    }
+
+    std::string texcoord_attrib {};
+    for (uint32_t it {}; it < 24; it++) {
+        texcoord_attrib = "TEXCOORD_" + std::to_string(it);
+        if (attributes.count(texcoord_attrib)) {
+
+        }
+    }
+
+    return false;
+}
+
 bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::string_view path) {
-    // @TODO Read binary bytes from glTF model file and parser to a mesh stream
-    return util::log("Not implemented!");
+    if (path.empty() || path.size() < 3) {
+        return util::log("Failed to load glTF meshes because there is no path insert");
+    }
+
+    stream::format format {this->get_model_format(path)};
+    if (format != stream::format::gltf) {
+        return util::log("Incompatible file extension");
+    }
+
+    std::ifstream ifs {path.data()};
+    if (!ifs.is_open()) {
+        return util::log("Failed to read glTF at '" + this->current_path + '\'');
+    }
+
+    std::vector<std::string> strings {};
+    util::split(strings, this->current_path, '/');
+
+    const uint64_t size {strings[std::max((int32_t) strings.size() - 1, 0)].size()};
+    const uint64_t tab_find {find.size()};
+    const std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
+    std::string binary_path {};
+
+    this->current_path = path;
+    this->current_gltf_json = nlohmann::json::parse(ifs);
+    this->current_gltf_meshes_json = this->current_gltf_json["meshes"];
+    this->current_gltf_acessors_json = this->current_gltf_json["acessors"];
+
+    for (nlohmann::json &buffer : this->current_gltf_json["buffers"]) {
+        auto &binary_ifs {this->current_gltf_ifs_binary.emplace_back()};
+        binary_path = folder + buffer["uri"].get<std::string>();
+        binary_ifs.open(binary_path.c_str(), std::ifstream::in | std::ifstream::binary);
+    }
+
+    /*
+     * -> read
+     * Mesh tag is a number and not the node name,
+     * because the dev who loads the glTF do not
+     * know the nodes name.
+     */
+    auto &nodes = this->current_gltf_json["nodes"];
+    for (uint64_t it {}; it < nodes.size(); it++) {
+        stream::mesh &mesh {meshes.emplace_back()};
+        mesh.format = format;
+        mesh.tag = std::to_string(it);
+        this->process_gltf(mesh, nodes.at(it));
+        util::log("Found glTF node: " + mesh.tag);
+    }
+
+    ifs.close();
+    for (std::ifstream &ifs_binary : this->current_gltf_ifs_binary) {
+        if (ifs_binary.is_open()) {
+            ifs_binary.close();
+        }
+    }
+
+    return false;
 }
 
 bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
-    if ((path.empty() || path.size() < 3) && mesh.format == stream::format::gltf) {
+    if (path.empty() || path.size() < 3) {
         return util::log("Failed to load object because there is no path insert");
     }
 
@@ -183,7 +265,7 @@ bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
     case stream::format::stl:
         return this->process_stl(mesh);
     case stream::format::gltf:
-        return util::log("Not implemented!");
+        return util::log("Incompatible file extension (*.gltf) with this method");
     case stream::format::unknown:
         return util::log("Unknown model format, please try: *.obj *.stl *.gltf");
     }

@@ -4,11 +4,16 @@
 #include "stream.hpp"
 #include "asset/texture.hpp"
 #include <fstream>
+#include <nlohmann/json.hpp>
 
 class streamparser {
 protected:
     stream::serializer current_serializer {};
     std::string current_path {};
+    nlohmann::json current_gltf_json {};
+    nlohmann::json current_gltf_meshes_json {};
+    nlohmann::json current_gltf_acessors_json {};
+    std::vector<std::ifstream> current_gltf_ifs_binary {};
 
     std::map<std::string, stream::format> mesh_ext_map {
             {"stl", stream::format::stl}, {"obj", stream::format::wavefrontobj}, {"gltf", stream::format::gltf}
@@ -17,13 +22,17 @@ protected:
     std::map<std::string, std::string> mtl_pbr_conversions_map {
         {"map_Ka", "ambientMap"}, {"map_Kd", "albedoMap"}, {"map_Ks", "specularMap"}
     };
+
+    std::map<std::string, uint64_t> gltf_type {
+        {"VEC3", sizeof(float)*3}, {"VEC2", sizeof(float)*2}, {"SCALAR", sizeof(int32_t)}
+    };
 protected:
     stream::serializer get_pbr_from_wavefront_object_mtllib(stream::serializer &serializer);
 
     bool process_wavefront_object(stream::mesh &mesh);
     bool process_wavefront_object_mtllib(stream::mtl &mtl);
     bool process_stl(stream::mesh &mesh);
-    bool process_gltf(stream::mesh &mesh);
+    bool process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node);
     bool process_gltf_mtl(stream::mtl &mtl);
 public:
     stream::format get_model_format(std::string_view path);

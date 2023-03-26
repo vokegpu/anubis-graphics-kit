@@ -1,0 +1,17 @@
+{
+    "settings": [
+        {
+            "tag": "cat",
+            "value": true
+        },
+        {
+            "tag": "dog",
+            "value": 234
+        },
+        {
+            "tag": "tree",
+            "value": 0.938458437759843759843
+        }
+    ],
+    "tag": "buububup"
+}

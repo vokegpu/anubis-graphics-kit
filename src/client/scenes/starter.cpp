@@ -4,18 +4,46 @@
 #include "agk.hpp"
 #include "world/environment/object.hpp"
 #include "world/environment/light.hpp"
+#include <nlohmann/json.hpp>
+#include <fstream>
 
 void client::scenes::starter::on_create() {
+    agk::pbr::loadmodel("snowball", pbrloader::dontcare, "./data/models/snow_03_4k.gltf");
+    // agk::pbr::loadmaterial("snowball", pbrloader::dontcare, "./data/models/snow_03_4k.gltf"):
+
     agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
-        {"color", "0.342 0.234324 0.13342"}, {"metal", "0"}, {"rough", "0.20"}, {"doubleSided", "0"}
+        {"color", stream::vec(0.342f, 0.23434f, 0.21334f)},
+        {"metal", stream::i(false)},
+        {"rough", stream::f(0.20f)},
+        {"doubleSided", stream::i(false)}
     }});
+
+    agk::pbr::loadmodel("monster", pbrloader::dontcare, "./data/models/Alien Animal.obj");
+    agk::pbr::loadmaterial("monster", new material {{
+        {"color", stream::vec(0.234f, 0.45f, 1.0f)},
+        {"metal", stream::i(false)},
+        {"rough", stream::f(0.20f)},
+        {"doubleSided", stream::i(false)}
+    }});
+
+    auto *p_snowball {new object {}};
+    p_snowball->transform.position = {20, 180, 0};
+    p_snowball->transform.scale = glm::vec3 {10.0f};
+    p_snowball->assign("model.snowball.0", "material.monster");
+    agk::world::create(p_snowball);
 
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.dinossaur", "material.dinossaur");
     p_dinossaur->transform.position.y = 90.0f;
     p_dinossaur->transform.scale = glm::vec3 {3.0f};
     agk::world::create(p_dinossaur);
+
+    auto *p_monster {new object {}};
+    p_monster->assign("model.monster", "material.monster");
+    p_monster->transform.position.y = 460.0f;
+    p_monster->transform.scale = glm::vec3 {20.0f};
+    agk::world::create(p_monster);
 
     this->p_light_spot = new light {};
     this->p_light_spot->intensity = {300, 300, 300};
@@ -58,6 +86,7 @@ void client::scenes::starter::on_create() {
         starter->p_object_dino->transform.rotation = p->transform.rotation;
     }});
 
+    agk::setfps(60, true);
     ekg::button("Vsync", ekg::dock::top | ekg::dock::left)->set_callback(new ekg::cpu::event {"callback23", nullptr, [](void *p_data) {
         agk::setfps(60, !agk::app.vsync);
     }});
@@ -147,6 +176,13 @@ void client::scenes::starter::on_create() {
 
     agk::world::sky()->set_time(8, 0);
     agk::world::currentplayer()->transform.position.y += 90;
+    this->do_json_test();
+}
+
+void client::scenes::starter::do_json_test() {
+    std::ifstream ifs {"./data/dev/cat.json"};
+    nlohmann::json json = nlohmann::json::parse(ifs);
+    ifs.close();
 }
 
 void client::scenes::starter::on_destroy() {
