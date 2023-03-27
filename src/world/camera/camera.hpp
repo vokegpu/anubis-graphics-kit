@@ -14,13 +14,10 @@ public:
 
     void set_mouse_sensitivity(float value);
     float get_mouse_sensitivity();
-
     void set_mouse_locked(bool state);
     bool is_mouse_locked();
-
     void on_create() override;
     void on_event(SDL_Event &sdl_event) override;
-
     void update_rotation();
 };
 

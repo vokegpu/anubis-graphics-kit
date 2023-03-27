@@ -164,30 +164,129 @@ bool streamparser::process_stl(stream::mesh &mesh) {
     return false;
 }
 
-bool streamparser::process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node) {
-    auto &primitives = gltf_node["primitives"];
-    auto &attributes = primitives["attributes"];
-
-    if (attributes.count("POSITION")) {
-
+uint64_t streamparser::get_gltf_component_size(uint32_t n) {
+    switch (n) {
+    case 5120:
+        return sizeof(int8_t);
+    case 5121:
+        return sizeof(uint8_t);
+    case 5122:
+        return sizeof(int16_t);
+    case 5123:
+        return sizeof(uint16_t);
+    case 5125:
+        return sizeof(int32_t);
+    case 5126:
+        return sizeof(uint32_t);
     }
 
-    if (attributes.count("NORMAL")) {
+    return sizeof(nullptr);
+}
 
+bool streamparser::read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, std::ifstream &ifs, uint64_t offset, uint64_t length, uint32_t count, uint64_t component_size) {
+    ifs.seekg(offset);
+    float n {};
+    uint32_t vector_len {};
+
+    switch (mesh_type) {
+    case stream::type::texcoord:
+        vector_len = 2;
+        break;
+    case stream::type::index:
+        vector_len = 1;
+        break;
+    default:
+        vector_len = 3;
+        break;
     }
 
-    if (attributes.count("TANGENT")) {
-
-    }
-
-    std::string texcoord_attrib {};
-    for (uint32_t it {}; it < 24; it++) {
-        texcoord_attrib = "TEXCOORD_" + std::to_string(it);
-        if (attributes.count(texcoord_attrib)) {
-
+    for (uint32_t it {}; it < count*vector_len; it++) {
+        ifs.read((char*) &n, component_size);
+        if (mesh_type == stream::type::index && n > 0.0f) {
+            p_mesh->append(n, mesh_type);
+        } else {
+            p_mesh->append(n, mesh_type);
         }
     }
 
+    return false;
+}
+
+bool streamparser::process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohmann::json &gltf_node) {
+    auto &primitives = gltf_node["primitives"].at(0);
+    bool mesh_streaming_serialize_task {p_mesh != nullptr};
+    bool mtl_streaming_serialize_task {p_mtl != nullptr};
+
+    if (!(mesh_streaming_serialize_task || mtl_streaming_serialize_task)) {
+        return util::log("Invalid input stream: null");
+    }
+
+    std::string key {};
+    bool process_accessor {};
+    stream::type streaming_meshs_type {};
+
+    for (auto &itp : primitives.items()) {
+        key = itp.key();
+        if (key == "attributes" && mesh_streaming_serialize_task) {
+            for (auto &ita : itp.value().items()) {
+                key = ita.key();
+                process_accessor = key == "POSITION" || key == "NORMAL";
+                if (process_accessor) {
+                    streaming_meshs_type = this->gltf_primitive_conversions_map[key];
+                } else {
+                    std::string texcoord_attrib {};
+                    for (uint32_t it {}; it < 24; it++) {
+                        texcoord_attrib = "TEXCOORD_" + std::to_string(it);
+                        if (key == texcoord_attrib) {
+                            process_accessor = true;
+                            streaming_meshs_type = stream::type::texcoord;
+                            break;
+                        }
+                    }
+                }
+
+                if (process_accessor) {
+                    auto &accessor = this->current_gltf_accessors_json.at(ita.value().get<uint64_t>());
+                    auto &buffer_view = this->current_gltf_buffer_views_json.at(accessor["bufferView"].get<uint64_t>());
+                    uint32_t count {accessor["count"].get<uint32_t>()};
+
+                    const uint64_t offset {buffer_view["byteOffset"].get<uint64_t>()};
+                    const uint64_t length {buffer_view["byteLength"].get<uint64_t>()};
+                    auto &ifs {this->current_gltf_ifs_binary.at(buffer_view["buffer"].get<uint64_t>())};
+
+                    util::log("Found accessor byte " + key + " " + std::to_string(offset));
+                    this->read_gltf_mesh_bytes(p_mesh, streaming_meshs_type, ifs, offset, length, count, this->get_gltf_component_size(accessor["componentType"].get<uint32_t>()));
+                }
+            }
+        } else if (key == "indices" && mesh_streaming_serialize_task) {
+            auto &accessor = this->current_gltf_accessors_json.at(itp.value().get<uint64_t>());
+            auto &buffer_view = this->current_gltf_buffer_views_json.at(accessor["bufferView"].get<uint64_t>());
+            uint32_t count {accessor["count"].get<uint32_t>()};
+
+            const uint64_t offset {buffer_view["byteOffset"].get<uint64_t>()};
+            const uint64_t length {buffer_view["byteLength"].get<uint64_t>()};
+            auto &ifs {this->current_gltf_ifs_binary.at(buffer_view["buffer"].get<uint64_t>())};
+
+            util::log("Found accessor byte " + key + " " + std::to_string(offset));
+            this->read_gltf_mesh_bytes(p_mesh, stream::type::index, ifs, offset, length, count, this->get_gltf_component_size(accessor["componentType"].get<uint32_t>()));
+        } else if (key == "material" && mtl_streaming_serialize_task) {
+            // @TODO material checking & streaming
+        }
+    }
+
+    return false;
+}
+
+bool streamparser::read_gltf_json_modules() {
+    std::ifstream ifs {this->current_path.data()};
+    if (!ifs.is_open()) {
+        return util::log("Failed to glTF at '" + this->current_path + '\'');
+    }
+
+    this->current_gltf_json = nlohmann::json::parse(ifs);
+    this->current_gltf_meshes_json = this->current_gltf_json["meshes"];
+    this->current_gltf_accessors_json = this->current_gltf_json["accessors"];
+    this->current_gltf_buffer_views_json = this->current_gltf_json["bufferViews"];
     return false;
 }
 
@@ -206,18 +305,15 @@ bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::stri
         return util::log("Failed to read glTF at '" + this->current_path + '\'');
     }
 
+    this->current_path = path;
+    this->read_gltf_json_modules();
+
     std::vector<std::string> strings {};
     util::split(strings, this->current_path, '/');
 
     const uint64_t size {strings[std::max((int32_t) strings.size() - 1, 0)].size()};
-    const uint64_t tab_find {find.size()};
     const std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
     std::string binary_path {};
-
-    this->current_path = path;
-    this->current_gltf_json = nlohmann::json::parse(ifs);
-    this->current_gltf_meshes_json = this->current_gltf_json["meshes"];
-    this->current_gltf_acessors_json = this->current_gltf_json["acessors"];
 
     for (nlohmann::json &buffer : this->current_gltf_json["buffers"]) {
         auto &binary_ifs {this->current_gltf_ifs_binary.emplace_back()};
@@ -236,8 +332,9 @@ bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::stri
         stream::mesh &mesh {meshes.emplace_back()};
         mesh.format = format;
         mesh.tag = std::to_string(it);
-        this->process_gltf(mesh, nodes.at(it));
-        util::log("Found glTF node: " + mesh.tag);
+
+        uint64_t mesh_index {nodes.at(it)["mesh"].get<uint64_t>()};
+        this->process_gltf(&mesh, nullptr, this->current_gltf_meshes_json.at(mesh_index));
     }
 
     ifs.close();

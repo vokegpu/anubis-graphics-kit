@@ -12,11 +12,16 @@ protected:
     std::string current_path {};
     nlohmann::json current_gltf_json {};
     nlohmann::json current_gltf_meshes_json {};
-    nlohmann::json current_gltf_acessors_json {};
+    nlohmann::json current_gltf_accessors_json {};
+    nlohmann::json current_gltf_buffer_views_json {};
     std::vector<std::ifstream> current_gltf_ifs_binary {};
 
     std::map<std::string, stream::format> mesh_ext_map {
             {"stl", stream::format::stl}, {"obj", stream::format::wavefrontobj}, {"gltf", stream::format::gltf}
+    };
+
+    std::map<std::string, stream::type> gltf_primitive_conversions_map {
+            {"POSITION", stream::type::vertex}, {"indices", stream::type::index}, {"NORMAL", stream::type::normal}
     };
 
     std::map<std::string, std::string> mtl_pbr_conversions_map {
@@ -28,12 +33,14 @@ protected:
     };
 protected:
     stream::serializer get_pbr_from_wavefront_object_mtllib(stream::serializer &serializer);
+    uint64_t get_gltf_component_size(uint32_t n);
 
     bool process_wavefront_object(stream::mesh &mesh);
     bool process_wavefront_object_mtllib(stream::mtl &mtl);
     bool process_stl(stream::mesh &mesh);
-    bool process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node);
-    bool process_gltf_mtl(stream::mtl &mtl);
+    bool process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohmann::json &gltf_node);
+    bool read_gltf_json_modules();
+    bool read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, std::ifstream &ifs, uint64_t offset, uint64_t length, uint32_t count, uint64_t component_size);
 public:
     stream::format get_model_format(std::string_view path);
     bool read_mesh_filename(std::string &filename, std::string_view path);

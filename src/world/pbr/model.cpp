@@ -52,9 +52,8 @@ void model::recompile() {
         auto &list {this->mesh.get_uint_list(stream::type::index)};
         this->buffer.bind(3, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_INT});
         this->buffer.send<uint32_t>(sizeof(uint32_t)*list.size(), list.data(), buffers_driver_read_mode);
-
         this->buffer.stride[0] = 0;
-        this->buffer.stride[1] = this->mesh.faces;
+        this->buffer.stride[1] = list.size();
     }
 
     this->buffer.revoke();

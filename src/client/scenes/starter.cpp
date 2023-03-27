@@ -42,7 +42,7 @@ void client::scenes::starter::on_create() {
     auto *p_monster {new object {}};
     p_monster->assign("model.monster", "material.monster");
     p_monster->transform.position.y = 460.0f;
-    p_monster->transform.scale = glm::vec3 {20.0f};
+    p_monster->transform.scale = glm::vec3 {0.32f};
     agk::world::create(p_monster);
 
     this->p_light_spot = new light {};
