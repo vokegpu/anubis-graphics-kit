@@ -8,7 +8,7 @@
 #include <fstream>
 
 void client::scenes::starter::on_create() {
-    agk::pbr::loadmodel("snowball", pbrloader::dontcare, "./data/models/snow_03_4k.gltf");
+    agk::pbr::loadmodel("box", pbrloader::dontcare, "./data/models/snow_03_4k.gltf");
     // agk::pbr::loadmaterial("snowball", pbrloader::dontcare, "./data/models/snow_03_4k.gltf"):
 
     agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
@@ -27,11 +27,11 @@ void client::scenes::starter::on_create() {
         {"doubleSided", stream::i(false)}
     }});
 
-    auto *p_snowball {new object {}};
-    p_snowball->transform.position = {20, 180, 0};
-    p_snowball->transform.scale = glm::vec3 {10.0f};
-    p_snowball->assign("model.snowball.0", "material.monster");
-    agk::world::create(p_snowball);
+    auto *p_gltf_obj {new object {}};
+    p_gltf_obj->transform.position = {20, 180, 0};
+    p_gltf_obj->transform.scale = glm::vec3 {10.0f};
+    p_gltf_obj->assign("model.box.0", "material.monster");
+    agk::world::create(p_gltf_obj);
 
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.dinossaur", "material.dinossaur");

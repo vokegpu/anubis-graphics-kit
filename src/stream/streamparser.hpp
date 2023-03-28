@@ -40,7 +40,7 @@ protected:
     bool process_stl(stream::mesh &mesh);
     bool process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohmann::json &gltf_node);
     bool read_gltf_json_modules();
-    bool read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, std::ifstream &ifs, uint64_t offset, uint64_t length, uint32_t count, uint64_t component_size);
+    bool read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, nlohmann::json &value);
 public:
     stream::format get_model_format(std::string_view path);
     bool read_mesh_filename(std::string &filename, std::string_view path);
