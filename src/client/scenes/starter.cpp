@@ -8,8 +8,13 @@
 #include <fstream>
 
 void client::scenes::starter::on_create() {
-    agk::pbr::loadmodel("box", pbrloader::dontcare, "./data/models/snow_03_4k.gltf");
-    // agk::pbr::loadmaterial("snowball", pbrloader::dontcare, "./data/models/snow_03_4k.gltf"):
+    agk::pbr::loadmodel("duck", pbrloader::dontcare, "./data/models/Duck.gltf");
+    //agk::pbr::loadmaterial("duck", pbrloader::dontcare, "./data/models/Duck.gltf"):
+
+    auto *p_gltf_obj {new object {}};
+    p_gltf_obj->transform.position = {20, 340, 0};
+    p_gltf_obj->transform.scale = glm::vec3 {2.0f};
+    agk::world::create(p_gltf_obj);
 
     agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
@@ -27,11 +32,7 @@ void client::scenes::starter::on_create() {
         {"doubleSided", stream::i(false)}
     }});
 
-    auto *p_gltf_obj {new object {}};
-    p_gltf_obj->transform.position = {20, 180, 0};
-    p_gltf_obj->transform.scale = glm::vec3 {10.0f};
-    p_gltf_obj->assign("model.box.0", "material.monster");
-    agk::world::create(p_gltf_obj);
+    p_gltf_obj->assign("model.duck", "material.monster");
 
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.dinossaur", "material.dinossaur");
@@ -174,7 +175,7 @@ void client::scenes::starter::on_create() {
             {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
-    agk::world::sky()->set_time(8, 0);
+    agk::world::sky()->set_time(19, 0);
     agk::world::currentplayer()->transform.position.y += 90;
     this->do_json_test();
 }

@@ -97,7 +97,7 @@ void renderer::process_environment() {
     uint32_t draw_call_count {};
 
     for (object *&p_objects : this->obj_draw_list) {
-        if (p_objects == nullptr || p_objects->object_assign_list.empty() || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
+        if (p_objects == nullptr || p_objects->no_render() || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
             continue;
         }
 

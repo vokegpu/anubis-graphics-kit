@@ -36,6 +36,7 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
 
     stream::mesh::pack pack {};
     uint32_t index {}, vsize {};
+    mesh.tag = "0";
 
     while (std::getline(ifs, string_buffer)) {
         line_size = string_buffer.size();
@@ -130,6 +131,7 @@ bool streamparser::process_stl(stream::mesh &mesh) {
     stream::mesh::pack pack {};
     glm::vec3 t {}, r {}, s {}, n {};
     char buf[2] {};
+    mesh.tag = "0";
 
     /*
      * triangle vertices are represented as: t, r, & s
@@ -189,7 +191,7 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_
     auto &ifs {this->current_gltf_ifs_binary.at(buffer_view["buffer"].get<uint64_t>())};
 
     if (!ifs.is_open()) {
-        return util::log("glTF binary is not open");
+        return util::log("Failed to read mesh bytes from glTF binary because the binary is not open");
     }
 
     const uint64_t offset {buffer_view["byteOffset"].get<uint64_t>()};
@@ -350,7 +352,6 @@ bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
 
     mesh.format = mesh.format != stream::format::unknown ? mesh.format : this->get_model_format(path);
     this->current_path = path;
-    this->read_mesh_filename(mesh.tag, path);
 
     switch (mesh.format) {
     case stream::format::wavefrontobj:

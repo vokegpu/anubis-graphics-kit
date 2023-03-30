@@ -65,7 +65,10 @@ namespace agk {
         bool loadmaterial(std::string_view tag, material *p_material);
         bool loadmaterial(std::vector<std::string> &loaded_material_list, std::string_view path);
         bool loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path);
+        
         imodule *find(std::string_view pbr_tag);
+        uint32_t findfamily(std::string_view pbr_tag);
+        pbrloader *&loader();
     }
 
     namespace ui {

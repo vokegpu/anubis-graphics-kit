@@ -320,10 +320,18 @@ bool agk::pbr::loadmodel(std::string_view tag, std::vector<std::string> &loaded_
     return agk::app.p_pbr_loader_service->load_model(tag, loaded_model_list, path);
 }
 
+uint32_t agk::pbr::findfamily(std::string_view pbr_tag) {
+    return agk::app.p_pbr_loader_service->find_family(pbr_tag);
+}
+
 imodule *agk::pbr::find(std::string_view pbr_tag) {
     return agk::app.p_pbr_loader_service->find(pbr_tag);
 }
 
 bool agk::pbr::loadmaterial(std::string_view tag, material *p_material) {
     return agk::app.p_pbr_loader_service->load_material(tag, p_material);
+}
+
+pbrloader *&agk::pbr::loader() {
+    return agk::app.p_pbr_loader_service;
 }

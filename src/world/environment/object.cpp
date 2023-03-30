@@ -12,11 +12,6 @@ void objecttransform::set_scale(float x, float y, float z) {
 }
 
 bool object::contains_assign(std::string_view model, std::string_view material) {
-    std::string ref_tag {model}; ref_tag += material;
-    if (this->ref_object_assign_map[ref_tag.data()] != nullptr) {
-        return true;
-    }
-
     for (objectassign &object_assign : this->object_assign_list) {
         if (object_assign.p_linked_model != nullptr && object_assign.p_linked_model->tag == model && (material.empty() || (object_assign.p_linked_material != nullptr && object_assign.p_linked_material->tag == material))) {
             return true;
@@ -26,48 +21,57 @@ bool object::contains_assign(std::string_view model, std::string_view material) 
     return false;
 }
 
+objectassign &object::find_assign_or_emplace_back(std::string_view model, std::string_view material) {
+    for (objectassign &object_assign : this->object_assign_list) {
+        if (object_assign.p_linked_model != nullptr && object_assign.p_linked_model->tag == model && object_assign.p_linked_material != nullptr && object_assign.p_linked_material->tag == material) {
+            return object_assign;
+        }
+    }
+
+    return this->object_assign_list.emplace_back();
+}
+
 void object::assign(std::string_view model, std::string_view material) {
     if (model.empty() || material.empty()) {
         return;
     }
 
-    std::string ref_tag {};
-    ref_tag += model;
-    ref_tag += material;
+    std::vector<objectassign> object_assigned_list {};
+    agk::pbr::loader()->assign_object(this, model, material, object_assigned_list);
 
-    if (this->contains_assign(model)) {
-        return;
+    if (!object_assigned_list.empty()) {
+        this->rendering_aabb_check = true;
+        this->object_assign_list.insert(this->object_assign_list.end(), object_assigned_list.begin(), object_assigned_list.end());
     }
+}
 
-    auto *p_material {(::material*) agk::pbr::find(material)};
-    auto *p_model {(::model*) agk::pbr::find(model)};
-
-    if (p_material == nullptr || p_model == nullptr) {
-        return;
-    }
-
-    auto &object_assign {this->object_assign_list.emplace_back()};
-    object_assign.p_linked_model = p_model;
-    object_assign.p_linked_material = p_material;
-    this->ref_object_assign_map[ref_tag] = &object_assign;
+void object::update_aabb_checker() {
     this->rendering_aabb_check = true;
 }
 
 util::aabb &object::get_current_aabb() {
     if (this->rendering_aabb_check) {
         stream::mesh final_mesh {};
+        std::vector<objectassign> cleaned_object_assign_list {};
+
         for (objectassign &object_assign : this->object_assign_list) {
-            if (object_assign.p_linked_model != nullptr) {
+            if (object_assign.p_linked_model != nullptr && object_assign.p_linked_material != nullptr) {
                 final_mesh += object_assign.p_linked_model->mesh;
+                cleaned_object_assign_list.push_back(object_assign);
             }
         }
 
         this->aabb = {};
         util::generateaabb(this->aabb, final_mesh);
+        this->object_assign_list = cleaned_object_assign_list;
         this->rendering_aabb_check = false;
     }
 
     return this->aabb;
+}
+
+bool object::no_render() {
+    return this->object_assign_list.empty();
 }
 
 void object::on_low_update() {

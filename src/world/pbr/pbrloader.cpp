@@ -1,11 +1,23 @@
 #include "pbrloader.hpp"
 #include "stream/stream.hpp"
 #include "agk.hpp"
+#include "util/env.hpp"
 
 std::vector<std::string> pbrloader::dontcare {};
 
 int32_t pbrloader::find_equals_material(std::map<std::string, std::string> &metadata) {
     return -1;
+}
+
+int32_t pbrloader::extract_family_tag(std::string_view pbr, std::string &family_tag) {
+    pbrloader::dontcare.resize(4);
+    util::split(pbrloader::dontcare, pbr, '.');
+
+    family_tag += pbrloader::dontcare[0];
+    family_tag += '.';
+    family_tag += pbrloader::dontcare[1];
+
+    return pbrloader::dontcare[2].empty() ? -1 : std::stoi(pbrloader::dontcare[2]);
 }
 
 bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path) {
@@ -28,8 +40,6 @@ bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loade
         if (agk::app.parser.load_mesh(mesh, path)) {
             return true;
         }
-
-        mesh.tag.clear();
         break;
     }
 
@@ -40,7 +50,7 @@ bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loade
 
     std::string ref_model_tag {};
     for (stream::mesh &mesh : meshes) {
-        ref_model_tag = id_tag + (mesh.tag.empty() ? "" : ("." + mesh.tag));
+        ref_model_tag = id_tag + "." + mesh.tag;
         if (this->pbr_map[ref_model_tag] != nullptr) {
             continue;
         }
@@ -53,17 +63,19 @@ bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loade
         util::log("PBR model loaded '" + p_model->tag + "'");
     }
 
+    this->pbr_family_map.insert({id_tag, meshes.size()});
     return false;
 }
 
 bool pbrloader::load_material(std::string_view tag, material *p_material) {
-    std::string id_tag {"material."}; id_tag += tag;
+    std::string id_tag {"material."}; id_tag += tag; id_tag += ".0";
     if (this->pbr_map.count(id_tag) || p_material == nullptr) {
         return true;
     }
 
     this->pbr_map[id_tag] = p_material;
     p_material->tag = id_tag;
+
     return !util::log("PBR material loaded '" + p_material->tag + "'");
 }
 
@@ -99,6 +111,62 @@ bool pbrloader::load_material(std::vector<std::string> &loaded_material_list, st
 
 imodule *pbrloader::find(std::string_view pbr_tag) {
     return this->pbr_map[pbr_tag.data()];
+}
+
+uint32_t pbrloader::find_family(std::string_view pbr_tag) {
+    return this->pbr_family_map.count(pbr_tag.data()) ? this->pbr_family_map[pbr_tag.data()] : 0;
+}
+
+void pbrloader::direct_assign_object(object *p_object, std::string_view model, std::string_view material) {
+    if (p_object->contains_assign(model, material)) {
+        return;
+    }
+
+    auto *p_material {(::material*) this->find(material)};
+    auto *p_model {(::model*) this->find(model)};
+
+    if (p_material == nullptr || p_model == nullptr) {
+        return;
+    }
+
+    auto &object_assign {p_object->find_assign_or_emplace_back(model, material)};
+    object_assign.p_linked_model = p_model;
+    object_assign.p_linked_material = p_material;
+    p_object->update_aabb_checker();
+}
+
+void pbrloader::assign_object(object *p_object, std::string_view model, std::string_view material, std::vector<objectassign> &object_assigned_list) {
+    std::string model_id_tag {};
+    std::string material_id_tag {};
+
+    int32_t is_model_family {this->extract_family_tag(model, model_id_tag)};
+    int32_t is_material_family {this->extract_family_tag(material, material_id_tag)};
+
+    if (is_model_family == -1 && is_material_family == -1) {
+        const uint32_t model_family {this->find_family(model_id_tag)};
+        const uint32_t material_family {this->find_family(material_id_tag)};
+        
+        uint32_t model_it {};
+        uint32_t material_it {};
+
+        for (model_it = 0; model_it < model_family; model_it++) {
+            this->direct_assign_object(p_object, model_id_tag + "." + std::to_string(model_it), material_id_tag + "." + std::to_string(material_it));
+
+            if (material_it < material_family) {
+                material_it++;
+            }
+        }
+    } else if (is_model_family != -1 && is_material_family == -1) {
+        this->direct_assign_object(p_object, model_id_tag + "." + std::to_string(is_model_family), material_id_tag + ".0");
+    } else if (is_model_family == -1 && is_material_family != -1) {
+        const uint32_t model_family {this->find_family(model_id_tag)};
+
+        for (uint32_t model_it {}; model_it < model_family; model_it++) {
+            this->direct_assign_object(p_object, model_id_tag + "." + std::to_string(model_it), material_id_tag + "." + std::to_string(is_material_family));
+        }
+    } else {
+        this->direct_assign_object(p_object, model_id_tag, material_id_tag);
+    }
 }
 
 void pbrloader::on_update() {

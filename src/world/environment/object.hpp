@@ -42,8 +42,6 @@ protected:
     enums::state visible {};
     enums::priority priority {};
     bool rendering_aabb_check {};
-public:
-    std::map<std::string, objectassign*> ref_object_assign_map {};
     std::vector<objectassign> object_assign_list {};
 public:
     enums::type type {};
@@ -54,15 +52,22 @@ public:
     explicit object(enums::state visibility = enums::state::enable);
     ~object();
 
+    bool no_render();
     util::aabb &get_current_aabb();
+    void update_aabb_checker();
+
     bool contains_assign(std::string_view model, std::string_view material = "");
     void assign(std::string_view model, std::string_view material);
+    objectassign &find_assign_or_emplace_back(std::string_view model, std::string_view material);
+
     void set_visible(enums::state enum_state, bool dispatch_event = true);
     enums::state get_visible();
+
     void set_priority(enums::priority enum_priority, bool dispatch_event = true);
     enums::priority get_priority();
+
     virtual void on_low_update();
-    void on_render();
+    void on_render() override;
 };
 
 #endif
