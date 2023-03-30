@@ -36,13 +36,7 @@ void object::assign(std::string_view model, std::string_view material) {
         return;
     }
 
-    std::vector<objectassign> object_assigned_list {};
-    agk::pbr::loader()->assign_object(this, model, material, object_assigned_list);
-
-    if (!object_assigned_list.empty()) {
-        this->rendering_aabb_check = true;
-        this->object_assign_list.insert(this->object_assign_list.end(), object_assigned_list.begin(), object_assigned_list.end());
-    }
+    agk::pbr::loader()->assign_object(this, model, material);
 }
 
 void object::update_aabb_checker() {

@@ -20,11 +20,7 @@ int32_t pbrloader::extract_family_tag(std::string_view pbr, std::string &family_
     return pbrloader::dontcare[2].empty() ? -1 : std::stoi(pbrloader::dontcare[2]);
 }
 
-bool pbrloader::load_model(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path) {
-    if (!loaded_model_list.empty()) {
-        loaded_model_list.clear();
-    }
-
+bool pbrloader::load_model(std::string_view tag, std::string_view path) {
     std::string id_tag {"model."}; id_tag += tag;
     stream::format model_format {agk::app.parser.get_model_format(path)};
     std::vector<stream::mesh> meshes {};
@@ -79,11 +75,7 @@ bool pbrloader::load_material(std::string_view tag, material *p_material) {
     return !util::log("PBR material loaded '" + p_material->tag + "'");
 }
 
-bool pbrloader::load_material(std::vector<std::string> &loaded_material_list, std::string_view path) {
-    if (!loaded_material_list.empty()) {
-        loaded_material_list.clear();
-    }
-
+bool pbrloader::load_material(std::string_view tag, std::string_view path) {
     stream::mtl mtl {};
     if (agk::app.parser.load_mtl(mtl, path)) {
         return true;
@@ -100,12 +92,12 @@ bool pbrloader::load_material(std::vector<std::string> &loaded_material_list, st
 
         material *p_material {new material {it->second}};
         p_material->tag = key;
-        loaded_material_list.push_back(key);
         this->pbr_map[key] = p_material;
 
         // @TODO check duplicated materials (rough, metal factor, textures)
     }
 
+    this->pbr_family_map.insert({});
     return false;
 }
 
@@ -135,7 +127,7 @@ void pbrloader::direct_assign_object(object *p_object, std::string_view model, s
     p_object->update_aabb_checker();
 }
 
-void pbrloader::assign_object(object *p_object, std::string_view model, std::string_view material, std::vector<objectassign> &object_assigned_list) {
+void pbrloader::assign_object(object *p_object, std::string_view model, std::string_view material) {
     std::string model_id_tag {};
     std::string material_id_tag {};
 

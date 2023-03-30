@@ -39,7 +39,8 @@ protected:
     bool process_wavefront_object_mtllib(stream::mtl &mtl);
     bool process_stl(stream::mesh &mesh);
     bool process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohmann::json &gltf_node);
-    bool read_gltf_json_modules();
+
+    bool read_gltf_mtl(stream::mtl &mtl);
     bool read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, nlohmann::json &value);
 public:
     stream::format get_model_format(std::string_view path);

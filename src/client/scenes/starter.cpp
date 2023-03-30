@@ -8,15 +8,15 @@
 #include <fstream>
 
 void client::scenes::starter::on_create() {
-    agk::pbr::loadmodel("duck", pbrloader::dontcare, "./data/models/Duck.gltf");
-    //agk::pbr::loadmaterial("duck", pbrloader::dontcare, "./data/models/Duck.gltf"):
+    agk::pbr::loadmodel("duck", "./data/models/Duck.gltf");
+    agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
 
     auto *p_gltf_obj {new object {}};
     p_gltf_obj->transform.position = {20, 340, 0};
-    p_gltf_obj->transform.scale = glm::vec3 {2.0f};
+    p_gltf_obj->transform.scale = glm::vec3 {40.0f};
     agk::world::create(p_gltf_obj);
 
-    agk::pbr::loadmodel("dinossaur", pbrloader::dontcare, "./data/models/Dinossaur.stl");
+    agk::pbr::loadmodel("dinossaur", "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
         {"color", stream::vec(0.342f, 0.23434f, 0.21334f)},
         {"metal", stream::i(false)},
@@ -24,15 +24,15 @@ void client::scenes::starter::on_create() {
         {"doubleSided", stream::i(false)}
     }});
 
-    agk::pbr::loadmodel("monster", pbrloader::dontcare, "./data/models/Alien Animal.obj");
+    agk::pbr::loadmodel("monster", "./data/models/Alien Animal.obj");
     agk::pbr::loadmaterial("monster", new material {{
-        {"color", stream::vec(0.234f, 0.45f, 1.0f)},
-        {"metal", stream::i(false)},
-        {"rough", stream::f(0.20f)},
-        {"doubleSided", stream::i(false)}
+        {"color", stream::vec(0.243534f, 0.43545f, 1.0f)},
+        {"metal", stream::i(true)},
+        {"rough", stream::f(0.90f)},
+        {"doubleSided", stream::i(true)}
     }});
 
-    p_gltf_obj->assign("model.duck", "material.monster");
+    p_gltf_obj->assign("model.snowball", "material.monster");
 
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.dinossaur", "material.dinossaur");

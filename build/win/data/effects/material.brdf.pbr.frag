@@ -46,6 +46,8 @@ uniform struct {
     vec3 uColor;
 } uFog;
 
+// @TODO add metal factor & roughness based in texture (albedo, specular, normalmap)
+
 vec3 shlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04f);
     if (material.mSurface.x == 1) {

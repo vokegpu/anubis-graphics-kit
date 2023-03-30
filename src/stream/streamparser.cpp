@@ -268,16 +268,29 @@ bool streamparser::process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohma
     return false;
 }
 
-bool streamparser::read_gltf_json_modules() {
-    std::ifstream ifs {this->current_path.data()};
+bool streamparser::read_gltf_mtl(stream::mtl &mtl) {
+    std::ifstream ifs {this->current_path};
     if (!ifs.is_open()) {
-        return util::log("Failed to glTF at '" + this->current_path + '\'');
+        return util::log("Failed to read glTF at '" + this->current_path + '\'');
     }
 
     this->current_gltf_json = nlohmann::json::parse(ifs);
     this->current_gltf_meshes_json = this->current_gltf_json["meshes"];
-    this->current_gltf_accessors_json = this->current_gltf_json["accessors"];
-    this->current_gltf_buffer_views_json = this->current_gltf_json["bufferViews"];
+
+    auto &nodes = this->current_gltf_json["nodes"];
+    uint32_t node_count {};
+
+    for (uint64_t it {}; it < nodes.size(); it++) {
+        if (nodes.at(it)["mesh"].is_null()) {
+            continue;
+        }
+
+        uint64_t mesh_index {nodes.at(it)["mesh"].get<uint64_t>()};
+        this->process_gltf(nullptr, &mtl, this->current_gltf_meshes_json.at(mesh_index));
+        node_count++;
+    }
+
+    ifs.close();
     return false;
 }
 
@@ -292,12 +305,16 @@ bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::stri
     }
 
     std::ifstream ifs {path.data()};
+    this->current_path = path;
+
     if (!ifs.is_open()) {
         return util::log("Failed to read glTF at '" + this->current_path + '\'');
     }
 
-    this->current_path = path;
-    this->read_gltf_json_modules();
+    this->current_gltf_json = nlohmann::json::parse(ifs);
+    this->current_gltf_meshes_json = this->current_gltf_json["meshes"];
+    this->current_gltf_accessors_json = this->current_gltf_json["accessors"];
+    this->current_gltf_buffer_views_json = this->current_gltf_json["bufferViews"];
 
     std::vector<std::string> strings {};
     util::split(strings, this->current_path, '/');
@@ -342,6 +359,7 @@ bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::stri
         }
     }
 
+    this->current_gltf_ifs_binary.clear();
     return false;
 }
 

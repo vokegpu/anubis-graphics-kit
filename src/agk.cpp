@@ -312,12 +312,12 @@ void agk::asset::load(imodule *p_asset) {
     agk::app.p_asset_manager_service->load(p_asset);
 }
 
-bool agk::pbr::loadmaterial(std::vector<std::string> &loaded_material_list, std::string_view path) {
-    return agk::app.p_pbr_loader_service->load_material(loaded_material_list, path);
+bool agk::pbr::loadmaterial(std::string_view tag, std::string_view path) {
+    return agk::app.p_pbr_loader_service->load_material(tag, path);
 }
 
-bool agk::pbr::loadmodel(std::string_view tag, std::vector<std::string> &loaded_model_list, std::string_view path) {
-    return agk::app.p_pbr_loader_service->load_model(tag, loaded_model_list, path);
+bool agk::pbr::loadmodel(std::string_view tag, std::string_view path) {
+    return agk::app.p_pbr_loader_service->load_model(tag, path);
 }
 
 uint32_t agk::pbr::findfamily(std::string_view pbr_tag) {
