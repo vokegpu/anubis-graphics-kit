@@ -24,6 +24,7 @@ The location of executables are on `./build/`, choose your system and run Anubis
 * Dynamic input system.
 * Frustum culling.
 * Motion blur.
+* Model files support: glTF, object wavefront, and mtllib.
 * ~~Screen space occlusion ambient (SSAO)~~.
 * Connected heightmaps.
 * ~~Subsurface scattering~~.
