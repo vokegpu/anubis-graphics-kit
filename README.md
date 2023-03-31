@@ -13,6 +13,9 @@ The location of executables are on `./build/`, choose your system and run Anubis
 
 # Philosophy & world rendering techniques used
 
+The starter scene is located at `./client/scenes/starter.hpp`, you can create different scenes and load different contexts.  
+The scenes work as a "script" context, where you can create objects, load assets, load models, services to create logic system, and scenery.
+
 -- The features present in AGK are not marked with ~~this~~:
 * Bidirectional reflectance distribution function.
 * Fractal B motion (FBM).
