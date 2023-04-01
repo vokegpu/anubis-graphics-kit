@@ -11,18 +11,69 @@ stream::format streamparser::get_model_format(std::string_view path) {
     return format;
 }
 
-bool streamparser::process_wavefront_object(stream::mesh &mesh) {
-    std::ifstream ifs {this->current_path.data(), std::ifstream::in};
+bool streamparser::read_wavefront_object_mtllib_index(std::ifstream &ifs_wavefront_object) {
+    std::string string_buffer {};
+    std::string find {};
+    std::vector<std::string> strings {};
+    std::string mtllib_path {};
+
+    while (std::getline(ifs_wavefront_object, string_buffer)) {
+        if (string_buffer.size() < 6) {
+            continue;
+        }
+
+        find = string_buffer.substr(0, 6);
+        if (find == "mtllib") {
+            util::split(strings, this->current_path, '/');
+
+            const uint64_t size {strings[std::max((int32_t) strings.size() - 1, 0)].size()};
+            const uint64_t tab_find {find.size() + 1};
+            
+            const std::string folder {this->current_path.substr(0, this->current_path.size() - size)};
+            const std::string file {string_buffer.substr(tab_find, string_buffer.size() - tab_find)};
+            mtllib_path = folder + file;
+            break;
+        }
+    }
+
+    std::ifstream ifs_mtllib {mtllib_path.c_str()};
+    if (!ifs_mtllib.is_open()) {
+        return util::log("Failed to index materials from wavefront object at '" + mtllib_path + '\'');
+    }
+
+    uint64_t index {};
+    while (std::getline(ifs_mtllib, string_buffer)) {
+        if (string_buffer.size() < 2) {
+            continue;
+        }
+
+        if (string_buffer[0] == '\t') {
+            string_buffer = string_buffer.substr(1, string_buffer.size() - 1);
+        }
+
+        util::split(strings, string_buffer, ' ');
+        if (strings[0] == "newmtl") {
+            this->wavefront_object_material_map[strings[1]] = index++;
+        }
+    }
+
+    ifs_mtllib.close();
+    return false;
+}
+
+bool streamparser::process_wavefront_object_meshes(std::vector<stream::mesh> &meshes) {
+    std::ifstream ifs {this->current_path.data()};
     if (!ifs.is_open()) {
         return util::log("Failed to read wavefront object at '" + this->current_path + '\'');
     }
+
+    this->read_wavefront_object_mtllib_index(ifs);
 
     std::string string_buffer {};
     std::string find {};
     std::string values {};
     std::vector<std::string> split {}, split_first {}, split_second {}, split_third {};
 
-    size_t line_size {};
     const size_t x {1};
     const size_t y {2};
     const size_t z {3};
@@ -36,35 +87,45 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
 
     stream::mesh::pack pack {};
     uint32_t index {}, vsize {};
-    mesh.tag = "0";
+    uint64_t mesh_index {};
+    bool clean_mesh_pack {};
 
     while (std::getline(ifs, string_buffer)) {
-        line_size = string_buffer.size();
-
-        if (line_size < 1) {
-            continue;
-        }
-
-        find = string_buffer.substr(0, 2);
-        if (find != "v " && find != "vt" && find != "vn" && find != "f ") {
+        if ((string_buffer.size() < 1 || ((!(find = string_buffer.substr(0, 2)).empty() || true) && find != "v " && find != "vt" && find != "vn" && find != "f ")) && (string_buffer.size() < 6 || (find = string_buffer.substr(0, 6)) != "usemtl")) {
             continue;
         }
 
         util::split(split_first, string_buffer, ' ');
-
         if (split_first.size() < 2) {
             continue;
         }
 
         split.clear();
-
         for (std::string &s : split_first) {
             if (!s.empty()) {
                 split.push_back(s);
             }
         }
 
-        if (find == "v ") {
+        if (find == "usemtl") {
+            if (!meshes.empty()) {
+                mesh_index++;
+            }
+
+            meshes.emplace_back();
+            meshes[mesh_index].material = this->wavefront_object_material_map[split[1]];
+            meshes[mesh_index] += mesh_index > 0 ? meshes[mesh_index--] : meshes[mesh_index];
+            meshes[mesh_index].tag = std::to_string(mesh_index);
+        } else if (find == "v ") {
+            if (clean_mesh_pack) {
+                pack = {};
+                mesh_index++;
+                clean_mesh_pack = false;
+
+                meshes.emplace_back();
+                meshes[mesh_index].tag = std::to_string(mesh_index);
+            }
+
             vector3f.x = std::stof(split[x]);
             vector3f.y = std::stof(split[y]);
             vector3f.z = std::stof(split[z]);
@@ -85,16 +146,18 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
             pack.n.push_back(vector3f);
             n_contains = true;
         } else if (find == "f ") {
+            clean_mesh_pack = true;
+
             for (int32_t indexes {1}; indexes < split.size(); indexes++) {
                 util::split(split_first, split[indexes], '/');
-                mesh.faces++;
+                meshes[mesh_index].faces++;
 
                 if (v_contains) {
                     vsize = (uint32_t) pack.v.size() + 1;
                     index = (std::stoi(split_first[0]));
                     index = (index + vsize) % vsize;
 
-                    mesh.append(pack.v[index - 1], stream::type::vertex);
+                    meshes[mesh_index].append(pack.v[index - 1], stream::type::vertex);
                 }
 
                 if (t_contains) {
@@ -102,7 +165,7 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
                     index = (std::stoi(split_first[1]));
                     index = (index + vsize) % vsize;
 
-                    mesh.append(pack.t[index - 1], stream::type::texcoord);
+                    meshes[mesh_index].append(pack.t[index - 1], stream::type::texcoord);
                 }
 
                 if (n_contains) {
@@ -110,7 +173,7 @@ bool streamparser::process_wavefront_object(stream::mesh &mesh) {
                     index = (std::stoi(split_first[2 - (!t_contains)]));
                     index = (index + vsize) % vsize;
 
-                    mesh.append(pack.n[index - 1], stream::type::normal);
+                    meshes[mesh_index].append(pack.n[index - 1], stream::type::normal);
                 }
             }
         }
@@ -182,10 +245,10 @@ uint64_t streamparser::get_gltf_component_size(uint32_t n) {
         return 4;
     }
 
-    return sizeof(nullptr);
+    return 0;
 }
 
-bool streamparser::read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, nlohmann::json &value) {
+bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_type, nlohmann::json &value) {
     auto &accessor = this->current_gltf_accessors_json.at(value.get<uint64_t>());
     auto &buffer_view = this->current_gltf_buffer_views_json.at(accessor["bufferView"].get<uint64_t>());
     auto &ifs {this->current_gltf_ifs_binary.at(buffer_view["buffer"].get<uint64_t>())};
@@ -209,11 +272,11 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_
         switch (vec_size) {
         case 1:
             ifs.read(reinterpret_cast<char*>(&i), component_size);
-            p_mesh->append(i, mesh_type);
+            mesh.append(i, mesh_type);
             break;
         default:
             ifs.read(reinterpret_cast<char*>(&f), component_size);
-            p_mesh->append(f, mesh_type);
+            mesh.append(f, mesh_type);
             break;
         }
     }
@@ -221,22 +284,15 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_
     return false;
 }
 
-bool streamparser::process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohmann::json &gltf_node) {
-    auto &primitives = gltf_node["primitives"].at(0);
-    bool mesh_streaming_serialize_task {p_mesh != nullptr};
-    bool mtl_streaming_serialize_task {p_mtl != nullptr};
-
-    if (!(mesh_streaming_serialize_task || mtl_streaming_serialize_task)) {
-        return util::log("Invalid input stream: null");
-    }
-
+bool streamparser::process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node) {
     std::string key {};
     bool process_accessor {};
     stream::type streaming_mesh_type {};
 
+    auto &primitives = gltf_node["primitives"].at(0);
     for (auto &itp : primitives.items()) {
         key = itp.key();
-        if (key == "attributes" && mesh_streaming_serialize_task) {
+        if (key == "attributes") {
             for (auto &ita : itp.value().items()) {
                 key = ita.key();
                 process_accessor = key == "POSITION" || key == "NORMAL";
@@ -255,13 +311,13 @@ bool streamparser::process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohma
                 }
 
                 if (process_accessor) {
-                    this->read_gltf_mesh_bytes(p_mesh, streaming_mesh_type, ita.value());
+                    this->read_gltf_mesh_bytes(mesh, streaming_mesh_type, ita.value());
                 }
             }
-        } else if (key == "indices" && mesh_streaming_serialize_task) {
-            this->read_gltf_mesh_bytes(p_mesh, stream::type::index, itp.value());
-        } else if (key == "material" && mtl_streaming_serialize_task) {
-            // @TODO material checking & streaming
+        } else if (key == "indices") {
+            this->read_gltf_mesh_bytes(mesh, stream::type::index, itp.value());
+        } else if (key == "material") {
+            mesh.material = itp.value().get<uint32_t>();
         }
     }
 
@@ -275,38 +331,19 @@ bool streamparser::read_gltf_mtl(stream::mtl &mtl) {
     }
 
     this->current_gltf_json = nlohmann::json::parse(ifs);
-    this->current_gltf_meshes_json = this->current_gltf_json["meshes"];
+    this->current_gltf_materials_json = this->current_gltf_json["materials"];
 
-    auto &nodes = this->current_gltf_json["nodes"];
-    uint32_t node_count {};
-
-    for (uint64_t it {}; it < nodes.size(); it++) {
-        if (nodes.at(it)["mesh"].is_null()) {
+    for (nlohmann::json &json : this->current_gltf_json) {
+        if (json.is_null()) {
             continue;
         }
-
-        uint64_t mesh_index {nodes.at(it)["mesh"].get<uint64_t>()};
-        this->process_gltf(nullptr, &mtl, this->current_gltf_meshes_json.at(mesh_index));
-        node_count++;
     }
 
-    ifs.close();
     return false;
 }
 
-bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::string_view path) {
-    if (path.empty() || path.size() < 3) {
-        return util::log("Failed to load glTF meshes because there is no path insert");
-    }
-
-    stream::format format {this->get_model_format(path)};
-    if (format != stream::format::gltf) {
-        return util::log("Incompatible file extension");
-    }
-
-    std::ifstream ifs {path.data()};
-    this->current_path = path;
-
+bool streamparser::process_gltf_meshes(std::vector<stream::mesh> &meshes) {
+    std::ifstream ifs {this->current_path.data()};
     if (!ifs.is_open()) {
         return util::log("Failed to read glTF at '" + this->current_path + '\'');
     }
@@ -344,11 +381,11 @@ bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::stri
         }
 
         stream::mesh &mesh {meshes.emplace_back()};
-        mesh.format = format;
+        mesh.format = stream::format::gltf;
         mesh.tag = std::to_string(node_count);
 
         uint64_t mesh_index {nodes.at(it)["mesh"].get<uint64_t>()};
-        this->process_gltf(&mesh, nullptr, this->current_gltf_meshes_json.at(mesh_index));
+        this->process_gltf(mesh, this->current_gltf_meshes_json.at(mesh_index));
         node_count++;
     }
 
@@ -363,21 +400,21 @@ bool streamparser::load_gltf_meshes(std::vector<stream::mesh> &meshes, std::stri
     return false;
 }
 
-bool streamparser::load_mesh(stream::mesh &mesh, std::string_view path) {
+bool streamparser::load_meshes(std::vector<stream::mesh> &meshes, std::string_view path) {
     if (path.empty() || path.size() < 3) {
         return util::log("Failed to load object because there is no path insert");
     }
 
-    mesh.format = mesh.format != stream::format::unknown ? mesh.format : this->get_model_format(path);
     this->current_path = path;
+    stream::format format {stream::format {this->get_model_format(path)}};
 
-    switch (mesh.format) {
+    switch (format) {
     case stream::format::wavefrontobj:
-        return this->process_wavefront_object(mesh);
+        return this->process_wavefront_object_meshes(meshes);
     case stream::format::stl:
-        return this->process_stl(mesh);
+        return this->process_stl(meshes.emplace_back());
     case stream::format::gltf:
-        return util::log("Incompatible file extension (*.gltf) with this method");
+        return this->process_gltf_meshes(meshes);
     case stream::format::unknown:
         return util::log("Unknown model format, please try: *.obj *.stl *.gltf");
     }
@@ -496,7 +533,7 @@ bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {
     case stream::format::stl:
         return !util::log("STL does not contains any material file");
     case stream::format::gltf:
-        return util::log("Not implemented!");
+        return util::log("glTF material not implemented!");
     case stream::format::unknown:
         return util::log("Unknown model format, please try: *.obj *.stl *.gltf");
     }

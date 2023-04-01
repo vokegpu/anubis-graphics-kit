@@ -58,7 +58,7 @@ namespace agk {
         streamparser &parser();
 
         bool load(::stream::mtl &mtl, std::string_view path);
-        bool load(::stream::mesh &mesh, std::string_view path);
+        bool load(std::vector<::stream::mesh> &mesh, std::string_view path);
     }
 
     namespace pbr {

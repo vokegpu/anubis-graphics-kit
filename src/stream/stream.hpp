@@ -31,6 +31,7 @@ namespace stream {
         int32_t faces {};
         stream::format format {};
         std::string tag {};
+        uint32_t material {};
         typedef struct pack { std::vector<glm::vec3> v {}, n {}; std::vector<glm::vec2> t {}; } pack;
     public:
         bool contains(stream::type _type) {

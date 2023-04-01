@@ -10,11 +10,13 @@ class streamparser {
 protected:
     stream::serializer current_serializer {};
     std::string current_path {};
+    std::vector<std::ifstream> current_gltf_ifs_binary {};
+
     nlohmann::json current_gltf_json {};
     nlohmann::json current_gltf_meshes_json {};
     nlohmann::json current_gltf_accessors_json {};
     nlohmann::json current_gltf_buffer_views_json {};
-    std::vector<std::ifstream> current_gltf_ifs_binary {};
+    nlohmann::json current_gltf_materials_json {};
 
     std::map<std::string, stream::format> mesh_ext_map {
             {"stl", stream::format::stl}, {"obj", stream::format::wavefrontobj}, {"gltf", stream::format::gltf}
@@ -31,22 +33,26 @@ protected:
     std::map<std::string, uint64_t> gltf_type {
         {"VEC3", sizeof(float)*3}, {"VEC2", sizeof(float)*2}, {"SCALAR", sizeof(int32_t)}
     };
+
+    std::map<std::string, uint64_t> wavefront_object_material_map {};
 protected:
     stream::serializer get_pbr_from_wavefront_object_mtllib(stream::serializer &serializer);
     uint64_t get_gltf_component_size(uint32_t n);
 
-    bool process_wavefront_object(stream::mesh &mesh);
+    bool process_wavefront_object_meshes(std::vector<stream::mesh> &meshes);
     bool process_wavefront_object_mtllib(stream::mtl &mtl);
+    bool read_wavefront_object_mtllib_index(std::ifstream &ifs_wavefront_object);
+
     bool process_stl(stream::mesh &mesh);
-    bool process_gltf(stream::mesh *p_mesh, stream::mtl *p_mtl, nlohmann::json &gltf_node);
+    bool process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node);
+    bool process_gltf_meshes(std::vector<stream::mesh> &meshes);
 
     bool read_gltf_mtl(stream::mtl &mtl);
-    bool read_gltf_mesh_bytes(stream::mesh *p_mesh, stream::type mesh_type, nlohmann::json &value);
+    bool read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_type, nlohmann::json &value);
 public:
     stream::format get_model_format(std::string_view path);
     bool read_mesh_filename(std::string &filename, std::string_view path);
-    bool load_mesh(stream::mesh &mesh, std::string_view path);
-    bool load_gltf_meshes(std::vector<stream::mesh> &meshes, std::string_view path);
+    bool load_meshes(std::vector<stream::mesh> &meshes, std::string_view path);
     bool load_mtl(stream::mtl &mtl, std::string_view path);
 
     template<typename t>

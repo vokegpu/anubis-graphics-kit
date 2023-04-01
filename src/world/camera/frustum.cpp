@@ -132,7 +132,7 @@ glm::mat4 &frustum::get_mvp() {
     return this->mvp;
 }
 
-void viewplane::set_plane(const glm::vec3 &p, float dist) {
+void frustum::plane::set_plane(const glm::vec3 &p, float dist) {
     float len {glm::length(p)};
     if (len > 0.0f) {
         len = 1.0f / len;

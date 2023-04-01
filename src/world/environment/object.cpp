@@ -69,7 +69,6 @@ bool object::no_render() {
 }
 
 void object::on_low_update() {
-
 }
 
 void object::on_render() {

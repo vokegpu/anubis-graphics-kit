@@ -8,8 +8,13 @@
 #include <fstream>
 
 void client::scenes::starter::on_create() {
+    agk::pbr::loadmodel("box", "./data/models/box.gltf");
+    agk::pbr::loadmaterial("box", "./data/models/box.gltf");
+
     agk::pbr::loadmodel("duck", "./data/models/Duck.gltf");
     agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
+
+    agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
 
     auto *p_gltf_obj {new object {}};
     p_gltf_obj->transform.position = {20, 340, 0};
@@ -35,7 +40,7 @@ void client::scenes::starter::on_create() {
     p_gltf_obj->assign("model.snowball", "material.monster");
 
     auto *p_dinossaur {new object {}};
-    p_dinossaur->assign("model.dinossaur", "material.dinossaur");
+    p_dinossaur->assign("model.coconuttree", "material.dinossaur");
     p_dinossaur->transform.position.y = 90.0f;
     p_dinossaur->transform.scale = glm::vec3 {3.0f};
     agk::world::create(p_dinossaur);
@@ -43,7 +48,7 @@ void client::scenes::starter::on_create() {
     auto *p_monster {new object {}};
     p_monster->assign("model.monster", "material.monster");
     p_monster->transform.position.y = 460.0f;
-    p_monster->transform.scale = glm::vec3 {0.32f};
+    p_monster->transform.scale = glm::vec3 {2.0f};
     agk::world::create(p_monster);
 
     this->p_light_spot = new light {};

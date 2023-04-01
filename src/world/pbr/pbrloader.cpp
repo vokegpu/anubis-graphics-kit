@@ -22,21 +22,10 @@ int32_t pbrloader::extract_family_tag(std::string_view pbr, std::string &family_
 
 bool pbrloader::load_model(std::string_view tag, std::string_view path) {
     std::string id_tag {"model."}; id_tag += tag;
-    stream::format model_format {agk::app.parser.get_model_format(path)};
     std::vector<stream::mesh> meshes {};
 
-    switch (model_format) {
-    case stream::format::gltf:
-        if (agk::app.parser.load_gltf_meshes(meshes, path)) {
-            return true;
-        }
-        break;
-    default:
-        auto &mesh {meshes.emplace_back()};
-        if (agk::app.parser.load_mesh(mesh, path)) {
-            return true;
-        }
-        break;
+    if (agk::app.parser.load_meshes(meshes, path)) {
+        return true;
     }
 
     /*
@@ -64,8 +53,17 @@ bool pbrloader::load_model(std::string_view tag, std::string_view path) {
 }
 
 bool pbrloader::load_material(std::string_view tag, material *p_material) {
-    std::string id_tag {"material."}; id_tag += tag; id_tag += ".0";
-    if (this->pbr_map.count(id_tag) || p_material == nullptr) {
+    if (p_material == nullptr) {
+        return true;
+    }
+
+    // Repeating family names repeat the couter
+    std::string id_tag {"material."};
+    id_tag += tag;
+    id_tag += '.';
+    id_tag += std::to_string(this->pbr_family_map[id_tag.data()]++);
+
+    if (this->pbr_map.count(id_tag)) {
         return true;
     }
 

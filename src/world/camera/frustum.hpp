@@ -5,15 +5,16 @@
 #include <vector>
 #include "util/math.hpp"
 
-struct viewplane {
-    glm::vec3 n {};
-    float distance {};
-
-    inline viewplane() = default;
-    void set_plane(const glm::vec3 &p, float dist);
-};
-
 class frustum : public object {
+public:
+    struct plane {
+    public:
+        glm::vec3 n {};
+        float distance {};
+    public:
+        inline plane() = default;
+        void set_plane(const glm::vec3 &p, float dist);
+    };
 protected:
     glm::vec3 front {};
     glm::vec3 right {};
@@ -32,11 +33,10 @@ protected:
     float h {};
     float aspect {};
     float tangent {};
-
     float near {};
     float far {};
 
-    viewplane planes[6] {};
+    frustum::plane planes[6] {};
 public:
     frustum() = default;
     ~frustum() = default;
