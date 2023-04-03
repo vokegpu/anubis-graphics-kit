@@ -7,8 +7,10 @@
 #include <nlohmann/json.hpp>
 
 class streamparser {
+private:
+    static int32_t gltexturewrap[2];;
+    static int32_t gltexturefilter[2];
 protected:
-    stream::serializer current_serializer {};
     std::string current_path {};
     std::vector<std::ifstream> current_gltf_ifs_binary {};
 
@@ -16,7 +18,6 @@ protected:
     nlohmann::json current_gltf_meshes_json {};
     nlohmann::json current_gltf_accessors_json {};
     nlohmann::json current_gltf_buffer_views_json {};
-    nlohmann::json current_gltf_materials_json {};
 
     std::map<std::string, stream::format> mesh_ext_map {
             {"stl", stream::format::stl}, {"obj", stream::format::wavefrontobj}, {"gltf", stream::format::gltf}
@@ -47,11 +48,12 @@ protected:
     bool process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node);
     bool process_gltf_meshes(std::vector<stream::mesh> &meshes);
 
-    bool read_gltf_mtl(stream::mtl &mtl);
+    bool process_gltf_mtl(stream::mtl &mtl);
     bool read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_type, nlohmann::json &value);
 public:
     stream::format get_model_format(std::string_view path);
     bool read_mesh_filename(std::string &filename, std::string_view path);
+    bool read_full_filename(std::string &filename, std::string_view path);
     bool load_meshes(std::vector<stream::mesh> &meshes, std::string_view path);
     bool load_mtl(stream::mtl &mtl, std::string_view path);
 

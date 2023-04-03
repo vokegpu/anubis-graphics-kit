@@ -83,7 +83,11 @@ bool pbrloader::load_material(std::string_view tag, std::string_view path) {
     auto &metadata {mtl.get_serializer().get_metadata()};
 
     for (auto it {metadata.begin()}; it != metadata.end(); it = std::next(it)) {
-        key = "material." + it->first;
+        key = "material.";
+        key += tag;
+        key += '.';
+        key += it->first;
+
         if (this->pbr_map.count(key)) {
             continue;
         }
@@ -92,6 +96,7 @@ bool pbrloader::load_material(std::string_view tag, std::string_view path) {
         p_material->tag = key;
         this->pbr_map[key] = p_material;
 
+        util::log("PBR material loaded '" + p_material->tag + "'");
         // @TODO check duplicated materials (rough, metal factor, textures)
     }
 
@@ -138,9 +143,26 @@ void pbrloader::assign_object(object *p_object, std::string_view model, std::str
         
         uint32_t model_it {};
         uint32_t material_it {};
+        ::material *p_material {};
 
         for (model_it = 0; model_it < model_family; model_it++) {
-            this->direct_assign_object(p_object, model_id_tag + "." + std::to_string(model_it), material_id_tag + "." + std::to_string(material_it));
+            auto *p_model {(::model*) this->find(model_id_tag + "." + std::to_string(model_it))};
+            if (p_model != nullptr) {
+                p_material = (::material*) this->find(material_id_tag + "." + std::to_string(p_model->mesh.material));
+            }
+
+            if (p_material == nullptr) {
+                p_material = (::material*) this->find(material_id_tag + "." + std::to_string(material_it));
+            }
+
+            if ((p_material == nullptr || p_model == nullptr) || p_object->contains_assign(p_model->tag, p_material->tag)) {
+                continue;
+            }
+
+            auto &object_assign {p_object->find_assign_or_emplace_back(p_model->tag, p_material->tag)};
+            object_assign.p_linked_model = p_model;
+            object_assign.p_linked_material = p_material;
+            p_object->update_aabb_checker();
 
             if (material_it < material_family) {
                 material_it++;

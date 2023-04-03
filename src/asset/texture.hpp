@@ -13,7 +13,7 @@ namespace asset {
     protected:
         std::map<std::string, glm::vec4> atlas_map {};
         gpu::texture gpu_side {};
-        t *cpu_side {};
+        t *p_cpu_side {};
         std::function<void(gpu::texture&, bool&)> mixin {};
     public:
         explicit texture(std::string_view texture_name, std::string_view path, const glm::ivec4 &texture_info, const std::function<void(gpu::texture &, bool &)> &injection_mixin = {}) {
@@ -29,12 +29,12 @@ namespace asset {
             int32_t w {}, h {};
             void *p_data {};
             util::readimage(path, w, h, p_data);
-            this->cpu_side = (t*) p_data;
+            this->p_cpu_side = (t*) p_data;
 
             this->gpu_side.w = w;
             this->gpu_side.h = h;
 
-            this->is_dead = !this->cpu_side;
+            this->is_dead = !this->p_cpu_side;
             glGenTextures(1, &this->gpu_side.id);
         }
 
@@ -53,12 +53,12 @@ namespace asset {
         }
 
         void read_cpu_side() {
-            if (this->cpu_side != nullptr) {
+            if (this->p_cpu_side != nullptr) {
                 this->free_cpu_side();
             }
 
-            this->cpu_side = new t[this->gpu_side.w * this->gpu_side.h * this->gpu_side.w * this->gpu_side.channel];
-            gpu::read<t>(this->gpu_side, this->cpu_side);
+            this->p_cpu_side = new t[this->gpu_side.w * this->gpu_side.h * this->gpu_side.w * this->gpu_side.channel];
+            gpu::read<t>(this->gpu_side, this->p_cpu_side);
         }
 
         void invoke() const {
@@ -87,7 +87,7 @@ namespace asset {
         }
 
         void free_cpu_side() {
-            delete this->cpu_side;
+            delete this->p_cpu_side;
         }
 
         gpu::texture &gpu_side_data() {
@@ -95,7 +95,7 @@ namespace asset {
         }
 
         t *&cpu_side_data() {
-            return this->cpu_side;
+            return this->p_cpu_side;
         }
 
         void on_create() override {
@@ -113,17 +113,17 @@ namespace asset {
 
             switch (this->gpu_side.type) {
                 case GL_TEXTURE_1D: {
-                    glTexImage1D(this->gpu_side.type, 0, this->gpu_side.format, this->gpu_side.w, 0, this->gpu_side.channel, this->gpu_side.primitive, this->cpu_side);
+                    glTexImage1D(this->gpu_side.type, 0, this->gpu_side.format, this->gpu_side.w, 0, this->gpu_side.channel, this->gpu_side.primitive, this->p_cpu_side);
                     break;
                 }
 
                 case GL_TEXTURE_2D: {
-                    glTexImage2D(this->gpu_side.type, 0, this->gpu_side.format, this->gpu_side.w, this->gpu_side.h, 0, this->gpu_side.channel, this->gpu_side.primitive, this->cpu_side);
+                    glTexImage2D(this->gpu_side.type, 0, this->gpu_side.format, this->gpu_side.w, this->gpu_side.h, 0, this->gpu_side.channel, this->gpu_side.primitive, this->p_cpu_side);
                     break;
                 }
 
                 case GL_TEXTURE_3D: {
-                    glTexImage3D(this->gpu_side.type, 0, this->gpu_side.format, this->gpu_side.w, this->gpu_side.h, this->gpu_side.d, 0, this->gpu_side.channel, this->gpu_side.primitive, this->cpu_side);
+                    glTexImage3D(this->gpu_side.type, 0, this->gpu_side.format, this->gpu_side.w, this->gpu_side.h, this->gpu_side.d, 0, this->gpu_side.channel, this->gpu_side.primitive, this->p_cpu_side);
                     break;
                 }
             }

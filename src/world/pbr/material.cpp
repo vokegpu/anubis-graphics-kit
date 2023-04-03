@@ -7,6 +7,7 @@ material::material(const std::map<std::string, std::string> &_metadata) {
     this->id = ++material::token;
     this->should_reload = true;
     this->metadata = _metadata;
+    this->should_reload_textures = true;
 }
 
 std::map<std::string, std::string> &material::get_metadata() {

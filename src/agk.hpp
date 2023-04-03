@@ -3,6 +3,9 @@
 
 #include "core/core.hpp"
 
+static const std::string AGK_DEFAULT_DIR_TEXTURES {"./data/textures/"};
+static const std::string AGK_DEFAULT_DIR_MODELS {"./data/models/"};
+
 /*
  * Main Anubis Graphics Kit namespace contains incorrect case style -
  * "soon it should be fixed".

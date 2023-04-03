@@ -28,5 +28,5 @@ bool util::readfile(std::string_view path, std::string &string_builder) {
 
 bool util::readimage(std::string_view path, int32_t &w, int32_t &h, void *&p_data) {
     int32_t channel {};
-    return (p_data = stbi_load(path.data(), &w, &h, &channel, 0));
+    return (p_data = stbi_load(path.data(), &w, &h, &channel, STBI_rgb));
 }

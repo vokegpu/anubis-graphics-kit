@@ -10,34 +10,35 @@
 void client::scenes::starter::on_create() {
     agk::pbr::loadmodel("box", "./data/models/box.gltf");
     agk::pbr::loadmaterial("box", "./data/models/box.gltf");
-
+    agk::pbr::loadmaterial("duck", "./data/models/Duck.gltf");
     agk::pbr::loadmodel("duck", "./data/models/Duck.gltf");
-    agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
-
     agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
 
     auto *p_gltf_obj {new object {}};
-    p_gltf_obj->transform.position = {20, 340, 0};
-    p_gltf_obj->transform.scale = glm::vec3 {40.0f};
+    p_gltf_obj->transform.position = {0, 300, 0};
+    p_gltf_obj->transform.scale = glm::vec3 {30.1343400f};
     agk::world::create(p_gltf_obj);
 
     agk::pbr::loadmodel("dinossaur", "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
-        {"color", stream::vec(0.342f, 0.23434f, 0.21334f)},
+        {"color", stream::vec(0.942f, 0.23434f, 0.21334f)},
         {"metal", stream::i(false)},
         {"rough", stream::f(0.20f)},
-        {"doubleSided", stream::i(false)}
+        {"doubleSided", stream::i(true)}
     }});
 
     agk::pbr::loadmodel("monster", "./data/models/Alien Animal.obj");
     agk::pbr::loadmaterial("monster", new material {{
-        {"color", stream::vec(0.243534f, 0.43545f, 1.0f)},
+        {"color", stream::vec(0.243534f, 0.43545f, 0.03f)},
         {"metal", stream::i(true)},
         {"rough", stream::f(0.90f)},
         {"doubleSided", stream::i(true)}
     }});
 
-    p_gltf_obj->assign("model.snowball", "material.monster");
+    agk::pbr::loadmodel("snow", "./data/models/snow_03_4k.gltf");
+    agk::pbr::loadmaterial("snow", "./data/models/snow_03_4k.gltf");
+
+    p_gltf_obj->assign("model.snow", "material.snow");
 
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.coconuttree", "material.dinossaur");
@@ -180,7 +181,7 @@ void client::scenes::starter::on_create() {
             {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
-    agk::world::sky()->set_time(19, 0);
+    agk::world::sky()->set_time(12, 0);
     agk::world::currentplayer()->transform.position.y += 90;
     this->do_json_test();
 }

@@ -1,5 +1,9 @@
 #include "streamparser.hpp"
 #include <nlohmann/json.hpp>
+#include "agk.hpp"
+
+int32_t streamparser::gltexturefilter[2] {};
+int32_t streamparser::gltexturewrap[2] {};
 
 stream::format streamparser::get_model_format(std::string_view path) {
     std::vector<std::string> strings {};
@@ -68,6 +72,8 @@ bool streamparser::process_wavefront_object_meshes(std::vector<stream::mesh> &me
     }
 
     this->read_wavefront_object_mtllib_index(ifs);
+    std::string model_filename {};
+    this->read_mesh_filename(model_filename, this->current_path);
 
     std::string string_buffer {};
     std::string find {};
@@ -114,7 +120,7 @@ bool streamparser::process_wavefront_object_meshes(std::vector<stream::mesh> &me
 
             meshes.emplace_back();
             meshes[mesh_index].material = this->wavefront_object_material_map[split[1]];
-            meshes[mesh_index] += mesh_index > 0 ? meshes[mesh_index--] : meshes[mesh_index];
+            meshes[mesh_index] += mesh_index > 0 ? meshes[mesh_index-1] : meshes[mesh_index];
             meshes[mesh_index].tag = std::to_string(mesh_index);
         } else if (find == "v ") {
             if (clean_mesh_pack) {
@@ -262,11 +268,14 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_ty
     const uint64_t component_size {this->get_gltf_component_size(accessor["componentType"].get<uint32_t>())};
     const uint64_t accessor_offset {accessor["byteOffset"].is_null() ? 0 : accessor["byteOffset"].get<uint64_t>()};
     const uint64_t vec_size {mesh_type == stream::type::index ? (uint64_t) 1 : (mesh_type == stream::type::texcoord ? (uint64_t) 2 : (uint64_t) 3)};
-    const uint64_t byte_iterations {accessor["count"].get<uint64_t>() * vec_size};
+    const uint64_t byte_iterations {accessor["count"].get<uint64_t>()};
 
     ifs.seekg(offset + accessor_offset);
     uint32_t i {};
     float f {};
+
+    glm::vec3 v3 {};
+    glm::vec2 v2 {};
 
     for (uint64_t it {}; it < byte_iterations; it++) {
         switch (vec_size) {
@@ -274,9 +283,18 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_ty
             ifs.read(reinterpret_cast<char*>(&i), component_size);
             mesh.append(i, mesh_type);
             break;
+        case 2:
+            ifs.read(reinterpret_cast<char*>(&v2.x), component_size);
+            ifs.read(reinterpret_cast<char*>(&v2.y), component_size);
+
+            v2.y = 1.0f - v2.y;
+            mesh.append(v2, mesh_type);
+            break;
         default:
-            ifs.read(reinterpret_cast<char*>(&f), component_size);
-            mesh.append(f, mesh_type);
+            ifs.read(reinterpret_cast<char*>(&v3.x), component_size);
+            ifs.read(reinterpret_cast<char*>(&v3.y), component_size);
+            ifs.read(reinterpret_cast<char*>(&v3.z), component_size);
+            mesh.append(v3, mesh_type);
             break;
         }
     }
@@ -324,21 +342,177 @@ bool streamparser::process_gltf(stream::mesh &mesh, nlohmann::json &gltf_node) {
     return false;
 }
 
-bool streamparser::read_gltf_mtl(stream::mtl &mtl) {
+bool streamparser::process_gltf_mtl(stream::mtl &mtl) {
     std::ifstream ifs {this->current_path};
     if (!ifs.is_open()) {
         return util::log("Failed to read glTF at '" + this->current_path + '\'');
     }
 
     this->current_gltf_json = nlohmann::json::parse(ifs);
-    this->current_gltf_materials_json = this->current_gltf_json["materials"];
+    std::string model_filename {};
+    this->read_mesh_filename(model_filename, this->current_path);
 
-    for (nlohmann::json &json : this->current_gltf_json) {
-        if (json.is_null()) {
+    auto &materials = this->current_gltf_json["materials"];
+    auto &samplers = this->current_gltf_json["samplers"];
+    auto &images = this->current_gltf_json["images"];
+    auto &textures = this->current_gltf_json["textures"];
+
+    std::string image_uri {};
+    std::string asset_tag {};
+    std::vector<std::string> strings {};
+
+    uint32_t gl_texture_format[2] {};
+    nlohmann::json sampler {};
+    std::map<uint64_t, std::string> asset_map {};
+    uint64_t texture_index {};
+
+    for (nlohmann::json &texture : textures) {
+        if (texture.is_null() || texture["source"].is_null()) {
             continue;
+        }
+
+        image_uri = images.at(texture["source"].get<uint64_t>())["uri"].get<std::string>();
+
+        /*
+         * Check internal format and format based at image file extension.
+         * BMP or any other extension is by default GL_RGB.
+         */
+        gl_texture_format[0] = GL_RGB;
+        gl_texture_format[1] = GL_RGB;
+
+        util::split(strings, image_uri, '.');
+        if (!strings.empty() && strings[strings.size() - 1] == "png") {
+            gl_texture_format[0] = GL_RGB;
+            gl_texture_format[1] = GL_RGB;
+        } else if (!strings.empty() && strings[strings.size() - 1] == "jpg") {
+            gl_texture_format[0] = GL_RGB;
+            gl_texture_format[1] = GL_RGB;
+        }
+
+        streamparser::gltexturefilter[0] = GL_NEAREST;
+        streamparser::gltexturefilter[1] = GL_NEAREST;
+
+        streamparser::gltexturewrap[0] = GL_REPEAT;
+        streamparser::gltexturewrap[1] = GL_REPEAT;
+
+        if (!texture["sampler"].is_null()) {
+            sampler = samplers.at(texture["sampler"].get<uint64_t>());
+            if (!sampler["minFilter"].is_null()) {
+                switch (sampler["minFilter"].get<int32_t>()) {
+                case 9729:
+                    streamparser::gltexturefilter[0] = GL_LINEAR;
+                    break;
+                case 9984:
+                    streamparser::gltexturefilter[0] = GL_NEAREST_MIPMAP_NEAREST;
+                    break;
+                case 9985:
+                    streamparser::gltexturefilter[0] = GL_LINEAR_MIPMAP_NEAREST;
+                    break;
+                case 9986:
+                    streamparser::gltexturefilter[0] = GL_NEAREST_MIPMAP_LINEAR;
+                    break;
+                case 9987:
+                    streamparser::gltexturefilter[0] = GL_LINEAR_MIPMAP_LINEAR;
+                    break;
+                }
+            }
+
+            if (!sampler["magFilter"].is_null()) {
+                switch (sampler["magFilter"].get<int32_t>()) {
+                case 9729:
+                    streamparser::gltexturefilter[1] = GL_LINEAR;
+                    break;
+                case 9984:
+                    streamparser::gltexturefilter[1] = GL_NEAREST_MIPMAP_NEAREST;
+                    break;
+                case 9985:
+                    streamparser::gltexturefilter[1] = GL_LINEAR_MIPMAP_NEAREST;
+                    break;
+                case 9986:
+                    streamparser::gltexturefilter[1] = GL_NEAREST_MIPMAP_LINEAR;
+                    break;
+                case 9987:
+                    streamparser::gltexturefilter[1] = GL_LINEAR_MIPMAP_LINEAR;
+                    break;
+                }
+            }
+
+            if (!sampler["wrapS"].is_null()) {
+                switch (sampler["wrapS"].get<int32_t>()) {
+                case 33071:
+                    streamparser::gltexturewrap[0] = GL_CLAMP_TO_EDGE;
+                    break;
+                case 33648:
+                    streamparser::gltexturewrap[0] = GL_MIRRORED_REPEAT;
+                    break;
+                }
+            }
+
+            if (!sampler["wrapT"].is_null()) {
+                switch (sampler["wrapT"].get<int32_t>()) {
+                case 33071:
+                    streamparser::gltexturewrap[1] = GL_CLAMP_TO_EDGE;
+                    break;
+                case 33648:
+                    streamparser::gltexturewrap[1] = GL_MIRRORED_REPEAT;
+                    break;
+                }
+            }
+        }
+
+        this->read_full_filename(image_uri, image_uri);
+        asset_tag = model_filename + "." + image_uri;
+        image_uri = AGK_DEFAULT_DIR_TEXTURES + image_uri;
+
+        auto *p_asset {new asset::texture<uint8_t> {asset_tag, image_uri, {GL_TEXTURE_2D, GL_UNSIGNED_BYTE, gl_texture_format[0], gl_texture_format[1]}, [](gpu::texture &texture, bool &mipmap) {
+            glTextureParameteri(texture.type, GL_TEXTURE_MIN_FILTER, streamparser::gltexturefilter[0]);
+            glTextureParameteri(texture.type, GL_TEXTURE_MAG_FILTER, streamparser::gltexturefilter[1]);
+
+            glTextureParameteri(texture.type, GL_TEXTURE_WRAP_S, streamparser::gltexturewrap[0]);
+            glTextureParameteri(texture.type, GL_TEXTURE_WRAP_T, streamparser::gltexturewrap[1]);
+
+            mipmap = true;
+        }}};
+
+        agk::asset::load(p_asset);
+        asset_map[texture_index] = p_asset->tag;
+        texture_index++;
+    }
+
+    stream::serializer &serializer {mtl.get_serializer()};
+    nlohmann::json pbr_metallic_roughness {};
+    std::string color_factor {};
+
+    uint32_t index {};
+    for (nlohmann::json &material : materials) {
+        pbr_metallic_roughness = material["pbrMetallicRoughness"];
+        if (material.is_null() || pbr_metallic_roughness.is_null()) {
+            continue;
+        }
+
+        const std::string name {std::to_string(index)};
+        index++;
+
+        serializer[name]["doubleSided"] = material["doubleSided"].is_null() ? "1" : stream::i(material["doubleSided"].get<bool>());
+        serializer[name]["metal"] = stream::f(pbr_metallic_roughness["metallicFactor"].get<float>());
+        serializer[name]["rough"] = pbr_metallic_roughness["roughnessFactor"].is_null() ? "0.72" : stream::f(pbr_metallic_roughness["roughnessFactor"].get<float>());
+
+        if (pbr_metallic_roughness["baseColorFactor"].is_array()) {
+            color_factor.clear();
+            for (nlohmann::json &value : pbr_metallic_roughness["baseColorFactor"]) {
+                color_factor += stream::f(value.get<float>());
+                color_factor += ' ';
+            }
+
+            serializer[name]["color"] = color_factor.substr(0, color_factor.size() - 1); // remove last space char;
+            serializer[name]["albedo"].clear();
+        } else if (pbr_metallic_roughness["baseColorTexture"].is_object()) {
+            serializer[name]["color"] = "1.0 1.0 1.0";
+            serializer[name]["albedo"] = asset_map[pbr_metallic_roughness["baseColorTexture"]["index"].get<uint64_t>()];
         }
     }
 
+    ifs.close();
     return false;
 }
 
@@ -375,8 +549,8 @@ bool streamparser::process_gltf_meshes(std::vector<stream::mesh> &meshes) {
     auto &nodes = this->current_gltf_json["nodes"];
     uint32_t node_count {};
 
-    for (uint64_t it {}; it < nodes.size(); it++) {
-        if (nodes.at(it)["mesh"].is_null()) {
+    for (nlohmann::json &node : nodes) {
+        if (node.is_null() || node["mesh"].is_null()) {
             continue;
         }
 
@@ -384,7 +558,7 @@ bool streamparser::process_gltf_meshes(std::vector<stream::mesh> &meshes) {
         mesh.format = stream::format::gltf;
         mesh.tag = std::to_string(node_count);
 
-        uint64_t mesh_index {nodes.at(it)["mesh"].get<uint64_t>()};
+        uint64_t mesh_index {node["mesh"].get<uint64_t>()};
         this->process_gltf(mesh, this->current_gltf_meshes_json.at(mesh_index));
         node_count++;
     }
@@ -477,6 +651,7 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
 
     std::string newmtl_segment {};
     std::string metadata {};
+    auto &serializer {mtl.get_serializer()};
 
     constexpr uint32_t x {1};
     constexpr uint32_t y {2};
@@ -494,11 +669,11 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
         util::split(strings, string_buffer, ' ');
 
         if (strings[0] == "illum" || strings[0] == "Ns" || strings[0] == "Ni" || strings[0] == "d" || strings[0] == "Tr") {
-            this->current_serializer[newmtl_segment][strings[0]] = strings[x];
+            serializer[newmtl_segment][strings[0]] = strings[x];
         } else if (strings[0] == "newmtl") {
             metadata.clear();
             metadata += string_buffer.substr(strings[0].size() + 1, string_buffer.size() - strings[0].size() - 1);
-            this->current_serializer[metadata];
+            serializer[metadata];
         } else if (strings[0] == "Ka" || strings[0] == "Kd" || strings[0] == "Ks" || strings[0] == "Ke" || strings[0] == "Tf") {
             metadata.clear();
             metadata += strings[x];
@@ -506,16 +681,16 @@ bool streamparser::process_wavefront_object_mtllib(stream::mtl &mtl) {
             metadata += strings[y];
             metadata += '/';
             metadata += strings[z];
-            this->current_serializer[newmtl_segment][strings[0]] = metadata;
+            serializer[newmtl_segment][strings[0]] = metadata;
         } else if (strings[0] == "bump" || strings[0] == "map_bump" || strings[0] == "map_Ka" || strings[0] == "map_Kd" || strings[0] == "map_Ks" || strings[0] == "map_Ke") {
             metadata.clear();
             metadata += string_buffer.substr(strings[0].size() + 1, string_buffer.size() - strings[0].size() - 1);
-            this->current_serializer[newmtl_segment][strings[0]] = metadata;
+            serializer[newmtl_segment][strings[0]] = metadata;
         }
     }
 
     ifs_mtllib.close();
-    mtl.set_serializer(this->get_pbr_from_wavefront_object_mtllib(this->current_serializer));
+    mtl.set_serializer(this->get_pbr_from_wavefront_object_mtllib(serializer));
     return false;
 }
 
@@ -533,12 +708,38 @@ bool streamparser::load_mtl(stream::mtl &mtl, std::string_view path) {
     case stream::format::stl:
         return !util::log("STL does not contains any material file");
     case stream::format::gltf:
-        return util::log("glTF material not implemented!");
+        return this->process_gltf_mtl(mtl);
     case stream::format::unknown:
         return util::log("Unknown model format, please try: *.obj *.stl *.gltf");
     }
 
     return true;
+}
+
+bool streamparser::read_full_filename(std::string &filename, std::string_view path) {
+    if (path.empty() || path.size() < 3) {
+        return util::log("Failed to read model filename because there is no path insert");
+    }
+
+    std::vector<std::string> strings {};
+    util::split(strings, path, '.');
+
+    if (strings.size() <= 1 || strings.empty()) {
+        return util::log(R"(Empty filename ".*", please rename to: "*.*")");
+    }
+
+    filename = strings[strings.size() - 2] + "." + strings[strings.size() - 1];
+    int64_t it {};
+
+    for (it = filename.size(); it > 0; --it) {
+        if (filename[it] == '\\' || filename[it] == '/') {
+            it++;
+            break;
+        }
+    }
+
+    filename = filename.substr(it, filename.size());
+    return false;
 }
 
 bool streamparser::read_mesh_filename(std::string &filename, std::string_view path) {

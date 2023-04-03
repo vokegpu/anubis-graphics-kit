@@ -56,7 +56,7 @@ void agk::mainloop(imodule *p_scene_initial) {
     glm::vec3 previous_camera_rotation {2, 2, 2};
 
     agk::app.p_asset_manager_service = new assetmanager {};
-    agk::task::synchronize(agk::app.p_asset_manager_service);
+    agk::task::registry(agk::app.p_asset_manager_service, agk::service::updateable);
     util::log("Asset manager created");
 
     agk::app.p_input_service = new deviceinput {};
