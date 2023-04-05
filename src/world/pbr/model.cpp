@@ -22,6 +22,7 @@ void model::recompile() {
 
     int32_t buffers_driver_read_mode {this->static_buffers ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW};
     this->buffer.invoke();
+    bool tbn_flag[3] {};
 
     if (this->mesh.contains(stream::type::vertex)) {
         auto &list {this->mesh.get_float_list(stream::type::vertex)};
@@ -32,6 +33,7 @@ void model::recompile() {
         this->buffer.stride[0] = 0;
         this->buffer.stride[1] = static_cast<int32_t>(list.size()) / 3;
         util::generateaabb(this->aabb, this->mesh);
+        tbn_flag[0] = true;
     }
 
     if (this->mesh.contains(stream::type::texcoord)) {
@@ -39,6 +41,7 @@ void model::recompile() {
         this->buffer.bind(1, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(1, 2);
+        tbn_flag[1] = true;
     }
 
     if (this->mesh.contains(stream::type::normal)) {
@@ -46,6 +49,11 @@ void model::recompile() {
         this->buffer.bind(2, {GL_ARRAY_BUFFER, GL_FLOAT});
         this->buffer.send<float>(sizeof(float)*list.size(), list.data(), buffers_driver_read_mode);
         this->buffer.attach(2, 3);
+        tbn_flag[2] = true;
+    }
+
+    if (tbn_flag[0] && tbn_flag[1] && tbn_flag[2]) {
+        
     }
 
     if (this->mesh.contains(stream::type::index)) {
