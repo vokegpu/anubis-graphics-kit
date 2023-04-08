@@ -5,13 +5,13 @@ layout (location = 0) out vec4 vFragColor;
 
 // PBR sampler(s)
 layout (binding = 0) uniform sampler2D uSamplerAlbedo;
-layout (binding = 1) uniform sampler2D uSamplerSpecular;
+layout (binding = 1) uniform sampler2D uSamplerRoughness;
 layout (binding = 2) uniform sampler2D uSamplerNormalMap;
 
 struct Material {
-    vec4 mSamplerFlags;
-    vec4 mSurface;
-    vec4 mColor;
+    vec4 mSamplerFlags; // (albedo, rough, normal, useless)
+    vec4 mSurface; // (metal, roughness factor, useless, useless)
+    vec4 mColor; // (r, g, b, useless)
 };
 
 // Material buffer
@@ -23,6 +23,8 @@ in vec3 vPos;
 in vec2 vTexCoord;
 in vec3 vNormal;
 in vec3 vPosModel;
+in vec3 vTangent;
+in vec3 vBitangent;
 
 uniform vec3 uCameraPos;
 uniform float uAmbientColor;
@@ -30,10 +32,11 @@ uniform int uLightAmount;
 uniform float uGamma = 1.0f;
 uniform int uMaterialIndex;
 
-Material material;
-vec3 colorSpecular;
-vec3 colorAlbedo;
-vec3 colorNormalMap;
+Material pbrMaterial;
+float pbrRoughnessFactor;
+vec3 pbrAlbedoColor;
+vec3 pbrNormalColor;
+mat3 tbnMatrix;
 
 uniform struct {
     vec3 uIntensity;
@@ -50,28 +53,28 @@ uniform struct {
 
 vec3 shlickFresnel(float lDotH) {
     vec3 f0 = vec3(0.04f);
-    if (material.mSurface.x == 1) {
-        f0 = colorAlbedo;
+    if (pbrMaterial.mSurface.x == 1) {
+        f0 = pbrAlbedoColor;
     }
     return f0 + (1 - f0) * pow(clamp(1.0f - lDotH, 0.0f, 1.0f), 5.0f);
 }
 
 float geometrySmith(float dotProd) {
-    float k = (material.mSurface.y + 1.0f) * (material.mSurface.y + 1.0f) / 8.0f;
+    float k = (pbrRoughnessFactor + 1.0f) * (pbrRoughnessFactor + 1.0f) / 8.0f;
     float denom = dotProd * (1.0f - k) + k;
     return 1.0f / denom;
 }
 
 float ggxDistribution(float nDotH) {
-    float a2 = material.mSurface.y * material.mSurface.y * material.mSurface.y * material.mSurface.y;
+    float a2 = pbrRoughnessFactor * pbrRoughnessFactor * pbrRoughnessFactor * pbrRoughnessFactor;
     float d = (nDotH * nDotH) * (a2 - 1.0f) + 1.0f;
     return a2 / (PI * d * d);
 }
 
 vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 diffuse = vec3(0.0f);
-    if (material.mSurface.x == 0) {
-        diffuse = colorAlbedo;
+    if (pbrMaterial.mSurface.x == 0) {
+        diffuse = pbrAlbedoColor;
     }
 
     vec3 intensity = uLight[index].uIntensity;
@@ -100,28 +103,32 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
 void main() {
     float dist = length(vPos);
     float fogFactor = clamp((uFog.uDistance.y - dist) / (uFog.uDistance.y - uFog.uDistance.x), 0.0, 1.0);
-    material = ubMaterial[uMaterialIndex];
+    pbrMaterial = ubMaterial[uMaterialIndex];
     vec2 texCoord = vec2(vTexCoord.x, 1.0f - vTexCoord.y);
 
-    // Not all models come with albedo, specular, and normal map textures, then set to the color.
-    colorAlbedo = material.mColor.rgb;
-    colorSpecular = material.mColor.rgb;
-    colorNormalMap = vec3(0.0f);
+    // Not all materials have albedo, specular, and normal map textures.
+    pbrAlbedoColor = pbrMaterial.mColor.rgb;
+    pbrRoughnessFactor = pbrMaterial.mSurface.y;
+    pbrNormalColor = vec3(0.0f);
+    vec3 n = vec3(0.0f);
 
-    if (material.mSamplerFlags.x == 1) {
-        colorAlbedo = texture(uSamplerAlbedo, texCoord).rgb;
+    if (pbrMaterial.mSamplerFlags.x == 1) {
+        pbrAlbedoColor = texture(uSamplerAlbedo, texCoord).rgb;
     }
 
-    if (material.mSamplerFlags.y == 1) {
-        colorSpecular = texture(uSamplerSpecular, texCoord).rgb;
+    if (pbrMaterial.mSamplerFlags.y == 1) {
+        pbrRoughnessFactor = texture(uSamplerRoughness, texCoord).r;
     }
 
-    if (material.mSamplerFlags.z == 1) {
-        colorNormalMap = texture(uSamplerNormalMap, texCoord).rgb;
+    if (pbrMaterial.mSamplerFlags.z == 1) {
+        pbrNormalColor = texture(uSamplerNormalMap, texCoord).rgb * 2.0f - 1.0f;
+        tbnMatrix = mat3(vTangent, vBitangent, normalize(vNormal));
+        n = normalize(tbnMatrix * pbrNormalColor);
+    } else {
+        n = normalize(vNormal);
     }
 
-    vec3 sum = colorAlbedo * uAmbientColor;
-    vec3 n = normalize(vNormal);
+    vec3 sum = pbrAlbedoColor * uAmbientColor;
     vec3 v = normalize(uCameraPos - vPosModel);
 
     if (!gl_FrontFacing) n = -n;

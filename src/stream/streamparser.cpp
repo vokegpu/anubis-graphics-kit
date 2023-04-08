@@ -263,7 +263,8 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_ty
         return util::log("Failed to read mesh bytes from glTF binary because the binary is not open");
     }
 
-    const uint64_t offset {buffer_view["byteOffset"].get<uint64_t>()};
+    const uint64_t offset {(accessor["byteOffset"].is_null() ? 0 : accessor["byteOffset"].get<uint64_t>()) + (buffer_view["byteOffset"].is_null() ? 0 : buffer_view["byteOffset"].get<uint64_t>())};
+    util::log("ih");
     const uint64_t length {buffer_view["byteLength"].get<uint64_t>()};
     const uint64_t component_size {this->get_gltf_component_size(accessor["componentType"].get<uint32_t>())};
     const uint64_t accessor_offset {accessor["byteOffset"].is_null() ? 0 : accessor["byteOffset"].get<uint64_t>()};
@@ -494,10 +495,13 @@ bool streamparser::process_gltf_mtl(stream::mtl &mtl) {
         index++;
 
         serializer[name]["doubleSided"] = material["doubleSided"].is_null() ? "1" : stream::i(material["doubleSided"].get<bool>());
-        serializer[name]["metal"] = stream::f(pbr_metallic_roughness["metallicFactor"].get<float>());
-        serializer[name]["rough"] = pbr_metallic_roughness["roughnessFactor"].is_null() ? "0.72" : stream::f(pbr_metallic_roughness["roughnessFactor"].get<float>());
+        serializer[name]["metal"] = pbr_metallic_roughness["metallicFactor"].is_null() ? "0" : stream::f(pbr_metallic_roughness["metallicFactor"].get<float>());
+        serializer[name]["rough"] = "0.43"; // default roughness factor
 
-        if (pbr_metallic_roughness["baseColorFactor"].is_array()) {
+        if (pbr_metallic_roughness["baseColorTexture"].is_object()) {
+            serializer[name]["color"] = "1.0 1.0 1.0";
+            serializer[name]["albedoSampler"] = asset_map[pbr_metallic_roughness["baseColorTexture"]["index"].get<uint64_t>()];
+        } else if (pbr_metallic_roughness["baseColorFactor"].is_array()) {
             color_factor.clear();
             for (nlohmann::json &value : pbr_metallic_roughness["baseColorFactor"]) {
                 color_factor += stream::f(value.get<float>());
@@ -505,10 +509,25 @@ bool streamparser::process_gltf_mtl(stream::mtl &mtl) {
             }
 
             serializer[name]["color"] = color_factor.substr(0, color_factor.size() - 1); // remove last space char;
-            serializer[name]["albedo"].clear();
-        } else if (pbr_metallic_roughness["baseColorTexture"].is_object()) {
-            serializer[name]["color"] = "1.0 1.0 1.0";
-            serializer[name]["albedo"] = asset_map[pbr_metallic_roughness["baseColorTexture"]["index"].get<uint64_t>()];
+            serializer[name]["albedoSampler"].clear();
+        }
+        
+        if (pbr_metallic_roughness["metallicRoughnessTexture"].is_object()) {
+            serializer[name]["rough"] = "0.0";
+            serializer[name]["roughnessSampler"] = asset_map[pbr_metallic_roughness["metallicRoughnessTexture"]["index"].get<uint64_t>()];
+        } else if (pbr_metallic_roughness["roughnessFactor"].is_array()) {
+            color_factor.clear();
+            for (nlohmann::json &value : pbr_metallic_roughness["roughnessFactor"]) {
+                color_factor += stream::f(value.get<float>());
+                color_factor += ' ';
+            }
+
+            serializer[name]["rough"] = color_factor.substr(0, color_factor.size() - 1); // remove last space char;
+            serializer[name]["roughnessSampler"].clear();
+        }
+
+        if (material["normalTexture"].is_object()) {
+            serializer[name]["normalSampler"] = asset_map[material["normalTexture"]["index"].get<uint64_t>()];
         }
     }
 

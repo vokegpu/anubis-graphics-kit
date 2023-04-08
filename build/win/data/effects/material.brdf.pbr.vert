@@ -3,13 +3,16 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec3 aNormal;
-
-layout (location = 3) in mat4 aInstancedModelMatrix;
+layout (location = 3) in vec3 aTangent;
+layout (location = 4) in vec3 aBitangent;
+layout (location = 5) in mat4 aInstancedModelMatrix;
 
 out vec3 vPos;
 out vec3 vPosModel;
 out vec2 vTexCoord;
 out vec3 vNormal;
+out vec3 vTangent;
+out vec3 vBitangent;
 
 uniform bool uInstanced = false;
 uniform mat4 uMVP;
@@ -34,4 +37,6 @@ void main() {
     vPos = gl_Position.xyz;
     vPosModel = modelPos.xyz;
     vTexCoord = aTexCoord;
+    vTangent = aTangent;
+    vBitangent = aBitangent;
 }

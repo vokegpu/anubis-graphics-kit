@@ -19,23 +19,23 @@ void material::invoke(::asset::shader *p_shader) {
         this->should_reload_textures = false;
         asset::texture<uint8_t> *p_texture {};
 
-        if (!this->metadata["albedo"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["albedo"])) != nullptr) {
-            this->sampler_map["albedo"] = p_texture->gpu_side_data().id;
+        if (!this->metadata["albedoSampler"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["albedoSampler"])) != nullptr) {
+            this->sampler_map["albedoSampler"] = p_texture->gpu_side_data().id;
         }
 
-        if (!this->metadata["specular"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["specular"])) != nullptr) {
-            this->sampler_map["specular"] = p_texture->gpu_side_data().id;
+        if (!this->metadata["roughnessSampler"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["roughnessSampler"])) != nullptr) {
+            this->sampler_map["roughnessSampler"] = p_texture->gpu_side_data().id;
         }
 
-        if (!this->metadata["normalMap"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["normalMap"])) != nullptr) {
-            this->sampler_map["normalMap"] = p_texture->gpu_side_data().id;
+        if (!this->metadata["normalSampler"].empty() && (p_texture = (asset::texture<uint8_t>*) agk::asset::find(this->metadata["normalSampler"])) != nullptr) {
+            this->sampler_map["normalSampler"] = p_texture->gpu_side_data().id;
         }
     }
 
     auto &programbuffer {p_shader->programbuffer};
-    auto &albedo {this->sampler_map["albedo"]};
-    auto &specular {this->sampler_map["specular"]};
-    auto &normal_map {this->sampler_map["normalMap"]};
+    auto &albedo {this->sampler_map["albedoSampler"]};
+    auto &specular {this->sampler_map["roughnessSampler"]};
+    auto &normal_map {this->sampler_map["normalSampler"]};
 
     if (this->should_reload) {
         this->should_reload = false;

@@ -11,6 +11,8 @@ namespace util {
     };
 
     void generateaabb(util::aabb &aabb, stream::mesh &mesh);
+    glm::vec3 generatetangent(glm::vec3 *pv, glm::vec2 *pt);
+
     float clamp(float val, float min, float max);
     float min(float val, float min);
     float max(float val, float max);

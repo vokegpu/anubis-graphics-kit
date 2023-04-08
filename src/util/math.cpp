@@ -1,4 +1,37 @@
 #include "math.hpp"
+#include <cfloat>
+
+glm::vec3 util::generatetangent(glm::vec3 *pv, glm::vec2 *pt) {
+    if (pv == nullptr || pt == nullptr) {
+        return {1.0f, 0.0f, 0.0f};
+    }
+
+    glm::vec3 &v1 {pv[0]};
+    glm::vec3 &v2 {pv[1]};
+    glm::vec3 &v3 {pv[2]};
+
+    glm::vec2 &t1 {pt[0]};
+    glm::vec2 &t2 {pt[1]};
+    glm::vec2 &t3 {pt[2]};
+
+    glm::vec3 vedge1 {v2 - v1};
+    glm::vec3 vedge2 {v3 - v1};
+
+    glm::vec2 tedge1 {t2 - t1};
+    glm::vec2 tedge2 {t3 - t1};
+
+    glm::vec3 tangent {};
+    float invertedgesq {tedge2.y * tedge1.x - tedge2.x * tedge1.y};
+    if (fabsf(invertedgesq) < FLT_EPSILON) {
+        tangent.x = 1.0f;
+    } else {
+        tangent.x = invertedgesq * (tedge2.y * vedge1.x - tedge1.y * vedge2.x);
+        tangent.y = invertedgesq * (tedge2.y * vedge1.y - tedge1.y * vedge2.y);
+        tangent.z = invertedgesq * (tedge2.y * vedge1.z - tedge1.y * vedge2.z);
+    }
+
+    return tangent;
+}
 
 float util::clamp(float val, float min, float max) {
     return val > max ? max : (val < min ? min : val);

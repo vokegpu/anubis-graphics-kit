@@ -28,7 +28,7 @@ protected:
     };
 
     std::map<std::string, std::string> mtl_pbr_conversions_map {
-        {"map_Ka", "ambientMap"}, {"map_Kd", "albedoMap"}, {"map_Ks", "specularMap"}
+        {"map_Ka", "ambientSampler"}, {"map_Kd", "albedoSampler"}, {"map_Ks", "roughnessSampler"}
     };
 
     std::map<std::string, uint64_t> gltf_type {

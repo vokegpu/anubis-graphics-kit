@@ -14,10 +14,15 @@ void client::scenes::starter::on_create() {
     agk::pbr::loadmodel("duck", "./data/models/Duck.gltf");
     agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
 
-    auto *p_gltf_obj {new object {}};
-    p_gltf_obj->transform.position = {0, 300, 0};
-    p_gltf_obj->transform.scale = glm::vec3 {30.1343400f};
-    agk::world::create(p_gltf_obj);
+    auto *p_gltf_obj1 {new object {}};
+    p_gltf_obj1->transform.position = {0, 300, 0};
+    p_gltf_obj1->transform.scale = glm::vec3 {30.1343400f};
+    agk::world::create(p_gltf_obj1);
+
+    auto *p_gltf_obj2 {new object {}};
+    p_gltf_obj2->transform.position = {30 + 20.3240932848328093f, 300, 0};
+    p_gltf_obj2->transform.scale = glm::vec3 {0.51309824982374892f};
+    agk::world::create(p_gltf_obj2);
 
     agk::pbr::loadmodel("dinossaur", "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
@@ -35,10 +40,16 @@ void client::scenes::starter::on_create() {
         {"doubleSided", stream::i(true)}
     }});
 
-    agk::pbr::loadmodel("snow", "./data/models/snow_03_4k.gltf");
-    agk::pbr::loadmaterial("snow", "./data/models/snow_03_4k.gltf");
+    //agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
+    //agk::pbr::loadmaterial("snowball", "./data/models/snow_03_4k.gltf");
 
-    p_gltf_obj->assign("model.snow", "material.snow");
+    //agk::pbr::loadmodel("woodball", "./data/models/wood_table_001_4k.gltf");
+    //agk::pbr::loadmaterial("woodball", "./data/models/wood_table_001_4k.gltf");
+
+    agk::pbr::loadmodel("toycar", "./data/models/ToyCar.gltf");
+    agk::pbr::loadmaterial("toycar", "./data/models/ToyCar.gltf");
+
+    p_gltf_obj2->assign("model.toycar", "material.toycar");
 
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.coconuttree", "material.dinossaur");
