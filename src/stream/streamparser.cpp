@@ -1,6 +1,8 @@
 #include "streamparser.hpp"
 #include <nlohmann/json.hpp>
 #include "agk.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 int32_t streamparser::gltexturefilter[2] {};
 int32_t streamparser::gltexturewrap[2] {};
@@ -254,7 +256,7 @@ uint64_t streamparser::get_gltf_component_size(uint32_t n) {
     return 0;
 }
 
-bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_type, nlohmann::json &value) {
+bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type stream_type, nlohmann::json &value) {
     auto &accessor = this->current_gltf_accessors_json.at(value.get<uint64_t>());
     auto &buffer_view = this->current_gltf_buffer_views_json.at(accessor["bufferView"].get<uint64_t>());
     auto &ifs {this->current_gltf_ifs_binary.at(buffer_view["buffer"].get<uint64_t>())};
@@ -263,13 +265,22 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_ty
         return util::log("Failed to read mesh bytes from glTF binary because the binary is not open");
     }
 
-    const uint64_t offset {(accessor["byteOffset"].is_null() ? 0 : accessor["byteOffset"].get<uint64_t>()) + (buffer_view["byteOffset"].is_null() ? 0 : buffer_view["byteOffset"].get<uint64_t>())};
-    util::log("ih");
+    const uint64_t offset {
+        buffer_view["byteOffset"].is_null() ? 0 : buffer_view["byteOffset"].get<uint64_t>()
+    };
+
+    const uint64_t accessor_offset {
+        accessor["byteOffset"].is_null() ? 0 : accessor["byteOffset"].get<uint64_t>()
+    };
+
+    const uint64_t vec_size {
+        stream_type == stream::type::index ? (uint64_t) 1 : (stream_type == stream::type::texcoord ? (uint64_t) 2 : (uint64_t) 3)
+    };
+
     const uint64_t length {buffer_view["byteLength"].get<uint64_t>()};
     const uint64_t component_size {this->get_gltf_component_size(accessor["componentType"].get<uint32_t>())};
-    const uint64_t accessor_offset {accessor["byteOffset"].is_null() ? 0 : accessor["byteOffset"].get<uint64_t>()};
-    const uint64_t vec_size {mesh_type == stream::type::index ? (uint64_t) 1 : (mesh_type == stream::type::texcoord ? (uint64_t) 2 : (uint64_t) 3)};
     const uint64_t byte_iterations {accessor["count"].get<uint64_t>()};
+    const std::string buffer_view_name {buffer_view["name"].is_null() ? "unnamed" : buffer_view["name"].get<std::string>()};
 
     ifs.seekg(offset + accessor_offset);
     uint32_t i {};
@@ -277,25 +288,26 @@ bool streamparser::read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_ty
 
     glm::vec3 v3 {};
     glm::vec2 v2 {};
+    mesh.reserve(byte_iterations*vec_size, stream_type);
 
     for (uint64_t it {}; it < byte_iterations; it++) {
         switch (vec_size) {
         case 1:
             ifs.read(reinterpret_cast<char*>(&i), component_size);
-            mesh.append(i, mesh_type);
+            mesh.append(i, stream_type);
             break;
         case 2:
             ifs.read(reinterpret_cast<char*>(&v2.x), component_size);
             ifs.read(reinterpret_cast<char*>(&v2.y), component_size);
 
             v2.y = 1.0f - v2.y;
-            mesh.append(v2, mesh_type);
+            mesh.append(v2, stream_type);
             break;
         default:
             ifs.read(reinterpret_cast<char*>(&v3.x), component_size);
             ifs.read(reinterpret_cast<char*>(&v3.y), component_size);
             ifs.read(reinterpret_cast<char*>(&v3.z), component_size);
-            mesh.append(v3, mesh_type);
+            mesh.append(v3, stream_type);
             break;
         }
     }
@@ -515,14 +527,8 @@ bool streamparser::process_gltf_mtl(stream::mtl &mtl) {
         if (pbr_metallic_roughness["metallicRoughnessTexture"].is_object()) {
             serializer[name]["rough"] = "0.0";
             serializer[name]["roughnessSampler"] = asset_map[pbr_metallic_roughness["metallicRoughnessTexture"]["index"].get<uint64_t>()];
-        } else if (pbr_metallic_roughness["roughnessFactor"].is_array()) {
-            color_factor.clear();
-            for (nlohmann::json &value : pbr_metallic_roughness["roughnessFactor"]) {
-                color_factor += stream::f(value.get<float>());
-                color_factor += ' ';
-            }
-
-            serializer[name]["rough"] = color_factor.substr(0, color_factor.size() - 1); // remove last space char;
+        } else if (pbr_metallic_roughness["roughnessFactor"].is_number()) {
+            serializer[name]["rough"] = stream::f(pbr_metallic_roughness["roughnessFactor"].get<float>()); // remove last space char;
             serializer[name]["roughnessSampler"].clear();
         }
 

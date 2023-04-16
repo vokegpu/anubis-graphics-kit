@@ -51,7 +51,13 @@ void material::invoke(::asset::shader *p_shader) {
 
         const float rough {std::stof(this->metadata["rough"])};
         const float is_metal {std::stof(this->metadata["metal"])};
-        const glm::vec3 color {std::stof(color_split[0]), std::stof(color_split[1]), std::stof(color_split[2])};
+        glm::vec3 color {};
+
+        if (color_split.size() >= 3) {
+            color.x = std::stof(color_split[0]);
+            color.y = std::stof(color_split[1]);
+            color.z = std::stof(color_split[2]);
+        }
 
         float buffer_database[12] {
             static_cast<float>(!(!(albedo))), static_cast<float>(!(!(specular))), static_cast<float>(!(!(normal_map))), 0.0f,

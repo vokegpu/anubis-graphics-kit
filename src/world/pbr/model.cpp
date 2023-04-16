@@ -228,6 +228,7 @@ void model::recompile() {
         }
     }
 
+    this->mesh.faces = this->buffer.stride[1];
     this->buffer.revoke();
     this->compiled = true;
     util::log("Compiled model buffers: " + std::to_string(this->mesh.faces) + " faces");

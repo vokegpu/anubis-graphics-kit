@@ -1,6 +1,9 @@
 #include "sky.hpp"
 #include "util/math.hpp"
 #include "agk.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+
+bool sky::isnight {};
 
 void sky::on_create() {
     /* I made some tests with colors and these colors seems cool to simulate sky world time. */
@@ -11,6 +14,22 @@ void sky::on_create() {
     this->day_ambient_light = 0.4f;
     this->night_ambient_light = 0.01f;
     this->set_time(6, 0);
+
+    agk::asset::load(new ::asset::shader {
+        "effects.sky.pbr", {{"./data/effects/sky.pbr.vert", GL_VERTEX_SHADER}, {"./data/effects/sky.pbr.frag", GL_FRAGMENT_SHADER}}
+    });
+
+    auto &stream_parser {agk::stream::parser()};
+    stream::mesh plane_mesh {};
+    stream_parser.load_heightmap_mesh<uint8_t>(plane_mesh, nullptr, {20, 20, 0});
+    auto &v_list {plane_mesh.get_float_list(stream::type::vertex)};
+
+    this->buffer_sky_plane.stride[1] = plane_mesh.faces;
+    this->buffer_sky_plane.invoke();
+    this->buffer_sky_plane.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_sky_plane.send<float>(sizeof(float)*v_list.size(), v_list.data(), GL_STATIC_DRAW);
+    this->buffer_sky_plane.unbind();
+    this->buffer_sky_plane.revoke();
 }
 
 void sky::on_destroy() {
@@ -86,20 +105,36 @@ void sky::on_update() {
     /* The ambient light is a high-precision float, it is cool to have a smooth degree. */
     this->ambient_light = this->ambient_light + (this->ambient_next_light - this->ambient_light) * agk::dt;
     agk::app.setting.fog_color.set_value(this->color_from_sky);
+    sky::isnight = this->is_night;
 }
 
 void sky::on_render() {
-    // @todo Add skybox, dynamic clouds, parallax sun and parallax moon.
+    auto *&p_camera {agk::world::currentcamera()};
+    auto *p_program {(::asset::shader*) agk::asset::find("gpu/effects.sky.pbr")};
+
+    glm::mat4 mat4x4trs {1.0f};
+    mat4x4trs = glm::translate(mat4x4trs, {0.0f, 0.0f, 0.0f});
+    mat4x4trs = glm::scale(mat4x4trs, {200.0f, 0.0f, 200.0f});
+    mat4x4trs = p_camera->get_mvp() * mat4x4trs;
+
+    p_program->invoke();
+    p_program->set_uniform_mat4("uMVP", &mat4x4trs[0][0]);
+
+    this->buffer_sky_plane.invoke();
+    this->buffer_sky_plane.draw();
+    this->buffer_sky_plane.revoke();
+
+    p_program->revoke();
 }
 
-void sky::set_time(int32_t hour, int32_t minutes) {
-    if (hour > 23) {
-        hour = 0;
+void sky::set_time(int32_t hours, int32_t minutes) {
+    if (hours > 23) {
+        hours = 0;
     }
 
     util::reset(this->delta_ms_real);
 
-    if (hour > 6 && hour < 19) {
+    if (hours > 6 && hours < 19) {
         this->is_night = false;
         this->color_from_sky = this->color_day;
         this->ambient_light = this->day_ambient_light;
@@ -109,6 +144,6 @@ void sky::set_time(int32_t hour, int32_t minutes) {
         this->ambient_light = this->night_ambient_light;
     }
 
-    this->delta_si_real_elapsed = (60 * hour) + minutes;
+    this->delta_si_real_elapsed = (60 * hours) + minutes;
     this->ambient_next_light = this->ambient_light;
 }

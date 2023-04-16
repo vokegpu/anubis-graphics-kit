@@ -10,25 +10,18 @@
 void client::scenes::starter::on_create() {
     agk::pbr::loadmodel("box", "./data/models/box.gltf");
     agk::pbr::loadmaterial("box", "./data/models/box.gltf");
-    agk::pbr::loadmaterial("duck", "./data/models/Duck.gltf");
+
     agk::pbr::loadmodel("duck", "./data/models/Duck.gltf");
-    agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
+    agk::pbr::loadmaterial("duck", "./data/models/Duck.gltf");
 
-    auto *p_gltf_obj1 {new object {}};
-    p_gltf_obj1->transform.position = {0, 300, 0};
-    p_gltf_obj1->transform.scale = glm::vec3 {30.1343400f};
-    agk::world::create(p_gltf_obj1);
-
-    auto *p_gltf_obj2 {new object {}};
-    p_gltf_obj2->transform.position = {30 + 20.3240932848328093f, 300, 0};
-    p_gltf_obj2->transform.scale = glm::vec3 {0.51309824982374892f};
-    agk::world::create(p_gltf_obj2);
+    agk::pbr::loadmodel("scene", "./data/models/scene.gltf");
+    agk::pbr::loadmaterial("scene", "./data/models/scene.gltf");
 
     agk::pbr::loadmodel("dinossaur", "./data/models/Dinossaur.stl");
     agk::pbr::loadmaterial("dinossaur", new material {{
-        {"color", stream::vec(0.942f, 0.23434f, 0.21334f)},
+        {"color", stream::vec(0.942f, 0.23434f, 0.71334f)},
         {"metal", stream::i(false)},
-        {"rough", stream::f(0.20f)},
+        {"rough", stream::f(0.80)},
         {"doubleSided", stream::i(true)}
     }});
 
@@ -36,32 +29,23 @@ void client::scenes::starter::on_create() {
     agk::pbr::loadmaterial("monster", new material {{
         {"color", stream::vec(0.243534f, 0.43545f, 0.03f)},
         {"metal", stream::i(true)},
-        {"rough", stream::f(0.90f)},
+        {"rough", stream::f(0.20)},
         {"doubleSided", stream::i(true)}
     }});
 
-    //agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
-    //agk::pbr::loadmaterial("snowball", "./data/models/snow_03_4k.gltf");
-
-    //agk::pbr::loadmodel("woodball", "./data/models/wood_table_001_4k.gltf");
-    //agk::pbr::loadmaterial("woodball", "./data/models/wood_table_001_4k.gltf");
-
-    agk::pbr::loadmodel("toycar", "./data/models/ToyCar.gltf");
-    agk::pbr::loadmaterial("toycar", "./data/models/ToyCar.gltf");
-
-    p_gltf_obj2->assign("model.toycar", "material.toycar");
+    agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
 
     auto *p_dinossaur {new object {}};
-    p_dinossaur->assign("model.coconuttree", "material.dinossaur");
+    p_dinossaur->assign("model.scene", "material.scene");
     p_dinossaur->transform.position.y = 90.0f;
-    p_dinossaur->transform.scale = glm::vec3 {3.0f};
+    p_dinossaur->transform.scale = glm::vec3 {2.0f};
+    p_dinossaur->transform.rotation.x = -glm::radians(90.0f);
     agk::world::create(p_dinossaur);
 
-    auto *p_monster {new object {}};
-    p_monster->assign("model.monster", "material.monster");
-    p_monster->transform.position.y = 460.0f;
-    p_monster->transform.scale = glm::vec3 {2.0f};
-    agk::world::create(p_monster);
+    auto *p_gltf_obj1 {new object {}};
+    p_gltf_obj1->transform.position = {0, 300, 0};
+    p_gltf_obj1->transform.scale = glm::vec3 {3.1343400f};
+    agk::world::create(p_gltf_obj1);
 
     this->p_light_spot = new light {};
     this->p_light_spot->intensity = {300, 300, 300};
@@ -96,12 +80,8 @@ void client::scenes::starter::on_create() {
         starter->p_light_spot->update();
     }});
 
-    ekg::button("Reset Mascote", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
-        auto starter {static_cast<client::scenes::starter*>(p_data)};
-        auto &p {agk::world::currentplayer()};
-
-        starter->p_object_dino->transform.position = p->transform.position;
-        starter->p_object_dino->transform.rotation = p->transform.rotation;
+    ekg::button("Switch Time", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
+        agk::world::sky()->set_time(12 * sky::isnight, 0);
     }});
 
     agk::setfps(60, true);
@@ -192,7 +172,7 @@ void client::scenes::starter::on_create() {
             {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
-    agk::world::sky()->set_time(12, 0);
+    agk::world::sky()->set_time(18, 0);
     agk::world::currentplayer()->transform.position.y += 90;
     this->do_json_test();
 }

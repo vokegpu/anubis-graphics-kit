@@ -83,7 +83,7 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 h = normalize(l + v);
     float nDotH = dot(n, h);
     float lDotH = dot(l, h);
-    float nDotL = max(dot(n, l), 1.0f);
+    float nDotL = max(dot(n, l), 0.0f);
     float nDotV = dot(n, v);
 
     /* 0.25f == same as divid by 4 */

@@ -49,7 +49,7 @@ protected:
     bool process_gltf_meshes(std::vector<stream::mesh> &meshes);
 
     bool process_gltf_mtl(stream::mtl &mtl);
-    bool read_gltf_mesh_bytes(stream::mesh &mesh, stream::type mesh_type, nlohmann::json &value);
+    bool read_gltf_mesh_bytes(stream::mesh &mesh, stream::type stream_type, nlohmann::json &value);
 public:
     stream::format get_model_format(std::string_view path);
     bool read_mesh_filename(std::string &filename, std::string_view path);

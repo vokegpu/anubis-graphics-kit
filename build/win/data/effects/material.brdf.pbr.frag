@@ -56,7 +56,7 @@ vec3 shlickFresnel(float lDotH) {
     if (pbrMaterial.mSurface.x == 1) {
         f0 = pbrAlbedoColor;
     }
-    return f0 + (1 - f0) * pow(clamp(1.0f - lDotH, 0.0f, 1.0f), 5.0f);
+    return f0 + (1 - f0) * pow(1.0f - lDotH, 5.0f);
 }
 
 float geometrySmith(float dotProd) {
@@ -92,7 +92,7 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 h = normalize(v + l);
     float nDotH = dot(n, h);
     float lDotH = dot(l, h);
-    float nDotL = max(dot(n, l), 1.0f);
+    float nDotL = max(dot(n, l), 0.0f);
     float nDotV = dot(n, v);
 
     /* 0.25f == fracion of 4 */

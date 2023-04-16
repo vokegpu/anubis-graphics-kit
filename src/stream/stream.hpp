@@ -34,6 +34,23 @@ namespace stream {
         uint32_t material {};
         typedef struct pack { std::vector<glm::vec3> v {}, n {}; std::vector<glm::vec2> t {}; } pack;
     public:
+        void reserve(uint64_t size, stream::type _type) {
+            switch (_type) {
+            case stream::type::vertex:
+                this->v_list.reserve(size);
+                break;
+            case stream::type::texcoord:
+                this->t_list.reserve(size);
+                break;
+            case stream::type::normal:
+                this->n_list.reserve(size);
+                break;
+            case stream::type::index:
+                this->i_list.reserve(size);
+                break;
+            }
+        }
+
         bool contains(stream::type _type) {
             switch (_type) {
             case stream::type::vertex:

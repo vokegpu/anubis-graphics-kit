@@ -246,6 +246,10 @@ sky *&agk::world::sky() {
     return agk::app.p_sky;
 }
 
+streamparser &agk::stream::parser() {
+    return agk::app.parser;
+}
+
 bool agk::stream::load(std::vector<::stream::mesh> &meshes, std::string_view path) {
     return agk::app.parser.load_meshes(meshes, path);
 }

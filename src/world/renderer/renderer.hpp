@@ -23,7 +23,7 @@ protected:
     uint64_t loaded_light_size {};
     bool update_disabled_chunks {};
 
-    /* Chunking. */
+    /* C. */
     buffering buffer_chunk {};
     texturing texture_chunk {};
 
@@ -35,6 +35,8 @@ protected:
     framebuffering framebuffer_post_processing {};
     util::timing timing_hdr_cycle {};
     glm::vec2 camera_motion_delta {};
+
+    float previous_average_luminosity {};
 
     /* Debug. */
     buffering buffer_coordinate_debug {};

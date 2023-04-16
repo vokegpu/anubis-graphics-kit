@@ -154,29 +154,31 @@ void renderer::process_post_processing() {
     this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT);
 
     /* Draw the current frame buffer. */
-    float ave_lum {};
+    float ave_lum {this->previous_average_luminosity};
 
+    /*
+     * The HDR luminance is not accurate, but is calculated each 33 frames (1)
+     */
     if (agk::app.setting.enable_hdr.get_value() && util::reset_when(this->timing_hdr_cycle, 16)) {
         int32_t size {agk::app.screen_width * agk::app.screen_height};
 
         this->parallel_post_processing.memory_barrier = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-        this->parallel_post_processing.dispatch_groups[0] = 64;
-        this->parallel_post_processing.dispatch_groups[1] = 64;
-        this->parallel_post_processing.dimension[0] = agk::app.screen_width;
-        this->parallel_post_processing.dimension[1] = agk::app.screen_height;
+        this->parallel_post_processing.dispatch_groups[0] = 1;
+        this->parallel_post_processing.dispatch_groups[1] = 1;
+        this->parallel_post_processing.dimension[0] = 200;
+        this->parallel_post_processing.dimension[1] = 200;
 
         /* Pass current framebuffer to HDR luminance texture.  */
         this->parallel_post_processing.invoke();
         this->texture_post_processing.invoke(0, {GL_TEXTURE_2D, GL_FLOAT});
         this->texture_post_processing[0].id = this->framebuffer_post_processing[0].id_texture;
-        this->texture_post_processing[0].w = agk::app.screen_width;
-        this->texture_post_processing[0].h = agk::app.screen_height;
+        this->texture_post_processing[0].w = this->framebuffer_post_processing[0].w;
+        this->texture_post_processing[0].h = this->framebuffer_post_processing[0].h;
         this->texture_post_processing[0].channel = GL_RGBA;
         this->texture_post_processing[0].format = GL_RGBA32F;
         this->parallel_post_processing.attach(0, this->texture_post_processing[0], GL_READ_ONLY);
 
         this->texture_post_processing.invoke(1, {GL_TEXTURE_2D, GL_FLOAT});
-        this->texture_post_processing.send<float>({1, 1, 1}, nullptr, {GL_R32F, GL_RED});
         this->parallel_post_processing.attach(1, this->texture_post_processing[1], GL_WRITE_ONLY);
         this->parallel_post_processing.dispatch();
 
@@ -185,7 +187,11 @@ void renderer::process_post_processing() {
 
         float luminance {};
         this->texture_post_processing.get<float>(&luminance);
-        ave_lum = expf(luminance / static_cast<float>(size));
+        if (std::isnan(luminance)) {
+            luminance = this->previous_average_luminosity;
+        }
+
+        ave_lum = expf(luminance / (40000.0f));
 
         this->texture_post_processing.revoke();
         this->parallel_post_processing.revoke();
@@ -201,9 +207,13 @@ void renderer::process_post_processing() {
     glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_depth);
 
     this->shape_post_processing.invoke();
-    this->shape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
-    this->shape_post_processing.p_program->set_uniform_float("uHDR.uExposure", agk::app.setting.hdr_exposure.get_value());
     this->shape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", agk::app.setting.enable_hdr.get_value());
+
+    if (agk::app.setting.enable_hdr.get_value()) {
+        this->shape_post_processing.p_program->set_uniform_float("uHDR.uExposure", agk::app.setting.hdr_exposure.get_value());
+        this->shape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
+        this->previous_average_luminosity = ave_lum;
+    }
 
     this->shape_post_processing.p_program->set_uniform_bool("uMotionBlur.uEnabled", agk::app.setting.enable_motion_blur.get_value());
     if (agk::app.setting.enable_motion_blur.get_value()) {
@@ -282,8 +292,12 @@ void renderer::on_create() {
     this->shape_post_processing.link(&this->buffer_post_processing, (::asset::shader*) agk::asset::find("gpu/effects.processing.post"));
 
     this->parallel_post_processing.p_program = (::asset::shader*) agk::asset::find("gpu/scripts.hdr.luminance");
-    this->parallel_post_processing.dispatch_groups[0] = 32;
-    this->parallel_post_processing.dispatch_groups[1] = 32;
+    this->parallel_post_processing.dispatch_groups[0] = 1;
+    this->parallel_post_processing.dispatch_groups[1] = 1;
+
+    this->texture_post_processing.invoke(1, {GL_TEXTURE_2D, GL_FLOAT});
+    this->texture_post_processing.send<float>({1, 1, 1}, nullptr, {GL_R16F, GL_RED});
+    this->texture_post_processing.revoke();
 
     /* Process chunking buffer. */
     auto &mesh_chunk {agk::world::get()->chunk_mesh_data};

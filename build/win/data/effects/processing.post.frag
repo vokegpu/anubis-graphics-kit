@@ -74,7 +74,6 @@ void main() {
         float exposure = uHDR.uExposure;
 
         vec3 xyzCol = RGBtoXYZ * vec3(sum);
-
         float xyzSum = xyzCol.x + xyzCol.y + xyzCol.z;
         vec3 xyYCol = vec3(0.0f);
         if (xyzSum > 0.0f) xyYCol = vec3(xyzCol.x / xyzSum, xyzCol.y / xyzSum, xyzCol.y);
