@@ -7,7 +7,7 @@ but VokeGpu will keep update this engine project.
 If you are on Windows, please replace `"Unix Makefiles"` with `"MinGW Makefiles"`, run the command:  
 `cmake -S . -B ./cmake-build-debug/ -G "Unix Makefiles" && cmake --build ./cmake-build-debug/`
 
-The location of executables are on `./build/`, choose your system and run Anubis Graphics Kit.
+The location of executables is on `./build/`, choose your system and run Anubis Graphics Kit. Note: If the Linux version is broken, replace the Linux `./data` with `./build/win/data/`, most of the commits are tested in Windows.
 
 ---
 
