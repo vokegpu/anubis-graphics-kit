@@ -37,7 +37,7 @@ The scenes work as a "script" context, where you can create objects, load assets
 * ~~Photo-realism flowers, grass, trees, florest scenarios etc~~.
 
 One of most important rendering technique used here is the umbrella of physically based rendering (PBR), the BRDF or bidirectional reflectance distribution function is the lighting equation used to process all in scene models, also the terrain.  
-![Alt text](/splash/splash-brdf-1.png?raw=true)
+![Alt text](/splash/splash-brdf-3.png?raw=true)
 
 The BRDF make the terrain and world objects looks soft and realistic at some point, the visual effect also do subsurface scattering or known as BSSDF (bidirectional subsurface scattering distribution function) effect.
 ![Alt text](/splash/splash-brdf-2.png?raw=true)

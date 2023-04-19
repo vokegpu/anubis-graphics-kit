@@ -8,12 +8,6 @@
 #include <fstream>
 
 void client::scenes::starter::on_create() {
-    agk::pbr::loadmodel("box", "./data/models/box.gltf");
-    agk::pbr::loadmaterial("box", "./data/models/box.gltf");
-
-    agk::pbr::loadmodel("duck", "./data/models/Duck.gltf");
-    agk::pbr::loadmaterial("duck", "./data/models/Duck.gltf");
-
     agk::pbr::loadmodel("scene", "./data/models/scene.gltf");
     agk::pbr::loadmaterial("scene", "./data/models/scene.gltf");
 
@@ -35,16 +29,20 @@ void client::scenes::starter::on_create() {
 
     agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
 
+    agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
+    agk::pbr::loadmaterial("snowball", "./data/models/snow_03_4k.gltf");
+
     auto *p_dinossaur {new object {}};
     p_dinossaur->assign("model.scene", "material.scene");
-    p_dinossaur->transform.position.y = 90.0f;
+    p_dinossaur->transform.position.y = 270.0f;
     p_dinossaur->transform.scale = glm::vec3 {2.0f};
     p_dinossaur->transform.rotation.x = -glm::radians(90.0f);
     agk::world::create(p_dinossaur);
 
     auto *p_gltf_obj1 {new object {}};
     p_gltf_obj1->transform.position = {0, 300, 0};
-    p_gltf_obj1->transform.scale = glm::vec3 {3.1343400f};
+    p_gltf_obj1->transform.scale = glm::vec3 {30.1343400f};
+    p_gltf_obj1->assign("model.snowball", "material.snowball");
     agk::world::create(p_gltf_obj1);
 
     this->p_light_spot = new light {};
