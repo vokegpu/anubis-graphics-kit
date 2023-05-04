@@ -56,7 +56,7 @@ All detailed process are include in the article writen for this project, called 
 
 We only accept codes with the following case style:
 ```cpp
-// file_name.hpp
+// nocase.hpp
 
 namespace agk::cat {
   bool checksomethingcat();
