@@ -96,9 +96,13 @@ bool frustum::viewing(glm::mat4 &mat4x4_model, util::aabb &aabb) {
         if (glm::dot(this->planes[it].n, p) + this->planes[it].distance < -2.666) {
             count++;
         }
+
+        if (count > 1) {
+            return false;
+        }
     }
 
-    return count <= 4;
+    return true;
 }
 
 glm::mat4 &frustum::get_mvp() {

@@ -23,6 +23,7 @@ The scenes work as a "script" context, where you can create objects, load assets
 * Procedural heightmap generation.
 * Module system (possibility fast creation of features).
 * World time system with cycle of day and night (~~skybox, sun, moon & clouds too~~).
+* Sky stars (real-time).
 * High dynamic range (HDR).
 * Dynamic input system.
 * Frustum culling.
@@ -48,7 +49,7 @@ The GUI is powered by VokeGpu [ekg ui library](https://github.com/vokegpu/ekg-ui
 All detailed process are include in the article writen for this project, called Real-Time Terrain Generator by Rina.
 
 ![Alt text](/splash/terrain-hmap-connect-fixed-2.png)
-![img.png](/splash/terrain-1.png)
+![img.png](/splash/real-time-stars.png)
 ![img.png](/splash/terrain-2.png)
 ![img.png](/splash/terrain-3.png)
 

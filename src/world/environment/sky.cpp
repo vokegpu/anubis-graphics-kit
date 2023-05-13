@@ -21,7 +21,7 @@ void sky::on_create() {
     });
 
     stream::mesh tesseract_mesh {};
-    glm::vec3 tesseract_cubic_massive {32, 11, 64};
+    glm::vec3 tesseract_cubic_massive {32, 64, 16};
     glm::vec3 p {};
 
     glm::vec4 p4 {};

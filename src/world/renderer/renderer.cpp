@@ -146,6 +146,7 @@ void renderer::process_post_processing() {
     /* Invoke framebuffer and start collect screen buffers. */
     this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    agk::app.p_sky->on_render();
     this->process_terrain();
     this->process_environment();
     this->process_sky();
@@ -390,6 +391,7 @@ void renderer::on_render() {
         }
 
         case false: {
+            agk::app.p_sky->on_render();
             this->process_terrain();
             this->process_environment();
             this->process_editor();
