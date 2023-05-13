@@ -71,6 +71,10 @@ void agk::mainloop(imodule *p_scene_initial) {
     agk::task::registry(agk::app.p_world_service, agk::service::updateable | agk::service::listenable | agk::service::renderable);
     util::log("World client created");
 
+    agk::app.p_sky = new sky {};
+    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service::renderable);
+    util::log("World sky manager created");
+
     agk::app.p_renderer_service = new renderer {};
     agk::task::registry(agk::app.p_renderer_service, agk::service::updateable | agk::service::listenable | agk::service::renderable);
     util::log("World renderer created");
@@ -82,10 +86,6 @@ void agk::mainloop(imodule *p_scene_initial) {
     agk::app.p_curr_player = new entity {};
     agk::world::create(agk::app.p_curr_player);
     util::log("Main world player created");
-
-    agk::app.p_sky = new sky {};
-    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service::renderable);
-    util::log("World time manager created");
 
     agk::app.p_user_camera = new usercamera {};
     agk::task::registry(agk::app.p_user_camera, agk::service::updateable | agk::service::listenable);

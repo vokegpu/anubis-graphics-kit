@@ -86,18 +86,19 @@ bool frustum::viewing(glm::mat4 &mat4x4_model, util::aabb &aabb) {
     const glm::vec3 min {glm::vec3(mat4x4_model * glm::vec4(aabb.min, 1.0f))};
     const glm::vec3 max {glm::vec3(mat4x4_model * glm::vec4(aabb.max, 1.0f))};
     glm::vec3 p {};
+    int32_t count {};
 
     for (uint8_t it {}; it < 6; it++) {
         p.x = this->planes[it].n.x > 0.0f ? max.x : min.x;
         p.y = this->planes[it].n.y > 0.0f ? max.y : min.y;
         p.z = this->planes[it].n.z > 0.0f ? max.z : min.z;
 
-        if (glm::dot(this->planes[it].n, p) + this->planes[it].distance < -1.666) {
-            return false;
+        if (glm::dot(this->planes[it].n, p) + this->planes[it].distance < -2.666) {
+            count++;
         }
     }
 
-    return true;
+    return count <= 4;
 }
 
 glm::mat4 &frustum::get_mvp() {

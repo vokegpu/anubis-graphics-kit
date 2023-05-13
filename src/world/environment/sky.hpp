@@ -8,7 +8,7 @@
 
 class sky : public imodule {
 protected:
-    buffering buffer_sky_plane {};
+    buffering buffer_tesseract {};
 public:
     static bool isnight;
 
@@ -28,6 +28,7 @@ public:
     float ambient_light {};
     float ambient_next_light {};
     float ambient_luminance {};
+    float stars_luminance {};
 public:
     void set_time(int32_t hours, int32_t minutes);
     void on_create() override;

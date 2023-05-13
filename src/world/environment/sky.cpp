@@ -2,6 +2,7 @@
 #include "util/math.hpp"
 #include "agk.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/noise.hpp>
 
 bool sky::isnight {};
 
@@ -19,17 +20,70 @@ void sky::on_create() {
         "effects.sky.pbr", {{"./data/effects/sky.pbr.vert", GL_VERTEX_SHADER}, {"./data/effects/sky.pbr.frag", GL_FRAGMENT_SHADER}}
     });
 
-    auto &stream_parser {agk::stream::parser()};
-    stream::mesh plane_mesh {};
-    stream_parser.load_heightmap_mesh<uint8_t>(plane_mesh, nullptr, {20, 20, 0});
-    auto &v_list {plane_mesh.get_float_list(stream::type::vertex)};
+    stream::mesh tesseract_mesh {};
+    glm::vec3 tesseract_cubic_massive {32, 11, 64};
+    glm::vec3 p {};
 
-    this->buffer_sky_plane.stride[1] = plane_mesh.faces;
-    this->buffer_sky_plane.invoke();
-    this->buffer_sky_plane.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
-    this->buffer_sky_plane.send<float>(sizeof(float)*v_list.size(), v_list.data(), GL_STATIC_DRAW);
-    this->buffer_sky_plane.unbind();
-    this->buffer_sky_plane.revoke();
+    glm::vec4 p4 {};
+    glm::vec3 r {};
+
+    float noised {};
+    std::srand(std::time(nullptr));
+
+    for (int32_t x {}; x < tesseract_cubic_massive.x; x++) {
+        for (int32_t y {}; y < tesseract_cubic_massive.y; y++) {
+            for (int32_t z {}; z < tesseract_cubic_massive.z; z++) {
+                p.x = static_cast<float>(x) / static_cast<float>(tesseract_cubic_massive.x);
+                p.y = static_cast<float>(y) / static_cast<float>(tesseract_cubic_massive.y);
+                p.z = static_cast<float>(z) / static_cast<float>(tesseract_cubic_massive.z);
+
+                p.x -= ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.z)) / static_cast<float>(tesseract_cubic_massive.z * 2.0f));
+                p.y -= ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.z)) / static_cast<float>(tesseract_cubic_massive.z * 2.0f));
+                p.z -= ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.z)) / static_cast<float>(tesseract_cubic_massive.z * 2.0f));
+
+                noised = glm::simplex(p);
+                p.x += noised;
+
+                noised = glm::simplex(p);
+                p.y += noised;
+
+                noised = glm::simplex(p);
+                p.z += noised;
+
+                p4.x = p.y;
+                p4.y = p.z;
+                p4.z = p.x;
+                p4.w = ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.z)) / static_cast<float>(tesseract_cubic_massive.z * 2.0f));
+
+                noised = glm::simplex(-p4);
+                p += noised;
+
+                //r.x = ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.x)) / static_cast<float>(tesseract_cubic_massive.x * 8.0f));
+                //r.y = ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.y)) / static_cast<float>(tesseract_cubic_massive.y * 8.0f));
+                //r.z = ((std::rand() % static_cast<int32_t>(tesseract_cubic_massive.z)) / static_cast<float>(tesseract_cubic_massive.z * 8.0f));
+
+                //r = (r / 2.0f) - r;
+                //p += r;
+
+                tesseract_mesh.append(p, stream::type::vertex);
+                tesseract_mesh.faces++;
+            }
+        }
+    }
+
+    auto &v_list {tesseract_mesh.get_float_list(stream::type::vertex)};
+
+    this->buffer_tesseract.primitive[0] = GL_POINTS;
+    this->buffer_tesseract.stride[0] = 0;
+    this->buffer_tesseract.stride[1] = v_list.size();
+    this->buffer_tesseract.invoke();
+    this->buffer_tesseract.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_tesseract.send<float>(sizeof(float)*v_list.size(), v_list.data(), GL_STATIC_DRAW);
+    this->buffer_tesseract.attach(0, 3, {0, 0});
+    this->buffer_tesseract.unbind();
+    this->buffer_tesseract.revoke();
+
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
 void sky::on_destroy() {
@@ -109,20 +163,38 @@ void sky::on_update() {
 }
 
 void sky::on_render() {
+    if (this->is_night) {
+        this->stars_luminance += 0.001f;
+    } else {
+        this->stars_luminance -= 0.01f;
+    }
+
     auto *&p_camera {agk::world::currentcamera()};
     auto *p_program {(::asset::shader*) agk::asset::find("gpu/effects.sky.pbr")};
 
-    glm::mat4 mat4x4trs {1.0f};
-    mat4x4trs = glm::translate(mat4x4trs, {0.0f, 0.0f, 0.0f});
-    mat4x4trs = glm::scale(mat4x4trs, {200.0f, 0.0f, 200.0f});
-    mat4x4trs = p_camera->get_mvp() * mat4x4trs;
+    float clip_dist {agk_perspective_clip_distance / 128.0f};
+    float mid_clip_dist {clip_dist / 2.0f};
+
+    glm::vec3 tesseract_pos {p_camera->transform.position};
+    tesseract_pos.x -= mid_clip_dist;
+    tesseract_pos.y = -1000.0f;
+    tesseract_pos.z -= mid_clip_dist;
+
+    glm::mat4 mat4x4rts {1.0f};
+
+    //mat4x4rts = glm::rotate(mat4x4rts, glm::radians(p_camera->transform.rotation.x), {1.0f, 0.0f, 0.0f});
+    //mat4x4rts = glm::rotate(mat4x4rts, glm::radians(p_camera->transform.rotation.y), {0.0f, 1.0f, 0.0f});
+    mat4x4rts = glm::translate(mat4x4rts, tesseract_pos);
+    mat4x4rts = glm::scale(mat4x4rts, {clip_dist, clip_dist, clip_dist});
+    mat4x4rts = p_camera->get_mvp() * mat4x4rts;
 
     p_program->invoke();
-    p_program->set_uniform_mat4("uMVP", &mat4x4trs[0][0]);
+    p_program->set_uniform_mat4("uMVP", &mat4x4rts[0][0]);
+    p_program->set_uniform_float("uStarsLuminance", this->stars_luminance);
 
-    this->buffer_sky_plane.invoke();
-    this->buffer_sky_plane.draw();
-    this->buffer_sky_plane.revoke();
+    this->buffer_tesseract.invoke();
+    this->buffer_tesseract.draw();
+    this->buffer_tesseract.revoke();
 
     p_program->revoke();
 }

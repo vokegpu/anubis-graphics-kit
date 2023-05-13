@@ -28,6 +28,7 @@ void client::scenes::starter::on_create() {
     }});
 
     agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
+    agk::pbr::loadmodel("monster", "./data/models/Alien Animal.obj");
 
     agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
     agk::pbr::loadmaterial("snowball", "./data/models/snow_03_4k.gltf");
@@ -44,6 +45,14 @@ void client::scenes::starter::on_create() {
     p_gltf_obj1->transform.scale = glm::vec3 {30.1343400f};
     p_gltf_obj1->assign("model.snowball", "material.snowball");
     agk::world::create(p_gltf_obj1);
+
+
+    auto *p_monster {new object {}};
+    p_monster->assign("model.monster", "material.monster");
+    p_monster->transform.position.y = 470.0f;
+    p_monster->transform.scale = glm::vec3 {10.0f};
+    p_monster->transform.rotation.x = -glm::radians(90.0f);
+    agk::world::create(p_monster);
 
     this->p_light_spot = new light {};
     this->p_light_spot->intensity = {300, 300, 300};
@@ -68,7 +77,7 @@ void client::scenes::starter::on_create() {
     ekg::gl_version = "#version 450";
     ekg::init(agk::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
 
-    auto frame = ekg::frame("Hello", {20, 20}, {330, 400});
+    auto frame = ekg::frame("Hello", {20, 600}, {620, 330});
     frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
     frame->set_drag(ekg::dock::top);
 
@@ -117,7 +126,7 @@ void client::scenes::starter::on_create() {
     ekg::label("FBM Octaves:", ekg::dock::fill | ekg::dock::next);
     this->p_octaves = ekg::slider("Octaves", 5, 0, 30, ekg::dock::fill);
 
-    auto p_frame {ekg::frame("hello vc é fofo", {500, 20}, {300, 200})};
+    auto p_frame {ekg::frame("hello vc é fofo", {1200, 600}, {300, 200})};
     p_frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::dock::right);
     p_frame->set_drag(ekg::dock::top);
 
