@@ -72,70 +72,72 @@ void client::scenes::starter::on_create() {
     frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
     frame->set_drag(ekg::dock::top);
 
-    ekg::button("Reset light-spot", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback", this, [](void *p_data) {
+    ekg::button("Reset light-spot", ekg::dock::fill)->set_callback(new ekg::cpu::event {"callback", this, [](void *p_data) {
         auto starter {static_cast<client::scenes::starter*>(p_data)};
         starter->p_light_spot->transform.position = agk::world::currentplayer()->transform.position;
         starter->p_light_spot->update();
     }});
 
-    ekg::button("Switch Time", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
+    ekg::button("Switch Time", ekg::dock::fill)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
         agk::world::sky()->set_time(12 * sky::isnight, 0);
     }});
 
     agk::setfps(60, true);
-    ekg::button("Vsync", ekg::dock::top | ekg::dock::left)->set_callback(new ekg::cpu::event {"callback23", nullptr, [](void *p_data) {
+    ekg::button("Vsync", ekg::dock::fill)->set_callback(new ekg::cpu::event {"callback23", nullptr, [](void *p_data) {
         agk::setfps(60, !agk::app.vsync);
     }});
 
-    ekg::label("Light Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next)->set_font_size(ekg::font::small);
-    this->p_light_intensity = ekg::slider("LightIntensity", 0.233f, 0.0f, 4024.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("Light Intensity:", ekg::dock::fill | ekg::dock::next)->set_font_size(ekg::font::small);
+    this->p_light_intensity = ekg::slider("LightIntensity", 0.233f, 0.0f, 4024.0f, ekg::dock::fill);
     this->p_light_intensity->set_precision(2);
 
-    ekg::label("Chunk Range:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_chunk_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::top | ekg::dock::left);
+    ekg::label("Chunk Range:", ekg::dock::fill | ekg::dock::next);
+    this->p_chunk_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::fill);
 
-    ekg::label("Fog Dist:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_fog_distance = ekg::slider("FogDist", 1024.0f * 4, 0.0f, 1024.0f * 16, ekg::dock::top | ekg::dock::left);
+    ekg::label("Fog Dist:", ekg::dock::fill | ekg::dock::next);
+    this->p_fog_distance = ekg::slider("FogDist", 1024.0f * 4, 0.0f, 1024.0f * 16, ekg::dock::fill);
     this->p_fog_distance->set_precision(2);
 
-    ekg::label("FBM Frequency:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_frequency = ekg::slider("Frequency", 0.34105f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("FBM Frequency:", ekg::dock::fill | ekg::dock::next);
+    this->p_frequency = ekg::slider("Frequency", 0.34105f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_frequency->set_precision(3);
 
-    ekg::label("FBM Amplitude:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_amplitude = ekg::slider("Amplitude", 0.18874f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("FBM Amplitude:", ekg::dock::fill | ekg::dock::next);
+    this->p_amplitude = ekg::slider("Amplitude", 0.18874f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_amplitude->set_precision(3);
 
-    ekg::label("FBM Persistence:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_persistence = ekg::slider("Persistence", 0.28834f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("FBM Persistence:", ekg::dock::fill | ekg::dock::next);
+    this->p_persistence = ekg::slider("Persistence", 0.28834f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_persistence->set_precision(3);
     
-    ekg::label("FBM Lacunarity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_lacunarity = ekg::slider("Lacunarity", 0.29888f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("FBM Lacunarity:", ekg::dock::fill | ekg::dock::next);
+    this->p_lacunarity = ekg::slider("Lacunarity", 0.29888f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_lacunarity->set_precision(3);
 
-    ekg::label("FBM Octaves:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_octaves = ekg::slider("Octaves", 5, 0, 30, ekg::dock::top | ekg::dock::left);
+    ekg::label("FBM Octaves:", ekg::dock::fill | ekg::dock::next);
+    this->p_octaves = ekg::slider("Octaves", 5, 0, 30, ekg::dock::fill);
 
     auto p_frame {ekg::frame("hello vc é fofo", {500, 20}, {300, 200})};
     p_frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::dock::right);
     p_frame->set_drag(ekg::dock::top);
 
-    this->p_enable_post_processing = ekg::checkbox("Post processing effects", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    this->p_enable_post_processing = ekg::checkbox("Post processing effects", ekg::dock::fill);
     this->p_enable_post_processing->set_value(true);
 
-    ekg::label("HDR:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_enable_hdr = ekg::checkbox("Enable", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    ekg::label("Exposure:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_hdr_exposure = ekg::slider("Exposure", 0.43f, 0.0f, 3.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("HDR:", ekg::dock::fill | ekg::dock::next);
+    this->p_enable_hdr = ekg::checkbox("Enable", ekg::dock::fill);
+    ekg::label("Exposure:", ekg::dock::fill | ekg::dock::next);
+    this->p_hdr_exposure = ekg::slider("Exposure", 0.43f, 0.0f, 3.0f, ekg::dock::fill);
     this->p_hdr_exposure->set_precision(2);
 
-    ekg::label("Motion Blur:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::top | ekg::dock::left | ekg::dock::next);
+    ekg::label("Motion Blur:", ekg::dock::fill | ekg::dock::next);
+    this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::fill);
     this->p_enable_motion_blur->set_value(true);
-    ekg::label("Intensity:", ekg::dock::top | ekg::dock::left | ekg::dock::next);
-    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.351f, 0.0f, 1.0f, ekg::dock::top | ekg::dock::left);
+    ekg::label("Intensity:", ekg::dock::fill | ekg::dock::next);
+    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.351f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_motion_blur_intensity->set_precision(2);
+
+    ekg::debug = false;
 
     float mesh[] {
         -0.2f, -0.2f,

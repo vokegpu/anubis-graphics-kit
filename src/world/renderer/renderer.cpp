@@ -427,6 +427,12 @@ void renderer::on_event_refresh_environment(SDL_Event &sdl_event) {
     auto *p_to_remove {static_cast<bool*>(sdl_event.user.data1)};
     auto *p_obj_id {static_cast<int32_t*>(sdl_event.user.data2)};
 
+    if (p_obj_id == nullptr || p_to_remove == nullptr) {
+        delete p_obj_id;
+        delete p_to_remove;
+        return;
+    }
+
     object *&p_obj_target {world->find_object(*p_obj_id)};
     if (*p_to_remove) {
         this->obj_draw_list.clear();
