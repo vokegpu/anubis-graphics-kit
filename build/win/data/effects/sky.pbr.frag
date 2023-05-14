@@ -6,6 +6,9 @@ in vec3 vPos;
 in vec2 vTexCoord;
 in vec3 vNormal;
 in float vStarsLuminance;
+in flat int vStarsRendering;
+
+uniform vec3 uColor;
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -106,12 +109,34 @@ float snoise(vec2 v)  {
     return n;
 }
 
-void main() {
-    float f = noise(vec2(length((rand(vec2(-22.0f, 5000.0f))) * 0.1 - (-vPos.zz))));
+#define LIGHT_ASTROO_PROBABILITY 0.7
+#define SUN_LIGHT_INTERPOLATION_FACTOR 6.0
 
-    if (f < 0.7f) {
-        vFragColor = vec4(0.5f - (noise(vec2(length((rand(vec2(-22.0f, 666.0f))) * 0.2 - (-vPos.zy))))), f, noise(vec2(length((rand(vec2(-22.0f, 40.0f))) * 0.1 - (-vPos.zy)))), 1.0f);
+void main() {
+    if (vStarsRendering == 0) {
+        vFragColor = vec4(uColor, 1.0f);
     } else {
-        vFragColor = vec4(1.0f);
+        float f = noise(vec2(length((rand(vec2(-22.0f, 5000.0f))) * 0.1 - (-vPos.zz))));
+
+        float interpFactor = -1.0f;
+        if (vStarsLuminance < SUN_LIGHT_INTERPOLATION_FACTOR) {
+            interpFactor = vStarsLuminance / SUN_LIGHT_INTERPOLATION_FACTOR;
+        }
+
+        if (interpFactor > 0.0f && interpFactor < 0.2f && f < LIGHT_ASTROO_PROBABILITY) {
+            discard;
+        } else if (interpFactor > 0.0f && interpFactor > 0.2f && rand(vec2(vPos.z, LIGHT_ASTROO_PROBABILITY)) < 0.5f) {
+            discard;
+        }
+
+        if (f < LIGHT_ASTROO_PROBABILITY) {
+            vFragColor = vec4(0.5f - (noise(vec2(length((rand(vec2(-22.0f, 666.0f))) * 0.2 - (-vPos.zy))))), f, noise(vec2(length((rand(vec2(-22.0f, 40.0f))) * 0.1 - (-vPos.zy)))), 1.0f);
+        } else {
+            vFragColor = vec4(1.0f);
+        }
+
+        if (interpFactor > 0.0f) {
+            vFragColor = mix(vFragColor, vec4(1.0f), 1.0f - interpFactor);
+        }
     }
 }

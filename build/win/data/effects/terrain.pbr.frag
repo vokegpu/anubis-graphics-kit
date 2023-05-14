@@ -19,6 +19,7 @@ uniform vec3 uCameraPos;
 uniform float uAmbientColor;
 uniform float uAmbientLuminance;
 uniform int uLightAmount;
+uniform bool uIsNight;
 
 uniform struct {
     vec4 uTexCoord;
@@ -109,7 +110,16 @@ void main() {
     }
 
     mCurrentMaterialRGB = texture(uTextureAtlas, transform2Modal(uAtlas[choosenType].uTexCoord)).rgb;
-    vec3 sum = (mCurrentMaterialRGB * g) * (uAmbientColor / uAmbientLuminance);
+    vec3 sum = mCurrentMaterialRGB;
+    float ambientColor = uAmbientColor;
+
+    if (uIsNight) {
+        vec3 nightColor = vec3(0.0156862745f, 0.02745098039f, 0.12549019607f);
+        sum = mix(mCurrentMaterialRGB, nightColor, 1.0f - (uAmbientColor / uAmbientLuminance));
+        ambientColor = clamp(uAmbientColor, 0.4f, 1.0f);
+    }
+
+    sum = (sum * g) * (ambientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
     vec3 v = normalize(uCameraPos - vPosModel);

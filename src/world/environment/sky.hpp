@@ -5,12 +5,15 @@
 #include "util/env.hpp"
 #include <glm/glm.hpp>
 #include "gpu/gpu_buffer.hpp"
+#include "world/pbr/model.hpp"
+#include "gpu/gpu_framebuffer.hpp"
 
 class sky : public imodule {
 protected:
     buffering buffer_tesseract {};
 public:
     static bool isnight;
+    static uint64_t hour;
 
     util::timing delta_ms_real {};
     uint64_t delta_day_virtual {};
@@ -21,6 +24,7 @@ public:
     glm::vec3 color_night {};
     glm::vec3 color_day {};
     glm::vec3 color_from_sky {};
+    model *p_model_moon {};
 
     bool is_night {};
     float day_ambient_light {};
@@ -29,6 +33,8 @@ public:
     float ambient_next_light {};
     float ambient_luminance {};
     float stars_luminance {};
+
+    framebuffering framebuffer_sky_bloom {}; 
 public:
     void set_time(int32_t hours, int32_t minutes);
     void on_create() override;

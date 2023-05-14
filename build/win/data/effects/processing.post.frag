@@ -34,10 +34,17 @@ uniform struct {
     mat4 uPreviousPerspectiveView;
 } uMotionBlur;
 
+uniform bool uSkyPostProcessing;
+
 void main() {
     vec2 size = textureSize(uTexture, 0);
     vec2 fragCoord = gl_FragCoord.xy / size;
     vec4 sum = vec4(0.0f);
+
+    if (uSkyPostProcessing) {
+        vFragColor = texture(uTexture, fragCoord);
+        return;
+    }
 
     if (uMotionBlur.uEnabled && uMotionBlur.uCameraRotated) {
         vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, texture(uDepthSampler, fragCoord).r / 1.0f, 1.0f);

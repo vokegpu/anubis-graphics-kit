@@ -20,6 +20,7 @@ void renderer::process_terrain() {
     float dist {};
 
     p_program_pbr->invoke();
+    p_program_pbr->set_uniform_bool("uIsNight", sky::isnight);
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uMaterial.uColor", &color[0]);
@@ -87,6 +88,7 @@ void renderer::process_environment() {
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
 
     p_program_pbr->invoke();
+    p_program_pbr->set_uniform_bool("uIsNight", sky::isnight);
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", agk::app.p_sky->ambient_light);
@@ -146,7 +148,19 @@ void renderer::process_post_processing() {
     /* Invoke framebuffer and start collect screen buffers. */
     this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    agk::app.p_sky->on_render();
+    glCullFace(GL_FRONT);
+
+    this->shape_post_processing.invoke();
+    this->shape_post_processing.p_program->set_uniform_bool("uSkyPostProcessing", true);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, agk::app.p_sky->framebuffer_sky_bloom[0].id_texture);
+
+    this->shape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
+    this->shape_post_processing.revoke();
+
+    glCullFace(GL_BACK);
+
     this->process_terrain();
     this->process_environment();
     this->process_sky();
@@ -208,6 +222,7 @@ void renderer::process_post_processing() {
     glBindTexture(GL_TEXTURE_2D, this->framebuffer_post_processing[0].id_depth);
 
     this->shape_post_processing.invoke();
+    this->shape_post_processing.p_program->set_uniform_bool("uSkyPostProcessing", false);
     this->shape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", agk::app.setting.enable_hdr.get_value());
 
     if (agk::app.setting.enable_hdr.get_value()) {
@@ -391,7 +406,19 @@ void renderer::on_render() {
         }
 
         case false: {
-            agk::app.p_sky->on_render();
+            this->shape_post_processing.invoke();
+            this->shape_post_processing.p_program->set_uniform_bool("uSkyPostProcessing", true);
+
+            glCullFace(GL_FRONT);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, agk::app.p_sky->framebuffer_sky_bloom[0].id_texture);
+
+            this->shape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
+            this->shape_post_processing.revoke();
+
+            glCullFace(GL_BACK);
+
             this->process_terrain();
             this->process_environment();
             this->process_editor();

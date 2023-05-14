@@ -31,6 +31,7 @@ uniform float uAmbientColor;
 uniform int uLightAmount;
 uniform float uGamma = 1.0f;
 uniform int uMaterialIndex;
+uniform bool uIsNight;
 
 Material pbrMaterial;
 float pbrRoughnessFactor;
@@ -126,6 +127,11 @@ void main() {
         n = normalize(tbnMatrix * pbrNormalColor);
     } else {
         n = normalize(vNormal);
+    }
+
+    if (uIsNight) {
+        vec3 nightColor = vec3(0.0156862745f, 0.02745098039f, 0.12549019607f);
+        pbrAlbedoColor = mix(pbrAlbedoColor, nightColor, uAmbientColor);
     }
 
     vec3 sum = pbrAlbedoColor * uAmbientColor;

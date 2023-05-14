@@ -18,6 +18,7 @@ namespace client::scenes {
         object *p_object_dino {};
         uint64_t last_display_fps {};
 
+        ekg::ui::slider *p_time_now {};
         ekg::ui::slider *p_light_intensity {};
         ekg::ui::slider *p_chunk_range {};
         ekg::ui::slider *p_fog_distance {};

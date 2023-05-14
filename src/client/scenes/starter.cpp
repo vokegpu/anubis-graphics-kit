@@ -46,11 +46,10 @@ void client::scenes::starter::on_create() {
     p_gltf_obj1->assign("model.snowball", "material.snowball");
     agk::world::create(p_gltf_obj1);
 
-
     auto *p_monster {new object {}};
-    p_monster->assign("model.monster", "material.monster");
-    p_monster->transform.position.y = 470.0f;
-    p_monster->transform.scale = glm::vec3 {10.0f};
+    p_monster->assign("model.coconuttree", "material.monster");
+    p_monster->transform.position.y = 720.0f + 500.0f;
+    p_monster->transform.scale = glm::vec3 {720.0f};
     p_monster->transform.rotation.x = -glm::radians(90.0f);
     agk::world::create(p_monster);
 
@@ -87,21 +86,21 @@ void client::scenes::starter::on_create() {
         starter->p_light_spot->update();
     }});
 
-    ekg::button("Switch Time", ekg::dock::fill)->set_callback(new ekg::cpu::event {"callback22", this, [](void *p_data) {
-        agk::world::sky()->set_time(12 * sky::isnight, 0);
-    }});
-
     agk::setfps(60, true);
     ekg::button("Vsync", ekg::dock::fill)->set_callback(new ekg::cpu::event {"callback23", nullptr, [](void *p_data) {
         agk::setfps(60, !agk::app.vsync);
     }});
+
+    ekg::label("Time Now:", ekg::dock::fill | ekg::dock::next);
+    this->p_time_now = ekg::slider("Time", 17, 0, 23, ekg::dock::fill);
+    this->p_time_now->set_precision(0);
 
     ekg::label("Light Intensity:", ekg::dock::fill | ekg::dock::next)->set_font_size(ekg::font::small);
     this->p_light_intensity = ekg::slider("LightIntensity", 0.233f, 0.0f, 4024.0f, ekg::dock::fill);
     this->p_light_intensity->set_precision(2);
 
     ekg::label("Chunk Range:", ekg::dock::fill | ekg::dock::next);
-    this->p_chunk_range = ekg::slider("ChunkRange", 3, 1, 16, ekg::dock::fill);
+    this->p_chunk_range = ekg::slider("ChunkRange", 6, 1, 16, ekg::dock::fill);
 
     ekg::label("Fog Dist:", ekg::dock::fill | ekg::dock::next);
     this->p_fog_distance = ekg::slider("FogDist", 1024.0f * 4, 0.0f, 1024.0f * 16, ekg::dock::fill);
@@ -209,6 +208,12 @@ void client::scenes::starter::on_update() {
         agk::world::currentplayer()->speed_base -= 0.5f;
     }
 
+    if (this->p_time_now->is_dragging()) {
+        agk::world::sky()->set_time(static_cast<int32_t>(this->p_time_now->get_value()), 0);
+    } else if (static_cast<uint64_t>(this->p_time_now->get_value()) != sky::hour) {
+        this->p_time_now->set_value(static_cast<float>(sky::hour));
+    }
+
     if (this->last_display_fps != agk::app.display_fps) {
         std::string title {"Anubis Graphics Kit "};
         title += std::to_string(agk::app.display_fps);
@@ -234,8 +239,7 @@ void client::scenes::starter::on_update() {
 
     glm::vec2 fog_bounding {this->p_fog_distance->get_value() * 0.5f, this->p_fog_distance->get_value()};
     agk::app.setting.fog_bounding.set_value(fog_bounding);
-    if (agk_perspective_clip_distance != fog_bounding.y) {
-        agk_perspective_clip_distance = fog_bounding.y;
+    if (this->p_fog_distance->is_dragging()) {
         agk::app.p_curr_camera->process_perspective(agk::app.screen_width, agk::app.screen_height);
     }
 

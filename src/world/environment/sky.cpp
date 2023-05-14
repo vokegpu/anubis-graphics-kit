@@ -5,6 +5,7 @@
 #include <glm/gtc/noise.hpp>
 
 bool sky::isnight {};
+uint64_t sky::hour {};
 
 void sky::on_create() {
     /* I made some tests with colors and these colors seems cool to simulate sky world time. */
@@ -83,6 +84,13 @@ void sky::on_create() {
     this->buffer_tesseract.unbind();
     this->buffer_tesseract.revoke();
 
+    agk::pbr::loadmodel("skymoon", "./data/models/moon.stl");
+    this->p_model_moon = (model*) agk::pbr::find("model.skymoon.0");
+
+    this->framebuffer_sky_bloom.invoke(0);
+    this->framebuffer_sky_bloom.send_depth({agk::app.screen_width, agk::app.screen_height, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
+    this->framebuffer_sky_bloom.revoke();
+
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
@@ -90,6 +98,16 @@ void sky::on_destroy() {
 }
 
 void sky::on_event(SDL_Event &sdl_event) {
+    switch (sdl_event.type) {
+        case SDL_WINDOWEVENT: {
+            if (sdl_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                this->framebuffer_sky_bloom.invoke(0);
+                this->framebuffer_sky_bloom.send_depth({sdl_event.window.data1, sdl_event.window.data2, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
+                this->framebuffer_sky_bloom.revoke();
+            }
+            break;
+        }
+    }
 }
 
 void sky::on_update() {
@@ -160,19 +178,20 @@ void sky::on_update() {
     this->ambient_light = this->ambient_light + (this->ambient_next_light - this->ambient_light) * agk::dt;
     agk::app.setting.fog_color.set_value(this->color_from_sky);
     sky::isnight = this->is_night;
+    sky::hour = this->delta_hour_virtual;
 }
 
 void sky::on_render() {
     if (this->is_night) {
         this->stars_luminance += 0.001f;
     } else {
-        this->stars_luminance -= 0.01f;
+        this->stars_luminance = glm::clamp(this->stars_luminance - 0.001f, 0.0f, 6.0f);
     }
 
     auto *&p_camera {agk::world::currentcamera()};
     auto *p_program {(::asset::shader*) agk::asset::find("gpu/effects.sky.pbr")};
 
-    float clip_dist {agk_perspective_clip_distance / 128.0f};
+    float clip_dist {256000.0f};
     float mid_clip_dist {clip_dist / 2.0f};
 
     glm::vec3 tesseract_pos {p_camera->transform.position};
@@ -181,22 +200,55 @@ void sky::on_render() {
     tesseract_pos.z -= mid_clip_dist;
 
     glm::mat4 mat4x4rts {1.0f};
+    glm::mat4 mat4x4projection {p_camera->get_mvp()};
 
-    //mat4x4rts = glm::rotate(mat4x4rts, glm::radians(p_camera->transform.rotation.x), {1.0f, 0.0f, 0.0f});
-    //mat4x4rts = glm::rotate(mat4x4rts, glm::radians(p_camera->transform.rotation.y), {0.0f, 1.0f, 0.0f});
     mat4x4rts = glm::translate(mat4x4rts, tesseract_pos);
     mat4x4rts = glm::scale(mat4x4rts, {clip_dist, clip_dist, clip_dist});
-    mat4x4rts = p_camera->get_mvp() * mat4x4rts;
+    mat4x4rts = mat4x4projection * mat4x4rts;
+
+    this->framebuffer_sky_bloom.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     p_program->invoke();
     p_program->set_uniform_mat4("uMVP", &mat4x4rts[0][0]);
     p_program->set_uniform_float("uStarsLuminance", this->stars_luminance);
+    p_program->set_uniform_bool("uStarsRendering", true);
 
     this->buffer_tesseract.invoke();
     this->buffer_tesseract.draw();
     this->buffer_tesseract.revoke();
 
+    /*
+     * z+ == west
+     * z- == east
+     * 
+     * x+ == north
+     * x- == south
+     */
+    glm::vec3 moon_color {0.6667f, 0.6667f, 0.6667f};
+    glm::vec3 moon_pos {p_camera->transform.position};
+
+    float dist {mid_clip_dist / 10.0f};
+
+    moon_pos.z -= dist;
+    moon_pos.y += 9048.0f;
+
+    dist /= 8;
+
+    mat4x4rts = glm::mat4(1.0f);
+    mat4x4rts = glm::translate(mat4x4rts, moon_pos);
+    mat4x4rts = glm::scale(mat4x4rts, {dist, dist, dist});
+    mat4x4rts = mat4x4projection * mat4x4rts;
+
+    p_program->set_uniform_vec3("uColor", &moon_color[0]);
+    p_program->set_uniform_mat4("uMVP", &mat4x4rts[0][0]);
+    p_program->set_uniform_bool("uStarsRendering", false);
+
+    this->p_model_moon->buffer.invoke();
+    this->p_model_moon->buffer.draw();
+    this->p_model_moon->buffer.revoke();
+
     p_program->revoke();
+    this->framebuffer_sky_bloom.revoke(GL_COLOR_BUFFER_BIT);
 }
 
 void sky::set_time(int32_t hours, int32_t minutes) {

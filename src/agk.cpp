@@ -72,7 +72,7 @@ void agk::mainloop(imodule *p_scene_initial) {
     util::log("World client created");
 
     agk::app.p_sky = new sky {};
-    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable);
+    agk::task::registry(agk::app.p_sky, agk::service::updateable | agk::service::listenable | agk::service::renderable);
     util::log("World sky manager created");
 
     agk::app.p_renderer_service = new renderer {};
