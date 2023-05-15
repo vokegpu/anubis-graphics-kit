@@ -17,6 +17,12 @@ void sky::on_create() {
     this->night_ambient_light = 0.01f;
     this->set_time(6, 0);
 
+    this->p_astroo_light = new light {};
+    this->p_astroo_light->directional = true;
+    this->p_astroo_light->intensity = {0.0f, 0.0f, 0.08117647058827604f};
+    this->p_astroo_light->update();
+    agk::world::create(this->p_astroo_light); 
+
     agk::asset::load(new ::asset::shader {
         "effects.sky.pbr", {{"./data/effects/sky.pbr.vert", GL_VERTEX_SHADER}, {"./data/effects/sky.pbr.frag", GL_FRAGMENT_SHADER}}
     });
@@ -85,7 +91,8 @@ void sky::on_create() {
     this->buffer_tesseract.revoke();
 
     agk::pbr::loadmodel("skymoon", "./data/models/moon.stl");
-    this->p_model_moon = (model*) agk::pbr::find("model.skymoon.0");
+    agk::pbr::loadmodel("snowball", "./data/models/wood_table_001_4k.gltf");
+    this->p_model_moon = (model*) agk::pbr::find("model.snowball.0");
 
     this->framebuffer_sky_bloom.invoke(0);
     this->framebuffer_sky_bloom.send_depth({agk::app.screen_width, agk::app.screen_height, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
@@ -185,7 +192,7 @@ void sky::on_render() {
     if (this->is_night) {
         this->stars_luminance += 0.001f;
     } else {
-        this->stars_luminance = glm::clamp(this->stars_luminance - 0.001f, 0.0f, 6.0f);
+        this->stars_luminance = glm::clamp(this->stars_luminance - 0.001f, 0.0f, 2.0f);
     }
 
     auto *&p_camera {agk::world::currentcamera()};
@@ -213,6 +220,9 @@ void sky::on_render() {
     p_program->set_uniform_float("uStarsLuminance", this->stars_luminance);
     p_program->set_uniform_bool("uStarsRendering", true);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     this->buffer_tesseract.invoke();
     this->buffer_tesseract.draw();
     this->buffer_tesseract.revoke();
@@ -226,15 +236,22 @@ void sky::on_render() {
      */
     glm::vec3 moon_color {0.6667f, 0.6667f, 0.6667f};
     glm::vec3 moon_pos {p_camera->transform.position};
+    glm::vec3 moon_light_dir {0.0f, 0.50f, 0.90f};
 
+    float factor {static_cast<float>(this->delta_min_virtual) / 1440};
     float dist {mid_clip_dist / 10.0f};
 
+    this->moon_pos_time.z = this->moon_pos_time.z + ((factor * 360.0f) - this->moon_pos_time.z) * agk::dt;
     moon_pos.z -= dist;
-    moon_pos.y += 9048.0f;
-
-    dist /= 8;
+    moon_pos.y += 9808.0f;
+    dist /= 4;
 
     mat4x4rts = glm::mat4(1.0f);
+    mat4x4rts = glm::rotate(mat4x4rts, glm::radians(this->moon_pos_time.z), {1.0f, 0.0f, 0.0f});
+    
+    this->p_astroo_light->transform.position = (glm::mat3(mat4x4rts) * moon_pos) - p_camera->transform.position;
+    this->p_astroo_light->update();
+
     mat4x4rts = glm::translate(mat4x4rts, moon_pos);
     mat4x4rts = glm::scale(mat4x4rts, {dist, dist, dist});
     mat4x4rts = mat4x4projection * mat4x4rts;
@@ -242,6 +259,10 @@ void sky::on_render() {
     p_program->set_uniform_vec3("uColor", &moon_color[0]);
     p_program->set_uniform_mat4("uMVP", &mat4x4rts[0][0]);
     p_program->set_uniform_bool("uStarsRendering", false);
+    p_program->set_uniform_vec3("uSkyColor", agk::app.background);
+    p_program->set_uniform_vec3("uDirectionLightMoon", &moon_light_dir[0]);
+
+    glDisable(GL_BLEND);
 
     this->p_model_moon->buffer.invoke();
     this->p_model_moon->buffer.draw();

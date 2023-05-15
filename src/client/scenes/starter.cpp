@@ -29,8 +29,6 @@ void client::scenes::starter::on_create() {
 
     agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
     agk::pbr::loadmodel("monster", "./data/models/Alien Animal.obj");
-
-    agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
     agk::pbr::loadmaterial("snowball", "./data/models/snow_03_4k.gltf");
 
     auto *p_dinossaur {new object {}};
@@ -47,10 +45,8 @@ void client::scenes::starter::on_create() {
     agk::world::create(p_gltf_obj1);
 
     auto *p_monster {new object {}};
-    p_monster->assign("model.coconuttree", "material.monster");
     p_monster->transform.position.y = 720.0f + 500.0f;
     p_monster->transform.scale = glm::vec3 {720.0f};
-    p_monster->transform.rotation.x = -glm::radians(90.0f);
     agk::world::create(p_monster);
 
     this->p_light_spot = new light {};
@@ -142,7 +138,7 @@ void client::scenes::starter::on_create() {
     this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::fill);
     this->p_enable_motion_blur->set_value(true);
     ekg::label("Intensity:", ekg::dock::fill | ekg::dock::next);
-    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.351f, 0.0f, 1.0f, ekg::dock::fill);
+    this->p_motion_blur_intensity = ekg::slider("Intensity", 0.151f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_motion_blur_intensity->set_precision(2);
 
     ekg::debug = false;

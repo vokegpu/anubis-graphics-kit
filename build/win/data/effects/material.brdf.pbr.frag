@@ -31,7 +31,6 @@ uniform float uAmbientColor;
 uniform int uLightAmount;
 uniform float uGamma = 1.0f;
 uniform int uMaterialIndex;
-uniform bool uIsNight;
 
 Material pbrMaterial;
 float pbrRoughnessFactor;
@@ -81,7 +80,7 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 intensity = uLight[index].uIntensity;
     vec3 l = vec3(0.0f);
 
-    if (uLight[index].uDirectional) {
+    if (uLight[index].uDirectional && false) {
         l = normalize(uLight[index].uVector);
     } else {
         l = uLight[index].uVector - vPosModel;
@@ -127,11 +126,6 @@ void main() {
         n = normalize(tbnMatrix * pbrNormalColor);
     } else {
         n = normalize(vNormal);
-    }
-
-    if (uIsNight) {
-        vec3 nightColor = vec3(0.0156862745f, 0.02745098039f, 0.12549019607f);
-        pbrAlbedoColor = mix(pbrAlbedoColor, nightColor, uAmbientColor);
     }
 
     vec3 sum = pbrAlbedoColor * uAmbientColor;

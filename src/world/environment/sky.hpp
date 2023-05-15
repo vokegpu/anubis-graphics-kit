@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include "gpu/gpu_buffer.hpp"
 #include "world/pbr/model.hpp"
+#include "world/environment/light.hpp"
 #include "gpu/gpu_framebuffer.hpp"
 
 class sky : public imodule {
@@ -27,6 +28,9 @@ public:
     model *p_model_moon {};
 
     bool is_night {};
+    light *p_astroo_light {};
+
+    glm::vec3 moon_pos_time {};
     float day_ambient_light {};
     float night_ambient_light {};
     float ambient_light {};

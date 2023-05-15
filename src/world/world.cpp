@@ -352,7 +352,7 @@ void world::on_update() {
         p_buffer_instance->revoke();
     }
 
-    if (util::reset_when(this->sky_cloud_timing, 256) && false) {
+    if (util::reset_when(this->sky_cloud_timing, 96) && false) {
         glm::ivec3 dimension {8, 8, 8};
         this->parallel.p_program = (::asset::shader*) agk::asset::find("gpu/scripts.cloud.generator");
         this->parallel.invoke();

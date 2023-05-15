@@ -25,7 +25,7 @@ void renderer::process_terrain() {
     p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uMaterial.uColor", &color[0]);
     p_program_pbr->set_uniform_bool("uMaterial.uMetal", false);
-    p_program_pbr->set_uniform_float("uMaterial.uRough", 0.93f);
+    p_program_pbr->set_uniform_float("uMaterial.uRough", 0.23f);
     p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", p_time_manager->ambient_light);
     p_program_pbr->set_uniform_float("uAmbientLuminance", p_time_manager->ambient_luminance);
@@ -88,7 +88,6 @@ void renderer::process_environment() {
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
 
     p_program_pbr->invoke();
-    p_program_pbr->set_uniform_bool("uIsNight", sky::isnight);
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", agk::app.p_sky->ambient_light);

@@ -9,6 +9,8 @@ in float vStarsLuminance;
 in flat int vStarsRendering;
 
 uniform vec3 uColor;
+uniform vec3 uDirectionLightMoon;
+uniform vec3 uSkyColor;
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -109,12 +111,18 @@ float snoise(vec2 v)  {
     return n;
 }
 
+vec3 albedoBlinnPhong() {
+    //return mix(uColor, uSkyColor, dot(vNormal, uDirectionLightMoon));
+    vec3 albedoColor = max(uColor * max(dot(vNormal, uDirectionLightMoon), 0.0f), uSkyColor);
+    return albedoColor;
+}
+
 #define LIGHT_ASTROO_PROBABILITY 0.7
-#define SUN_LIGHT_INTERPOLATION_FACTOR 6.0
+#define SUN_LIGHT_INTERPOLATION_FACTOR 2.0
 
 void main() {
     if (vStarsRendering == 0) {
-        vFragColor = vec4(uColor, 1.0f);
+        vFragColor = vec4(albedoBlinnPhong(), 1.0f);
     } else {
         float f = noise(vec2(length((rand(vec2(-22.0f, 5000.0f))) * 0.1 - (-vPos.zz))));
 
@@ -123,9 +131,9 @@ void main() {
             interpFactor = vStarsLuminance / SUN_LIGHT_INTERPOLATION_FACTOR;
         }
 
-        if (interpFactor > 0.0f && interpFactor < 0.2f && f < LIGHT_ASTROO_PROBABILITY) {
+        if (interpFactor >= 0.0f && interpFactor < 0.2f && f < LIGHT_ASTROO_PROBABILITY) {
             discard;
-        } else if (interpFactor > 0.0f && interpFactor > 0.2f && rand(vec2(vPos.z, LIGHT_ASTROO_PROBABILITY)) < 0.5f) {
+        } else if (interpFactor > 0.2f && rand(vPos.xz) > 0.5) {
             discard;
         }
 
@@ -135,8 +143,9 @@ void main() {
             vFragColor = vec4(1.0f);
         }
 
-        if (interpFactor > 0.0f) {
+        if (interpFactor >= 0.0f) {
             vFragColor = mix(vFragColor, vec4(1.0f), 1.0f - interpFactor);
+            vFragColor.a = max(interpFactor, 0.09f);
         }
     }
 }

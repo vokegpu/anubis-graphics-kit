@@ -38,7 +38,7 @@ uniform struct {
 
 uniform struct {
     vec3 uIntensity;
-    bool uDirectioanl;
+    bool uDirectional;
     vec3 uVector;
 } uLight[100];
 
@@ -72,7 +72,7 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 intensity = uLight[index].uIntensity;
     vec3 l = vec3(0.0f);
 
-    if (uLight[index].uDirectioanl) {
+    if (uLight[index].uDirectional) {
         l = normalize(uLight[index].uVector);
     } else {
         l = uLight[index].uVector - vPosModel;
@@ -114,16 +114,13 @@ void main() {
     float ambientColor = uAmbientColor;
 
     if (uIsNight) {
-        vec3 nightColor = vec3(0.0156862745f, 0.02745098039f, 0.12549019607f);
-        sum = mix(mCurrentMaterialRGB, nightColor, 1.0f - (uAmbientColor / uAmbientLuminance));
-        ambientColor = clamp(uAmbientColor, 0.4f, 1.0f);
     }
-
     sum = (sum * g) * (ambientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
     vec3 v = normalize(uCameraPos - vPosModel);
 
+    if (!gl_FrontFacing) n = -n;
     for (int index = 0; index <= uLightAmount; index++) {
         sum += bidirecionalReflectanceDistributionFunc(n, v, index);
     }
