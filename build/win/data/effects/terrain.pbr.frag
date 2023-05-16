@@ -114,13 +114,16 @@ void main() {
     float ambientColor = uAmbientColor;
 
     if (uIsNight) {
+        vec3 nightColor = vec3(0.0156862745f, 0.02745098039f, 0.12549019607f);
+        sum = mix(mCurrentMaterialRGB, nightColor, 1.0f - (uAmbientColor / uAmbientLuminance));
+        ambientColor = clamp(uAmbientColor, 0.4f, 1.0f);
     }
+
     sum = (sum * g) * (ambientColor / uAmbientLuminance);
 
     vec3 n = normalize(vNormal);
     vec3 v = normalize(uCameraPos - vPosModel);
 
-    if (!gl_FrontFacing) n = -n;
     for (int index = 0; index <= uLightAmount; index++) {
         sum += bidirecionalReflectanceDistributionFunc(n, v, index);
     }

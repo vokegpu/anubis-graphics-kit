@@ -87,38 +87,38 @@ void client::scenes::starter::on_create() {
         agk::setfps(60, !agk::app.vsync);
     }});
 
-    ekg::label("Time Now:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("Time Now:", ekg::dock::next);
     this->p_time_now = ekg::slider("Time", 17, 0, 23, ekg::dock::fill);
     this->p_time_now->set_precision(0);
 
-    ekg::label("Light Intensity:", ekg::dock::fill | ekg::dock::next)->set_font_size(ekg::font::small);
+    ekg::label("Light Intensity:", ekg::dock::next)->set_font_size(ekg::font::small);
     this->p_light_intensity = ekg::slider("LightIntensity", 0.233f, 0.0f, 4024.0f, ekg::dock::fill);
     this->p_light_intensity->set_precision(2);
 
-    ekg::label("Chunk Range:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("Chunk Range:", ekg::dock::next);
     this->p_chunk_range = ekg::slider("ChunkRange", 6, 1, 16, ekg::dock::fill);
 
-    ekg::label("Fog Dist:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("Fog Dist:", ekg::dock::next);
     this->p_fog_distance = ekg::slider("FogDist", 1024.0f * 4, 0.0f, 1024.0f * 16, ekg::dock::fill);
     this->p_fog_distance->set_precision(2);
 
-    ekg::label("FBM Frequency:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("FBM Frequency:", ekg::dock::next);
     this->p_frequency = ekg::slider("Frequency", 0.34105f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_frequency->set_precision(3);
 
-    ekg::label("FBM Amplitude:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("FBM Amplitude:", ekg::dock::next);
     this->p_amplitude = ekg::slider("Amplitude", 0.18874f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_amplitude->set_precision(3);
 
-    ekg::label("FBM Persistence:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("FBM Persistence:", ekg::dock::next);
     this->p_persistence = ekg::slider("Persistence", 0.28834f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_persistence->set_precision(3);
     
-    ekg::label("FBM Lacunarity:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("FBM Lacunarity:", ekg::dock::next);
     this->p_lacunarity = ekg::slider("Lacunarity", 0.29888f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_lacunarity->set_precision(3);
 
-    ekg::label("FBM Octaves:", ekg::dock::fill | ekg::dock::next);
+    ekg::label("FBM Octaves:", ekg::dock::next);
     this->p_octaves = ekg::slider("Octaves", 5, 0, 30, ekg::dock::fill);
 
     auto p_frame {ekg::frame("hello vc é fofo", {1200, 600}, {300, 200})};

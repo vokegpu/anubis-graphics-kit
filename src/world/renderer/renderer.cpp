@@ -25,7 +25,7 @@ void renderer::process_terrain() {
     p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
     p_program_pbr->set_uniform_vec3("uMaterial.uColor", &color[0]);
     p_program_pbr->set_uniform_bool("uMaterial.uMetal", false);
-    p_program_pbr->set_uniform_float("uMaterial.uRough", 0.23f);
+    p_program_pbr->set_uniform_float("uMaterial.uRough", 0.78f);
     p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_float("uAmbientColor", p_time_manager->ambient_light);
     p_program_pbr->set_uniform_float("uAmbientLuminance", p_time_manager->ambient_luminance);
