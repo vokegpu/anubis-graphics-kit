@@ -19,13 +19,9 @@ void sky::on_create() {
 
     this->p_astroo_light = new light {};
     this->p_astroo_light->directional = true;
-    this->p_astroo_light->intensity = {0.0f, 0.0f, 0.08117647058827604f};
+    this->p_astroo_light->intensity = {10.08117647058827604f, 0.0f, 0.0f};
     this->p_astroo_light->update();
-    agk::world::create(this->p_astroo_light); 
-
-    agk::asset::load(new ::asset::shader {
-        "effects.sky.pbr", {{"./data/effects/sky.pbr.vert", GL_VERTEX_SHADER}, {"./data/effects/sky.pbr.frag", GL_FRAGMENT_SHADER}}
-    });
+    agk::world::create(this->p_astroo_light);
 
     stream::mesh tesseract_mesh {};
     glm::vec3 tesseract_cubic_massive {32, 64, 16};
@@ -90,13 +86,8 @@ void sky::on_create() {
     this->buffer_tesseract.unbind();
     this->buffer_tesseract.revoke();
 
-    agk::pbr::loadmodel("skymoon", "./data/models/moon.stl");
-    agk::pbr::loadmodel("snowball", "./data/models/wood_table_001_4k.gltf");
-    this->p_model_moon = (model*) agk::pbr::find("model.snowball.0");
-
-    this->framebuffer_sky_bloom.invoke(0);
-    this->framebuffer_sky_bloom.send_depth({agk::app.screen_width, agk::app.screen_height, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
-    this->framebuffer_sky_bloom.revoke();
+    agk::pbr::loadmodel("moonball", "./data/models/wood_table_001_4k.gltf");
+    this->p_model_moon = (model*) agk::pbr::find("model.moonball.0");
 
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
@@ -105,16 +96,7 @@ void sky::on_destroy() {
 }
 
 void sky::on_event(SDL_Event &sdl_event) {
-    switch (sdl_event.type) {
-        case SDL_WINDOWEVENT: {
-            if (sdl_event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                this->framebuffer_sky_bloom.invoke(0);
-                this->framebuffer_sky_bloom.send_depth({sdl_event.window.data1, sdl_event.window.data2, 0}, {GL_TEXTURE_2D, GL_RGBA32F}, true);
-                this->framebuffer_sky_bloom.revoke();
-            }
-            break;
-        }
-    }
+
 }
 
 void sky::on_update() {
@@ -213,8 +195,6 @@ void sky::on_render() {
     mat4x4rts = glm::scale(mat4x4rts, {clip_dist, clip_dist, clip_dist});
     mat4x4rts = mat4x4projection * mat4x4rts;
 
-    this->framebuffer_sky_bloom.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     p_program->invoke();
     p_program->set_uniform_mat4("uMVP", &mat4x4rts[0][0]);
     p_program->set_uniform_float("uStarsLuminance", this->stars_luminance);
@@ -236,12 +216,19 @@ void sky::on_render() {
      */
     glm::vec3 moon_color {0.6667f, 0.6667f, 0.6667f};
     glm::vec3 moon_pos {p_camera->transform.position};
-    glm::vec3 moon_light_dir {0.0f, 0.50f, 0.90f};
+    glm::vec3 moon_light_dir {0.90f, -0.50f, -0.30f};
 
-    float factor {static_cast<float>(this->delta_min_virtual) / 1440};
+    float factor {(static_cast<float>(this->delta_min_virtual)) / 1440};
     float dist {mid_clip_dist / 10.0f};
 
-    this->moon_pos_time.z = this->moon_pos_time.z + ((factor * 360.0f) - this->moon_pos_time.z) * agk::dt;
+    if (factor < this->moon_pos_time.x) {
+        this->moon_pos_time.z = -0.1f;
+    } else {
+        this->moon_pos_time.z = (this->moon_pos_time.z + ((factor * 360.0f) - this->moon_pos_time.z) * agk::dt);
+    }
+
+    this->moon_pos_time.x = factor;
+
     moon_pos.z -= dist;
     moon_pos.y += 9808.0f;
     dist /= 4;
@@ -269,7 +256,6 @@ void sky::on_render() {
     this->p_model_moon->buffer.revoke();
 
     p_program->revoke();
-    this->framebuffer_sky_bloom.revoke(GL_COLOR_BUFFER_BIT);
 }
 
 void sky::set_time(int32_t hours, int32_t minutes) {

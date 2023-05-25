@@ -29,6 +29,7 @@ void client::scenes::starter::on_create() {
 
     agk::pbr::loadmodel("coconuttree", "./data/models/Coconut Tree.obj");
     agk::pbr::loadmodel("monster", "./data/models/Alien Animal.obj");
+    agk::pbr::loadmodel("snowball", "./data/models/snow_03_4k.gltf");
     agk::pbr::loadmaterial("snowball", "./data/models/snow_03_4k.gltf");
 
     auto *p_dinossaur {new object {}};
@@ -75,6 +76,16 @@ void client::scenes::starter::on_create() {
     auto frame = ekg::frame("Hello", {20, 600}, {620, 330});
     frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
     frame->set_drag(ekg::dock::top);
+
+    ekg::checkbox("Light Theme", true, ekg::dock::fill)->set_callback(new ekg::cpu::event {"theme-switcher", nullptr, [](void*) {
+        auto &theme {ekg::theme()};
+        std::string current_theme_name {theme.get_current_theme_name()};
+        if (current_theme_name == "light") {
+            theme.gen_default_dark_theme();
+        } else {
+            theme.gen_default_light_theme();
+        }
+    }});
 
     ekg::button("Reset light-spot", ekg::dock::fill)->set_callback(new ekg::cpu::event {"callback", this, [](void *p_data) {
         auto starter {static_cast<client::scenes::starter*>(p_data)};
@@ -172,8 +183,8 @@ void client::scenes::starter::on_create() {
     this->buffer_test.primitive[0] = GL_TRIANGLES;
 
     agk::asset::load(new ::asset::shader {"effects.overlay.debug", {
-            {"./data/effects/overlay.debug.vert", GL_VERTEX_SHADER},
-            {"./data/effects/overlay.debug.frag", GL_FRAGMENT_SHADER}
+            {"./data/gpu/overlay.debug.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/overlay.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
     agk::world::sky()->set_time(18, 0);

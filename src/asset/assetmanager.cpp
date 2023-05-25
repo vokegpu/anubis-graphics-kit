@@ -32,44 +32,48 @@ void assetmanager::on_create() {
     imodule::on_create();
 
     this->load(new asset::shader {"effects.coordinate.debug", {
-            {"./data/effects/coordinate.debug.vert", GL_VERTEX_SHADER},
-            {"./data/effects/coordinate.debug.frag", GL_FRAGMENT_SHADER}
+            {"./data/gpu/coordinate.debug.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/coordinate.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
     this->load(new asset::shader {"effects.material.brdf.pbr", {
-            {"./data/effects/material.brdf.pbr.vert", GL_VERTEX_SHADER},
-            {"./data/effects/material.brdf.pbr.frag", GL_FRAGMENT_SHADER}
+            {"./data/gpu/material.brdf.pbr.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/material.brdf.pbr.frag", GL_FRAGMENT_SHADER}
     }, [](asset::shader *p_shader) {
         float empty_buffer[12] {};
         p_shader->attach("uniformBufferMaterial", 0);
         p_shader->programbuffer.invoke(0, GL_UNIFORM_BUFFER);
-        p_shader->programbuffer.send<float>(sizeof(empty_buffer) * 512, nullptr, GL_DYNAMIC_DRAW);
+            p_shader->programbuffer.send<float>(sizeof(empty_buffer) * 512, nullptr, GL_DYNAMIC_DRAW);
         p_shader->programbuffer.bind(0);
         p_shader->programbuffer.revoke();
     }});
 
     this->load(new asset::shader {"effects.processing.post", {
-            {"./data/effects/processing.post.vert", GL_VERTEX_SHADER},
-            {"./data/effects/processing.post.frag", GL_FRAGMENT_SHADER}
+            {"./data/gpu/processing.post.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/processing.post.frag", GL_FRAGMENT_SHADER}
     }});
 
     this->load(new asset::shader {"effects.terrain.pbr", {
-            {"./data/effects/terrain.pbr.vert", GL_VERTEX_SHADER},
-            {"./data/effects/terrain.pbr.frag", GL_FRAGMENT_SHADER},
-            {"./data/effects/terrain.pbr.tesc", GL_TESS_CONTROL_SHADER},
-            {"./data/effects/terrain.pbr.tese", GL_TESS_EVALUATION_SHADER}
+            {"./data/gpu/terrain.pbr.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/terrain.pbr.frag", GL_FRAGMENT_SHADER},
+            {"./data/gpu/terrain.pbr.tesc", GL_TESS_CONTROL_SHADER},
+            {"./data/gpu/terrain.pbr.tese", GL_TESS_EVALUATION_SHADER}
     }});
 
+    this->load(new asset::shader {
+        "effects.sky.pbr", {{"./data/gpu/sky.pbr.vert", GL_VERTEX_SHADER}, {"./data/gpu/sky.pbr.frag", GL_FRAGMENT_SHADER}}
+    });
+
     this->load(new asset::shader {"scripts.cloud.generator.script", {
-            {"./data/scripts/cloud.generator.comp", GL_COMPUTE_SHADER}
+            {"./data/gpu/cloud.generator.comp", GL_COMPUTE_SHADER}
     }});
 
     this->load(new asset::shader {"scripts.hdr.luminance", {
-            {"./data/scripts/hdr.luminance.comp", GL_COMPUTE_SHADER}
+            {"./data/gpu/hdr.luminance.comp", GL_COMPUTE_SHADER}
     }});
 
     this->load(new asset::shader {"scripts.heightmap.generator", {
-            {"./data/scripts/heightmap.generator.comp", GL_COMPUTE_SHADER}
+            {"./data/gpu/heightmap.generator.comp", GL_COMPUTE_SHADER}
     }});
 
     this->load(new asset::texture<uint8_t> {"terrain.atlas", "./data/textures/terrain_atlas.png", {GL_TEXTURE_2D, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB}, [](gpu::texture &texture, bool &mipmap) {

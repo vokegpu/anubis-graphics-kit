@@ -37,8 +37,6 @@ public:
     float ambient_next_light {};
     float ambient_luminance {};
     float stars_luminance {};
-
-    framebuffering framebuffer_sky_bloom {}; 
 public:
     void set_time(int32_t hours, int32_t minutes);
     void on_create() override;

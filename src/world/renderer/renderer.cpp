@@ -147,19 +147,7 @@ void renderer::process_post_processing() {
     /* Invoke framebuffer and start collect screen buffers. */
     this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glCullFace(GL_FRONT);
-
-    this->shape_post_processing.invoke();
-    this->shape_post_processing.p_program->set_uniform_bool("uSkyPostProcessing", true);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, agk::app.p_sky->framebuffer_sky_bloom[0].id_texture);
-
-    this->shape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
-    this->shape_post_processing.revoke();
-
-    glCullFace(GL_BACK);
-
+    agk::app.p_sky->on_render();
     this->process_terrain();
     this->process_environment();
     this->process_sky();
@@ -405,19 +393,7 @@ void renderer::on_render() {
         }
 
         case false: {
-            this->shape_post_processing.invoke();
-            this->shape_post_processing.p_program->set_uniform_bool("uSkyPostProcessing", true);
-
-            glCullFace(GL_FRONT);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, agk::app.p_sky->framebuffer_sky_bloom[0].id_texture);
-
-            this->shape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
-            this->shape_post_processing.revoke();
-
-            glCullFace(GL_BACK);
-
+            agk::app.p_sky->on_render();
             this->process_terrain();
             this->process_environment();
             this->process_editor();
