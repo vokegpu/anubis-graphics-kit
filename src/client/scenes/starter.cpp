@@ -73,9 +73,60 @@ void client::scenes::starter::on_create() {
     ekg::gl_version = "#version 450";
     ekg::init(agk::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
 
-    auto frame = ekg::frame("Hello", {20, 600}, {620, 330});
-    frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
-    frame->set_drag(ekg::dock::top);
+    ekg::debug = false;
+
+    float mesh[] {
+        -0.2f, -0.2f,
+        -0.4f, -0.2f,
+        -0.2f, -0.4f,
+        -0.4f, -0.4f,
+        0.2f, 0.2f,
+        0.4f, 0.2f,
+        0.2f, 0.4f,
+        0.4f, 0.4f,
+    };
+
+    uint8_t indices[] {
+        0, 1, 3,
+        3, 2, 0,
+        4 + 0, 4 + 1, 4 + 3,
+        4 + 3, 4 + 2, 4 + 0
+    };
+
+    this->buffer_test.invoke();
+    this->buffer_test.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
+    this->buffer_test.send<float>(sizeof(mesh), mesh, GL_STATIC_DRAW);
+    this->buffer_test.attach(0, 2);
+
+    this->buffer_test.bind(1, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_BYTE});
+    this->buffer_test.send<uint8_t>(sizeof(indices), indices, GL_STATIC_DRAW);
+    this->buffer_test.revoke();
+    this->buffer_test.primitive[0] = GL_TRIANGLES;
+
+    agk::asset::load(new ::asset::shader {"effects.overlay.debug", {
+            {"./data/gpu/overlay.debug.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/overlay.debug.frag", GL_FRAGMENT_SHADER}
+    }});
+
+    agk::world::sky()->set_time(18, 0);
+    agk::world::currentplayer()->transform.position.y += 90;
+    this->do_json_test();
+
+    ekg::popgroup();
+    this->init_gui();
+}
+
+void client::scenes::starter::init_gui() {
+    this->p_top_left_frame = ekg::frame("top-left-frame", {0, 0}, {200, 200});
+    this->p_top_left_frame->set_resize(ekg::dock::right);
+    ekg::popgroup();
+
+    this->p_bottom_frame = ekg::frame("bottom-frame", {0, 0}, {200, 200});
+    this->p_bottom_frame->set_resize(ekg::dock::top);
+    ekg::popgroup();
+
+    auto p_miscellaneous_frame = ekg::frame("Hello", {620, 330}, ekg::dock::fill);
+    p_miscellaneous_frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::right);
 
     ekg::checkbox("Light Theme", true, ekg::dock::fill)->set_callback(new ekg::cpu::event {"theme-switcher", nullptr, [](void*) {
         auto &theme {ekg::theme()};
@@ -132,9 +183,11 @@ void client::scenes::starter::on_create() {
     ekg::label("FBM Octaves:", ekg::dock::next);
     this->p_octaves = ekg::slider("Octaves", 5, 0, 30, ekg::dock::fill);
 
-    auto p_frame {ekg::frame("hello vc é fofo", {1200, 600}, {300, 200})};
-    p_frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::dock::right);
-    p_frame->set_drag(ekg::dock::top);
+    ekg::scroll("hello-mrfinalshare");
+    ekg::popgroup();
+
+    auto p_post_processing_frame {ekg::frame("hello vc é fofo", {0, 200}, ekg::dock::fill)};
+    p_post_processing_frame->set_resize(ekg::dock::left | ekg::dock::bottom | ekg::dock::right);
 
     this->p_enable_post_processing = ekg::checkbox("Post processing effects", ekg::dock::fill);
     this->p_enable_post_processing->set_value(true);
@@ -148,48 +201,24 @@ void client::scenes::starter::on_create() {
     ekg::label("Motion Blur:", ekg::dock::fill | ekg::dock::next);
     this->p_enable_motion_blur = ekg::checkbox("Enable", ekg::dock::fill);
     this->p_enable_motion_blur->set_value(true);
+    
     ekg::label("Intensity:", ekg::dock::fill | ekg::dock::next);
     this->p_motion_blur_intensity = ekg::slider("Intensity", 0.151f, 0.0f, 1.0f, ekg::dock::fill);
     this->p_motion_blur_intensity->set_precision(2);
+    ekg::scroll("hello-mrfinalshare");
+    ekg::popgroup();
 
-    ekg::debug = false;
+    this->p_bottom_frame->add_child(p_miscellaneous_frame->get_id());
+    this->p_bottom_frame->add_child(p_post_processing_frame->get_id());
+    this->p_bottom_frame->add_child(ekg::scroll("potato-machines-joao-das-galaxias")->get_id());
+}
 
-    float mesh[] {
-        -0.2f, -0.2f,
-        -0.4f, -0.2f,
-        -0.2f, -0.4f,
-        -0.4f, -0.4f,
-        0.2f, 0.2f,
-        0.4f, 0.2f,
-        0.2f, 0.4f,
-        0.4f, 0.4f,
-    };
+void client::scenes::starter::refresh_gui() {
+    this->p_bottom_frame->set_width(ekg::display::width);
 
-    uint8_t indices[] {
-        0, 1, 3,
-        3, 2, 0,
-        4 + 0, 4 + 1, 4 + 3,
-        4 + 3, 4 + 2, 4 + 0
-    };
-
-    this->buffer_test.invoke();
-    this->buffer_test.bind(0, {GL_ARRAY_BUFFER, GL_FLOAT});
-    this->buffer_test.send<float>(sizeof(mesh), mesh, GL_STATIC_DRAW);
-    this->buffer_test.attach(0, 2);
-
-    this->buffer_test.bind(1, {GL_ELEMENT_ARRAY_BUFFER, GL_UNSIGNED_BYTE});
-    this->buffer_test.send<uint8_t>(sizeof(indices), indices, GL_STATIC_DRAW);
-    this->buffer_test.revoke();
-    this->buffer_test.primitive[0] = GL_TRIANGLES;
-
-    agk::asset::load(new ::asset::shader {"effects.overlay.debug", {
-            {"./data/gpu/overlay.debug.vert", GL_VERTEX_SHADER},
-            {"./data/gpu/overlay.debug.frag", GL_FRAGMENT_SHADER}
-    }});
-
-    agk::world::sky()->set_time(18, 0);
-    agk::world::currentplayer()->transform.position.y += 90;
-    this->do_json_test();
+    float bottom_frame_height {this->p_bottom_frame->get_height()};
+    this->p_top_left_frame->set_height(ekg::display::height - bottom_frame_height);
+    this->p_bottom_frame->set_pos(0.0f, ekg::display::height - bottom_frame_height);
 }
 
 void client::scenes::starter::do_json_test() {
@@ -256,6 +285,7 @@ void client::scenes::starter::on_update() {
     agk::app.setting.enable_motion_blur.set_value(this->p_enable_motion_blur->get_value());
     agk::app.setting.motion_blur_intensity.set_value(this->p_motion_blur_intensity->get_value());
 
+    this->refresh_gui();
     ekg::display::dt = agk::dt;
     ekg::update();
 }

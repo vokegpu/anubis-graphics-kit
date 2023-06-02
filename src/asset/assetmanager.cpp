@@ -43,7 +43,7 @@ void assetmanager::on_create() {
         float empty_buffer[12] {};
         p_shader->attach("uniformBufferMaterial", 0);
         p_shader->programbuffer.invoke(0, GL_UNIFORM_BUFFER);
-            p_shader->programbuffer.send<float>(sizeof(empty_buffer) * 512, nullptr, GL_DYNAMIC_DRAW);
+        p_shader->programbuffer.send<float>(sizeof(empty_buffer) * 512, nullptr, GL_DYNAMIC_DRAW);
         p_shader->programbuffer.bind(0);
         p_shader->programbuffer.revoke();
     }});

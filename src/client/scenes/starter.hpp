@@ -17,7 +17,7 @@ namespace client::scenes {
         light *p_light_spot {};
         object *p_object_dino {};
         uint64_t last_display_fps {};
-
+    public:
         ekg::ui::slider *p_time_now {};
         ekg::ui::slider *p_light_intensity {};
         ekg::ui::slider *p_chunk_range {};
@@ -34,6 +34,12 @@ namespace client::scenes {
         ekg::ui::slider *p_hdr_exposure {};
         ekg::ui::checkbox *p_enable_motion_blur {};
         ekg::ui::slider *p_motion_blur_intensity {};
+
+        ekg::ui::frame *p_top_left_frame {};
+        ekg::ui::frame *p_bottom_frame {};
+    public:
+        void init_gui();
+        void refresh_gui();
     public:
         void on_create() override;
         void on_destroy() override;
