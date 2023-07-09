@@ -291,7 +291,9 @@ void client::scenes::starter::on_update() {
 }
 
 void client::scenes::starter::on_render() {
+    glDisable(GL_DEPTH_TEST);
     ekg::render();
+    glEnable(GL_DEPTH_TEST);
     // this->do_test_overlay();
 }
 

@@ -53,7 +53,7 @@ uniform struct {
 
 vec3 fSchlick(float lDotH, vec3 f0) {
     f0 = pbrMaterial.mSurface.x == 1 ? pbrAlbedoColor : f0;
-    return f0 + (1.0f - f0) * pow(1.0f - lDotH, 5.0f);
+    return f0 + (1.0f - f0) * pow(clamp(1.0f - lDotH, 0.0f, 1.0f), 5.0f);
 }
 
 //float fSchlick(float dotProd, float f0, float f90) {
@@ -67,17 +67,16 @@ vec3 fSchlick(float lDotH, vec3 f0) {
 //     return lightScatter * viewScatter * (1.0f / PI);
 // }
 
-float smithGeometryShadow(float nDotV, float nDotL) {
-    float a = pbrRoughnessFactor * pbrRoughnessFactor;
-    float v = nDotL * sqrt(nDotV * nDotV * (1.0f - a) + a);
-    float l = nDotV * sqrt(nDotL * nDotL * (1.0f - a) + a);
-    return 0.5f / (v + l);
-}
-
 float ggxDistribution(float nDotH) {
     float a = pbrRoughnessFactor * pbrRoughnessFactor;
     float p = (nDotH * nDotH) * (a - 1.0f) + 1.0f;
     return a / (PI * p * p);
+}
+
+float geometrySmith(float dotProd) {
+    float k = (pbrRoughnessFactor + 1.0f) * (pbrRoughnessFactor + 1.0f) / 8.0f;
+    float denom = dotProd * (1.0f - k) + k;
+    return 1.0f / denom;
 }
 
 vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
@@ -108,8 +107,8 @@ vec3 bidirecionalReflectanceDistributionFunc(vec3 n, vec3 v, int index) {
     vec3 fd = diffuse * (1.0f / PI);
 
     /* 0.25f == fracion of 4 */
-    //vec3 specular = 0.25f * ggxDistribution(nDotH) * shlickFresnel(lDotH) * smithGeometryShadow(nDotV, nDotL);
-    return (fd + PI * fr) * intensity * nDotL;
+    vec3 specular = 0.25f * ggxDistribution(nDotH) * shlickFresnel(lDotH) * smithGeometryShadow(nDotV, nDotL);
+    return (fd + PI * specular) * intensity * nDotL;
 }
 
 void main() {

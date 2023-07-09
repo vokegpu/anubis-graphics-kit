@@ -67,6 +67,7 @@ namespace asset {
                     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &status);
                     std::string msg {}; msg.resize(status);
                     glGetShaderInfoLog(shader, status, nullptr, msg.data());
+
                     util::log("Failed to compiled this shader");
                     util::log(msg);
 
@@ -93,6 +94,7 @@ namespace asset {
                     glGetProgramiv(this->program, GL_INFO_LOG_LENGTH, &status);
                     std::string msg {}; msg.resize(status);
                     glGetProgramInfoLog(this->program, status, nullptr, msg.data());
+
                     util::log("Failed to link this shading program!");
                     util::log(msg);
                     this->is_dead = true;
