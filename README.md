@@ -4,7 +4,7 @@ Anubis Graphics Kit (AGK) is a photo-realism rendering engine made in OpenGL 4 f
 There is an official researcher article being write together with this project to investigate a way to connect heightmaps. The research is not linked to any institution, perhaps I will publish here at the ends of article project,  
 but VokeGpu will keep update this engine project.
 
-If you are on Windows, please replace `"Unix Makefiles"` with `"MinGW Makefiles"`, run the command:  
+If you are on Windows, please replace `"Unix Makefiles"` with `"MinGW Makefiles"` or `"Clang"`, run the command:  
 `cmake -S . -B ./cmake-build-debug/ -G "Unix Makefiles" && cmake --build ./cmake-build-debug/`
 
 The location of executables is on `./build/`, choose your system and run Anubis Graphics Kit. Note: If the Linux version is broken, replace the Linux `./data` with `./build/win/data/`, most of the commits are tested in Windows.
