@@ -40,11 +40,18 @@ void assetmanager::on_create() {
             {"./data/gpu/material.brdf.pbr.vert", GL_VERTEX_SHADER},
             {"./data/gpu/material.brdf.pbr.frag", GL_FRAGMENT_SHADER}
     }, [](asset::shader *p_shader) {
-        float empty_buffer[12] {};
+        float empty_buffer_material[12] {};
         p_shader->attach("uniformBufferMaterial", 0);
         p_shader->programbuffer.invoke(0, GL_UNIFORM_BUFFER);
-        p_shader->programbuffer.send<float>(sizeof(empty_buffer) * 512, nullptr, GL_DYNAMIC_DRAW);
+        p_shader->programbuffer.send<float>(sizeof(empty_buffer_material) * 512, nullptr, GL_DYNAMIC_DRAW);
         p_shader->programbuffer.bind(0);
+        p_shader->programbuffer.revoke();
+
+        float empty_buffer_light[8] {};
+        p_shader->attach("uniformBufferLight", 1);
+        p_shader->programbuffer.invoke(1, GL_UNIFORM_BUFFER);
+        p_shader->programbuffer.send<float>(sizeof(empty_buffer_light) * 64, nullptr, GL_DYNAMIC_DRAW);
+        p_shader->programbuffer.bind(1);
         p_shader->programbuffer.revoke();
     }});
 

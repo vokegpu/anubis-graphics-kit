@@ -38,18 +38,19 @@ vec3 pbrAlbedoColor;
 vec3 pbrNormalColor;
 mat3 tbnMatrix;
 
-uniform struct {
-    vec3 uIntensity;
-    bool uDirectional;
-    vec3 uVector;
-} uLight[100];
+struct Light {
+    vec4 uPos;
+    vec4 uIntensity;
+};
+
+layout (std140, binding = 1) uniform uniformBufferLight {
+     Light ubLight[64];
+};
 
 uniform struct {
     vec2 uDistance;
     vec3 uColor;
 } uFog;
-
-// @TODO add metal factor & roughness based in texture (albedo, specular, normalmap)
 
 vec3 fSchlick(float lDotH, vec3 f0) {
     f0 = pbrMaterial.mSurface.x == 1 ? pbrAlbedoColor : f0;

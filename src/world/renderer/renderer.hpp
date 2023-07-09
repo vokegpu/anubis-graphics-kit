@@ -46,6 +46,8 @@ public:
     std::vector<object*> obj_draw_list {};
     std::vector<chunk*> chunk_draw_list {};
 
+    buffering buffer_global {};
+
     void add(chunk *p_chunk);
     void refresh();
 

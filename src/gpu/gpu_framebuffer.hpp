@@ -56,17 +56,14 @@ public:
         /* Depth sampler texture. */
         if (framebuffer.id_depth == 0) glGenTextures(1, &framebuffer.id_depth);
         glBindTexture(GL_TEXTURE_2D, framebuffer.id_depth);
-        float border[] {1.0f, 0.0f, 0.0f, 0.0f};
 
         // Set filter linear.
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
         // Apply clamp to border and the border color.
-        // (1, 0, 0, 0) because depth value can not be less than zero, or otherwise it becomes at sample place of near Z.
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        //glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
 
         // Interpolate the depth result to generate only value.
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
