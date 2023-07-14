@@ -23,7 +23,7 @@ void main() {
         gl_Position = uMVP * vec4(aPos, 1.0f);
     } else {
         gl_Position = uMVP * vec4(aPos + (uStarsLuminance * 0.001f), 1.0f);
-        gl_PointSize = clamp(rand(aPos.zx * sin(clamp(uStarsLuminance, 0.1f, 50000.0f))) * (2.43443543f), 1.0f, 2.43443543f);
+        gl_PointSize = clamp(rand(aPos.zx * sin(clamp(uStarsLuminance, 0.1f, 50000.0f))) * (2.43443543f), 1.0f, 1.43443543f);
     }
 
     vStarsLuminance = uStarsLuminance;
