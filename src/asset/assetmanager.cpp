@@ -36,9 +36,9 @@ void assetmanager::on_create() {
             {"./data/gpu/coordinate.debug.frag", GL_FRAGMENT_SHADER}
     }});
 
-    this->load(new asset::shader {"effects.material.brdf.pbr", {
-            {"./data/gpu/material.brdf.pbr.vert", GL_VERTEX_SHADER},
-            {"./data/gpu/material.brdf.pbr.frag", GL_FRAGMENT_SHADER}
+    this->load(new asset::shader {"effects.pbr.material", {
+            {"./data/gpu/pbr.material.vert", GL_VERTEX_SHADER},
+            {"./data/gpu/pbr.material.frag", GL_FRAGMENT_SHADER}
     }, [](asset::shader *p_shader) {
         float empty_buffer_material[12] {};
         p_shader->attach("uniformBufferMaterial", 0);

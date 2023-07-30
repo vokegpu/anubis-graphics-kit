@@ -1,5 +1,1 @@
-# Ignore the folders.
 /cmake-build-debug/
-/.idea/
-/.vscode/
-/cmake-build-debug-event-trace/

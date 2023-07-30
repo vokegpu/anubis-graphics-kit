@@ -16,11 +16,20 @@ light::~light() {
 }
 
 void light::on_low_update() {
-    ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
-    
+    auto *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.pbr.material.lighting")};
+    auto &program_buffer {p_program_pbr->programbuffer};
 
-    
-    p_program_pbr = (::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr");
+    float buffer[12] {
+        this->transform.position.x, this->transform.position.y, this->transform.position.z, static_cast<float>(this->directional),
+        this->intensity.x, this->intensity.y, this->intensity.z, 0.0f
+    };
+
+    uint64_t size_of_buffer {sizeof(buffer)};
+
+    programbuffer.invoke();
+    programbuffer.edit<float>(size_of_buffer * this->index, size_of_buffer, buffer);
+    programbuffer.revoke();
+
     this->low_update_ticking = false;
 }
 

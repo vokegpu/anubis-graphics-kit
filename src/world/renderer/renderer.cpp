@@ -12,34 +12,16 @@ void renderer::process_terrain() {
     glm::mat3 mat3x3_inverse_transpose {};
     glm::vec3 color {1.0f, 1.0f, 1.0f};
 
-    auto *&p_time_manager {agk::world::sky()};
     ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
+
+    auto *&p_time_manager {agk::world::sky()};
     auto *&p_camera {agk::world::currentcamera()};
-    float dist_render {agk::app.setting.fog_bounding.get_value().y};
-    dist_render += dist_render * 0.5f;
+
+    float dist_render {agk::app.setting.fog_bounding.get_value().y + dist_render * 0.5f};
     float dist {};
 
-    p_program_pbr->invoke();
-    p_program_pbr->set_uniform_bool("uIsNight", sky::isnight);
-    p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
-    p_program_pbr->set_uniform_vec3("uFog.uColor", &agk::app.setting.fog_color.get_value()[0]);
-    p_program_pbr->set_uniform_vec3("uMaterial.uColor", &color[0]);
-    p_program_pbr->set_uniform_bool("uMaterial.uMetal", false);
-    p_program_pbr->set_uniform_float("uMaterial.uRough", 0.78f);
-    p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
-    p_program_pbr->set_uniform_float("uAmbientColor", p_time_manager->ambient_light);
-    p_program_pbr->set_uniform_float("uAmbientLuminance", p_time_manager->ambient_luminance);
-    p_program_pbr->set_uniform_int("uTerrainHeight", agk::app.setting.chunk_terrain_height.get_value());
-
-    glCullFace(GL_FRONT);
-    this->buffer_chunk.invoke();
-
-    glActiveTexture(GL_TEXTURE1);
-    auto *p_texture_atlas {(asset::texture<uint8_t>*) agk::asset::find("textures/terrain.atlas")};
-    p_texture_atlas->invoke();
-
-    /* Height map texture. */
-    glActiveTexture(GL_TEXTURE0);
+    // glActiveTexture(GL_TEXTURE1);
+    // auto *p_texture_atlas {(asset::texture<uint8_t>*) agk::asset::find("textures/terrain.atlas")};
 
     for (chunk *&p_chunks : this->chunk_draw_list) {
         if (p_chunks == nullptr || !p_chunks->is_processed() || p_chunks->is_dead || (dist = glm::distance(p_camera->transform.position, p_chunks->transform.position)) > dist_render) {
@@ -56,24 +38,8 @@ void renderer::process_terrain() {
         if (!p_camera->viewing(mat4x4_model, p_chunks->aabb)) {
             continue;
         }
-
-        glBindTexture(GL_TEXTURE_2D, p_chunks->texture);
-
-        mat3x3_inverse_transpose = glm::inverseTranspose(glm::mat3(mat4x4_model));
-        p_program_pbr->set_uniform_mat3("uNormalMatrix", &mat3x3_inverse_transpose[0][0]);
-        p_program_pbr->set_uniform_mat4("uMatrixModel", &mat4x4_model[0][0]);
-
-        mat4x4_model = this->mat4x4_perspective_view * mat4x4_model;
-        p_program_pbr->set_uniform_mat4("uMVP_TescStage", &mat4x4_model[0][0]);
-        p_program_pbr->set_uniform_mat4("uMVP_TeseStage", &mat4x4_model[0][0]);
-
-        this->buffer_chunk.draw();
     }
 
-    this->texture_chunk.revoke();
-    this->buffer_chunk.revoke();
-
-    p_program_pbr->revoke();
     glCullFace(GL_BACK);
 }
 
@@ -85,7 +51,8 @@ void renderer::process_environment() {
     float dist_render {agk::app.setting.fog_bounding.get_value().y};
     dist_render += dist_render * 0.5f;
     float dist {};
-    ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.material.brdf.pbr")};
+
+    ::asset::shader *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.pbr.material")};
 
     p_program_pbr->invoke();
     p_program_pbr->set_uniform_vec2("uFog.uDistance", &agk::app.setting.fog_bounding.get_value()[0]);
@@ -98,7 +65,7 @@ void renderer::process_environment() {
     uint32_t draw_call_count {};
 
     for (object *&p_objects : this->obj_draw_list) {
-        if (p_objects == nullptr || p_objects->no_render() || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
+        if (p_objects == nullptr || p_objects->type == enums::type::light || p_objects->no_render() || p_objects->is_dead || (dist = glm::distance(agk::app.p_curr_camera->transform.position, p_objects->transform.position)) > dist_render) {
             continue;
         }
 
@@ -128,16 +95,6 @@ void renderer::process_environment() {
         p_objects->on_render();
         draw_call_count++;
     }
-
-    uint64_t light_amount {agk::app.p_world_service->obj_id_light_list.size()};
-    if (this->loaded_light_size != light_amount) {
-        this->loaded_light_size = light_amount;
-
-        p_program_pbr->set_uniform_int("uLightAmount", (int32_t) light_amount);
-        p_program_pbr = (::asset::shader*) agk::asset::find("gpu/effects.terrain.pbr");
-        p_program_pbr->invoke();
-        p_program_pbr->set_uniform_int("uLightAmount", (int32_t) light_amount);
-    };
 
     p_program_pbr->revoke();
     glEnable(GL_CULL_FACE);

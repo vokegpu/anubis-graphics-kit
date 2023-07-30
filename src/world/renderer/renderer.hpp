@@ -8,9 +8,9 @@
 #include <vector>
 #include <map>
 #include <array>
-#include "gpu/gpu_framebuffer.hpp"
-#include "gpu/gpu_texture.hpp"
-#include "gpu/gpu_parallel.hpp"
+#include "gpu/gpuframebuffer.hpp"
+#include "gpu/gputexture.hpp"
+#include "gpu/gpuparallel.hpp"
 
 class renderer : public imodule {
 protected:

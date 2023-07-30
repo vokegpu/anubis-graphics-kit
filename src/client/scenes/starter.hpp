@@ -2,7 +2,7 @@
 #define AGK_CLIENT_SERVICES_STARTER_H
 
 #include "core/imodule.hpp"
-#include "gpu/gpu_buffer.hpp"
+#include "gpu/gpubuffer.hpp"
 #include "world/environment/light.hpp"
 #include "world/environment/object.hpp"
 #include <ekg/ekg.hpp>

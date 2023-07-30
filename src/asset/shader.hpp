@@ -9,7 +9,7 @@
 #include "core/imodule.hpp"
 #include <vector>
 #include <functional>
-#include "gpu/gpu_programbuffer.hpp"
+#include "gpu/gpuprogrambuffer.hpp"
 
 namespace asset {
     typedef struct shader_resource {

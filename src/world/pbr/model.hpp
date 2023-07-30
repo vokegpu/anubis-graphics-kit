@@ -1,7 +1,7 @@
 #ifndef AGK_WORLD_PBR_MODEL_H
 #define AGK_WORLD_PBR_MODEL_H
 
-#include "gpu/gpu_buffer.hpp"
+#include "gpu/gpubuffer.hpp"
 #include "core/imodule.hpp"
 #include <functional>
 #include "util/math.hpp"

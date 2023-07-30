@@ -4,10 +4,10 @@
 #include "core/imodule.hpp"
 #include "util/env.hpp"
 #include <glm/glm.hpp>
-#include "gpu/gpu_buffer.hpp"
+#include "gpu/gpubuffer.hpp"
 #include "world/pbr/model.hpp"
 #include "world/environment/light.hpp"
-#include "gpu/gpu_framebuffer.hpp"
+#include "gpu/gpuframebuffer.hpp"
 
 class sky : public imodule {
 protected:
