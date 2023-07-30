@@ -21,6 +21,8 @@ namespace stream {
         vertex, texcoord, normal, index
     };
 
+    // @TODO remove the useless mesh abstraction & impl a fast parser for gltf binaries.
+
     struct mesh {
     protected:
         std::vector<float> v_list {};
