@@ -41,17 +41,13 @@ void assetmanager::on_create() {
             {"./data/gpu/pbr.material.frag", GL_FRAGMENT_SHADER}
     }, [](asset::shader *p_shader) {
         float empty_buffer_material[12] {};
+        float empty_buffer_lighting[8] {};
+
         p_shader->attach("uniformBufferMaterial", 0);
         p_shader->programbuffer.invoke(0, GL_UNIFORM_BUFFER);
-        p_shader->programbuffer.send<float>(sizeof(empty_buffer_material) * 512, nullptr, GL_DYNAMIC_DRAW);
+        p_shader->programbuffer.send<float>((sizeof(empty_buffer_material) * 512) +
+                                            (sizeof(empty_buffer_lighting) * 64), nullptr, GL_DYNAMIC_DRAW);
         p_shader->programbuffer.bind(0);
-        p_shader->programbuffer.revoke();
-
-        float empty_buffer_light[8] {};
-        p_shader->attach("uniformBufferLight", 1);
-        p_shader->programbuffer.invoke(1, GL_UNIFORM_BUFFER);
-        p_shader->programbuffer.send<float>(sizeof(empty_buffer_light) * 64, nullptr, GL_DYNAMIC_DRAW);
-        p_shader->programbuffer.bind(1);
         p_shader->programbuffer.revoke();
     }});
 
@@ -60,16 +56,10 @@ void assetmanager::on_create() {
             {"./data/gpu/processing.post.frag", GL_FRAGMENT_SHADER}
     }});
 
-    this->load(new asset::shader {"effects.terrain.pbr", {
-            {"./data/gpu/terrain.pbr.vert", GL_VERTEX_SHADER},
-            {"./data/gpu/terrain.pbr.frag", GL_FRAGMENT_SHADER},
-            {"./data/gpu/terrain.pbr.tesc", GL_TESS_CONTROL_SHADER},
-            {"./data/gpu/terrain.pbr.tese", GL_TESS_EVALUATION_SHADER}
+    this->load(new asset::shader {"effects.sky.pbr", {
+        {"./data/gpu/sky.pbr.vert", GL_VERTEX_SHADER},
+        {"./data/gpu/sky.pbr.frag", GL_FRAGMENT_SHADER}
     }});
-
-    this->load(new asset::shader {
-        "effects.sky.pbr", {{"./data/gpu/sky.pbr.vert", GL_VERTEX_SHADER}, {"./data/gpu/sky.pbr.frag", GL_FRAGMENT_SHADER}}
-    });
 
     this->load(new asset::shader {"scripts.cloud.generator.script", {
             {"./data/gpu/cloud.generator.comp", GL_COMPUTE_SHADER}

@@ -16,7 +16,7 @@ light::~light() {
 }
 
 void light::on_low_update() {
-    auto *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.pbr.material.lighting")};
+    auto *p_program_pbr {(::asset::shader*) agk::asset::find("gpu/effects.pbr.material")};
     auto &program_buffer {p_program_pbr->programbuffer};
 
     float buffer[12] {
@@ -26,9 +26,9 @@ void light::on_low_update() {
 
     uint64_t size_of_buffer {sizeof(buffer)};
 
-    programbuffer.invoke();
-    programbuffer.edit<float>(size_of_buffer * this->index, size_of_buffer, buffer);
-    programbuffer.revoke();
+    program_buffer.invoke(1, GL_UNIFORM_BUFFER);
+    program_buffer.edit<float>(size_of_buffer * this->index, size_of_buffer, buffer);
+    program_buffer.revoke();
 
     this->low_update_ticking = false;
 }

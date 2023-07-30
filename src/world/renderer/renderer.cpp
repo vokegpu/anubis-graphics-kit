@@ -60,6 +60,7 @@ void renderer::process_environment() {
     p_program_pbr->set_uniform_float("uAmbientColor", agk::app.p_sky->ambient_light);
     p_program_pbr->set_uniform_vec3("uCameraPos", &agk::app.p_curr_camera->transform.position[0]);
     p_program_pbr->set_uniform_mat4("uPerspectiveView", &this->mat4x4_perspective_view[0][0]);
+    p_program_pbr->set_uniform_int("uLightAmount", static_cast<int32_t>(agk::app.p_world_service->obj_id_light_list.size()));
 
     glCullFace(GL_BACK);
     uint32_t draw_call_count {};
@@ -316,13 +317,6 @@ void renderer::on_create() {
     auto *p_terrain_atlas {(asset::texture<uint8_t>*) agk::asset::find("textures/terrain.atlas")};
     p_terrain_atlas->add("sand", {terrain_atlas.x * 0, terrain_atlas.y * 0, terrain_atlas.x, terrain_atlas.y});
     p_terrain_atlas->add("rock", {terrain_atlas.x * 1, terrain_atlas.y * 0, terrain_atlas.x, terrain_atlas.y});
-
-    auto *p_program_pbr {(asset::shader*) agk::asset::find("gpu/effects.terrain.pbr")};
-    p_program_pbr->invoke();
-
-    /* Send atlas texture coordinates. */
-    p_terrain_atlas->attach("uAtlas", "uTexCoord", p_program_pbr);
-    p_program_pbr->revoke();
 }
 
 void renderer::on_destroy() {
