@@ -19,40 +19,40 @@ const mat3 XYZtoRGB = mat3(
     -0.4985314f, 0.0415560f, 1.0572252f
 );
 
-uniform struct {
-    bool uEnabled;
-    float uAverageLuminance;
-    float uExposure;
-    float uWhite;
-} uHDR;
+uniform mat4 uInversePerspectiveView;
+uniform mat4 uPreviousPerspectiveView;
 
 uniform struct {
-    bool uEnabled;
-    float uIntensity;
-    bool uCameraRotated;
-    mat4 uInversePerspectiveView;
-    mat4 uPreviousPerspectiveView;
-} uMotionBlur;
+    /* HDR */
+    bool  uHDREnabled;
+    float uHDRAverageLuminance;
+    float uHDRExposure;
+
+    /* Motion Blur */
+    bool  uMotionBlurEnabled;
+    bool  uMotionBlurCameraRotated;
+    float uMotionBlurIntensity;
+} uEffects;
 
 void main() {
     vec2 size = textureSize(uTexture, 0);
     vec2 fragCoord = gl_FragCoord.xy / size;
     vec4 sum = vec4(0.0f);
 
-    if (uMotionBlur.uEnabled && uMotionBlur.uCameraRotated) {
+    if (uEffects.uMotionBlurEnabled && uEffects.uMotionBlurCameraRotated) {
         vec4 h = vec4(fragCoord.x * 2 - 1, (1.0f - fragCoord.y) * 2 - 1, texture(uDepthSampler, fragCoord).r / 1.0f, 1.0f);
-        vec4 d = uMotionBlur.uInversePerspectiveView * h;
+        vec4 d = uInversePerspectiveView * h;
         vec4 w = d / d.w;
 
         vec4 currPos = h;
-        vec4 prevPos = uMotionBlur.uPreviousPerspectiveView * w;
+        vec4 prevPos = uPreviousPerspectiveView * w;
         prevPos = prevPos / prevPos.w;
 
         vec2 velocity = currPos.xy - prevPos.xy;
         float numSamples = 20;
 
         float distToCenter = length(gl_FragCoord.x - (size.x / 2)) / size.x;
-        float dynmaicIntensity = clamp(length(velocity) * 0.1f, 0.0f, uMotionBlur.uIntensity * 0.1f);
+        float dynmaicIntensity = clamp(length(velocity) * 0.1f, 0.0f, uEffects.uMotionBlurIntensity * 0.1f);
 
         for (float index = 0; index < numSamples; index++) {
             vec2 nearestTexCoord = fragCoord + (vec2(((index / (numSamples - 1.0f)) - 0.5f) * (dynmaicIntensity) * distToCenter, 0.0f));
@@ -69,16 +69,16 @@ void main() {
         sum = texture(uTexture, fragCoord);
     }
 
-    if (uHDR.uEnabled) {
+    if (uEffects.uHDREnabled) {
         float white = 0.928f;
-        float exposure = uHDR.uExposure;
+        float exposure = uEffects.uHDRExposure;
 
         vec3 xyzCol = RGBtoXYZ * vec3(sum);
         float xyzSum = xyzCol.x + xyzCol.y + xyzCol.z;
         vec3 xyYCol = vec3(0.0f);
         if (xyzSum > 0.0f) xyYCol = vec3(xyzCol.x / xyzSum, xyzCol.y / xyzSum, xyzCol.y);
 
-        float l = (exposure * xyYCol.z) / uHDR.uAverageLuminance;
+        float l = (exposure * xyYCol.z) / uEffects.uHDRAverageLuminance;
         l = (l * (1 + l / (white * white))) / (1.0f + l);
 
         xyzCol.x = (l * xyYCol.x) / (xyYCol.y);

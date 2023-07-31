@@ -106,9 +106,8 @@ void renderer::process_post_processing() {
     this->framebuffer_post_processing.invoke(0, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     agk::app.p_sky->on_render();
-    this->process_terrain();
-    this->process_environment();
-    this->process_sky();
+    //this->process_terrain();
+    //this->process_environment();
 
     /* Revoke all buffers from frame. */
     this->framebuffer_post_processing.revoke(GL_COLOR_BUFFER_BIT);
@@ -168,21 +167,21 @@ void renderer::process_post_processing() {
 
     this->shape_post_processing.invoke();
     this->shape_post_processing.p_program->set_uniform_bool("uSkyPostProcessing", false);
-    this->shape_post_processing.p_program->set_uniform_bool("uHDR.uEnabled", agk::app.setting.enable_hdr.get_value());
+    this->shape_post_processing.p_program->set_uniform_bool("uEffects.uHDREnabled", agk::app.setting.enable_hdr.get_value());
 
     if (agk::app.setting.enable_hdr.get_value()) {
-        this->shape_post_processing.p_program->set_uniform_float("uHDR.uExposure", agk::app.setting.hdr_exposure.get_value());
-        this->shape_post_processing.p_program->set_uniform_float("uHDR.uAverageLuminance", ave_lum);
+        this->shape_post_processing.p_program->set_uniform_float("uEffects.uHDRExposure", agk::app.setting.hdr_exposure.get_value());
+        this->shape_post_processing.p_program->set_uniform_float("uEffects.uHDRAverageLuminance", ave_lum);
         this->previous_average_luminosity = ave_lum;
     }
 
-    this->shape_post_processing.p_program->set_uniform_bool("uMotionBlur.uEnabled", agk::app.setting.enable_motion_blur.get_value());
+    this->shape_post_processing.p_program->set_uniform_bool("uEffects.uMotionBlurEnabled", agk::app.setting.enable_motion_blur.get_value());
     if (agk::app.setting.enable_motion_blur.get_value()) {
         // @TODO Should make the HDR luminance calc better.
 
         this->mat4x4_inverse_perspective_view = glm::inverse(this->mat4x4_perspective_view);
-        this->shape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uInversePerspectiveView", &this->mat4x4_inverse_perspective_view[0][0]);
-        this->shape_post_processing.p_program->set_uniform_mat4("uMotionBlur.uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);
+        this->shape_post_processing.p_program->set_uniform_mat4("uInversePerspectiveView", &this->mat4x4_inverse_perspective_view[0][0]);
+        this->shape_post_processing.p_program->set_uniform_mat4("uPreviousPerspectiveView", &this->mat4x4_previous_perspective_view[0][0]);
         this->mat4x4_previous_perspective_view = this->mat4x4_perspective_view;
 
         auto p_camera {agk::app.p_curr_camera};
@@ -193,11 +192,11 @@ void renderer::process_post_processing() {
         this->camera_motion_delta.x = yaw - this->camera_motion_delta.x;
         this->camera_motion_delta.y = pitch - this->camera_motion_delta.y;
         float acc {(this->camera_motion_delta.x * this->camera_motion_delta.x + this->camera_motion_delta.y * this->camera_motion_delta.y)};
-        this->shape_post_processing.p_program->set_uniform_bool("uMotionBlur.uCameraRotated", acc != 0.0f);
+        this->shape_post_processing.p_program->set_uniform_bool("uEffects.uMotionBlurCameraRotated", acc != 0.0f);
         this->camera_motion_delta.x = yaw;
         this->camera_motion_delta.y = pitch;
 
-        this->shape_post_processing.p_program->set_uniform_float("uMotionBlur.uIntensity", agk::app.setting.motion_blur_intensity.get_value());
+        this->shape_post_processing.p_program->set_uniform_float("uEffects.uMotionBlurIntensity", agk::app.setting.motion_blur_intensity.get_value());
     }
 
     this->shape_post_processing.draw({0, 0, agk::app.screen_width, agk::app.screen_height}, {.0f, 0.0f, 1.0f, 1.0f});
@@ -345,10 +344,9 @@ void renderer::on_render() {
 
         case false: {
             agk::app.p_sky->on_render();
-            this->process_terrain();
-            this->process_environment();
+            //this->process_terrain();
+            //this->process_environment();
             this->process_editor();
-            this->process_sky();
             break;
         }
     }
