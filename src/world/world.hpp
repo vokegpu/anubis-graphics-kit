@@ -15,7 +15,7 @@
 #include "gpu/gpuparallel.hpp"
 #include "gpu/gputexture.hpp"
 
-static float agk_perspective_clip_distance {8048.0f * 8048.0f};
+static float agk_perspective_clip_distance {300000.0f};
 static const float AGK_WORLD_SCALE_FACTOR {6.40000000000000000f};
 static const float AGK_WORLD_ENV_SCALE_FACTOR {6.40000000000000000f};
 
