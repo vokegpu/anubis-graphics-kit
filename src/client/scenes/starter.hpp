@@ -37,6 +37,7 @@ namespace client::scenes {
 
         ekg::ui::frame *p_top_left_frame {};
         ekg::ui::frame *p_bottom_frame {};
+        ekg::runtime ekg_runtime {};
     public:
         void init_gui();
         void refresh_gui();

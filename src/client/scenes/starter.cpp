@@ -71,7 +71,7 @@ void client::scenes::starter::on_create() {
     p_user_camera->bind_editor_rotate.set_value("mouse-2");
 
     ekg::gl_version = "#version 450";
-    ekg::init(agk::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
+    ekg::init(&this->ekg_runtime, agk::app.p_sdl_window, "./data/fonts/JetBrainsMono-Bold.ttf");
 
     ekg::debug = false;
 

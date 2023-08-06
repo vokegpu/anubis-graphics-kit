@@ -180,12 +180,12 @@ void sky::on_render() {
     auto *&p_camera {agk::world::currentcamera()};
     auto *p_program {(::asset::shader*) agk::asset::find("gpu/effects.sky.pbr")};
 
-    float clip_dist {256000.0f};
+    float clip_dist {2000.0f};
     float mid_clip_dist {clip_dist / 2.0f};
 
     glm::vec3 tesseract_pos {p_camera->transform.position};
     tesseract_pos.x -= mid_clip_dist;
-    tesseract_pos.y = -1000.0f;
+    tesseract_pos.y -= 0.0f;
     tesseract_pos.z -= mid_clip_dist;
 
     glm::mat4 mat4x4rts {1.0f};
@@ -202,7 +202,6 @@ void sky::on_render() {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_CULL_FACE);
 
     this->buffer_tesseract.invoke();
     this->buffer_tesseract.draw();
@@ -231,8 +230,8 @@ void sky::on_render() {
     this->moon_pos_time.x = factor;
 
     moon_pos.z -= dist;
-    moon_pos.y += 9808.0f;
-    dist /= 4;
+    moon_pos.y += 808.0f;
+    //dist /= 4;
 
     mat4x4rts = glm::mat4(1.0f);
     mat4x4rts = glm::rotate(mat4x4rts, glm::radians(this->moon_pos_time.z), {1.0f, 0.0f, 0.0f});
