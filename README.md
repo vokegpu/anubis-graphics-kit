@@ -9,6 +9,9 @@ If you are on Windows, please replace `"Unix Makefiles"` with `"MinGW Makefiles"
 
 The location of executables is on `./build/`, choose your system and run Anubis Graphics Kit. Note: If the Linux version is broken, replace the Linux `./data` with `./build/win/data/`, most of the commits are tested in Windows.
 
+The project uses:
+SDL2, GLEW, freetype, and [EKG GUI library](https://github.com/vokegpu/ekg-ui-library).
+
 # GPU support
 
 This project only is supported for Nvidia GPUs, sadly the shaders are incompatible with AMD GPUs.
