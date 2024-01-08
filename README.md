@@ -14,7 +14,9 @@ SDL2, GLEW, Freetype, and [EKG GUI library](https://github.com/vokegpu/ekg-ui-li
 
 # GPU support
 
-This project only is supported by Nvidia GPUs, sadly the shaders are incompatible with AMD GPUs.
+This project only is supported by Nvidia GPUs, sadly the shaders are incompatible with AMD GPUs.  
+The sky shader does not work on AMD GPUs, due the loss precision and range of rendering.  
+All other effects works, but the sky rendering was the masterpiece.  
 
 ---
 
