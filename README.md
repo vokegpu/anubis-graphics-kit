@@ -1,8 +1,10 @@
 # AGK
 
 Anubis Graphics Kit (AGK) is a photo-realism rendering engine made in OpenGL 4 for SDL2, the purpose of this engine is to do rendering tests and implement empirical rendering equations, techniques, concepts, & specifically the umbrella PBR.  
-An official researcher article is being written together with this project to investigate a way to connect heightmaps. The research is not linked to any institution, perhaps I will publish it here at the end of the article project,  
-but VokeGpu will keep updating this engine project.
+~~An official researcher article is being written together with this project to investigate a way to connect heightmaps. The research is not linked to any institution, perhaps I will publish it here at the end of the article project,  
+but VokeGpu will keep updating this engine project.~~
+
+This project also served as an opportunity to test the ![EKG GUI library](https://github.com/vokegpu/ekg-ui-library) within a PBR-based environment in the the OpenGL context.
 
 If you are on Windows, please replace `"Unix Makefiles"` with `"MinGW Makefiles"` or `"Ninja"`, and run the command:  
 `cmake -S . -B ./cmake-build-debug/ -G "Unix Makefiles" && cmake --build ./cmake-build-debug/`
